@@ -1,16 +1,16 @@
 <?php
 
 interface enrollment_factory {
-    // Returns a SemesterProcessor
+    // Returns a semester_processor
     function semester_source();
 
-    // Returns a CourseProcessor
+    // Returns a course_processor
     function course_source();
 
-    // Returns a TeacherProcessor
+    // Returns a teacher_processor
     function teacher_source();
 
-    // Retunrs a StudentProcessor
+    // Retunrs a student_processor
     function student_source();
 }
 
