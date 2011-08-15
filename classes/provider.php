@@ -15,9 +15,6 @@ interface enrollment_factory {
 }
 
 abstract class enrollment_provider implements enrollment_factory {
-    // Manditory override
-    var $name_key;
-
     // Override for special behavior hooks
     function preprocess() {
         return true;

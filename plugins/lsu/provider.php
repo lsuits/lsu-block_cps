@@ -3,10 +3,16 @@
 require_once 'processors.php';
 
 class lsu_enrollment_provider extends enrollment_provider {
-    var $name_key = 'lsu';
 
     function __construct() {
         // Get credentials and wsdl from settings
+    }
+
+    function settings() {
+        return array(
+            'credential_location' => 'change me',
+            'wsdl_location' => 'webService.wsdl'
+        );
     }
 
     function semester_source() {
