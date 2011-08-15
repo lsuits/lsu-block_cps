@@ -138,3 +138,61 @@ class lsu_teachers extends lsu_source implements teacher_processor {
             array_map($teacher_mapper, $xml_teachers->ROW);
     }
 }
+
+class lsu_students extends lsu_source implements student_processor {
+    var $serviceId = 'MOODLE_STUDENTS_1';
+
+    function students($course_nbr, $course_dept, $section_nbr, $semester_year, $semester_name) {
+        $semester_term = $this->encode_semester($semester_year, $semester_name);
+
+        $params = array('01', $semester_term, $course_dept, $course_nbr, $section_nbr);
+
+        $xml_students = $this->invoke($params);
+
+        $student_mapper = function ($xml_student) {
+            list($lastname, $firstname) = $this->parse_name($xml_student->INDIV_NAME);
+
+            $student = new stdClass;
+
+            $student->username = $xml_student->PRIMARY_ACCESS_ID;
+            $student->idnumber = $xml_student->LSU_ID;
+
+            $student->credit_hours = $xml_student->CREDIT_HRS;
+            $student->ferpa = $xml_student->WITHHOLD_DIR_FLG;
+
+            return $student;
+        };
+
+        return empty($xml_students->ROW) ?
+            array() :
+            array_map($student_mapper, $xml_students->ROW);
+    }
+}
+
+class lsu_student_data extends lsu_source {
+    var $serviceId = 'MOODLE_STUDENTS_2';
+
+    function student_data($semester_year, $semester_name) {
+        $student_data = array();
+        foreach (array('1590', '1595') as $instituition) {
+            $xml_data = $this->invoke(array($semester_term, $instituition));
+
+            foreach ($xml_data->ROW as $xml_student_data) {
+                $stud_data = new stdClass;
+
+                $reg = trim($xml_student_data->REGISTRATION_DATE);
+
+                $stud_data->year = $xml_student_data->YEAR_CLASS;
+                $stud_data->college = $xml_student_data->COLLEGE_CODE;
+                $stud_data->major = $xml_student_data->CURRIC_CODE;
+                $stud_data->reg_status = empty($reg) ? NULL : $this->parse_date($reg);
+                $stud_data->keypadid = $xml_student_data->KEYPADID;
+                $stud_data->idnumber = $xml_student_data->LSU_ID;
+
+                $student_data[] = $stud_data;
+            }
+        }
+
+        return $student_data;
+    }
+}
