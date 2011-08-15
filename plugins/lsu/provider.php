@@ -1,6 +1,6 @@
 <?php
 
-require_once 'processors.php';
+require_once dirname(__FILE__) . '/processors.php';
 
 class lsu_enrollment_provider extends enrollment_provider {
 
@@ -10,7 +10,7 @@ class lsu_enrollment_provider extends enrollment_provider {
 
     function settings() {
         return array(
-            'credential_location' => 'change me',
+            'credential_location' => 'https://secure.web.lsu.edu/credentials.php',
             'wsdl_location' => 'webService.wsdl'
         );
     }

@@ -1,6 +1,6 @@
 <?php
 
-require_once 'lib.php';
+require_once dirname(__FILE__) . '/lib.php';
 
 class lsu_semesters extends lsu_source implements semester_processor {
     var $serviceId = 'MOODLE_SEMESTERS';
