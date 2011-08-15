@@ -35,5 +35,5 @@ $string['lsu_wsdl_location_desc'] = 'This is the wsdl used in SOAP requests to L
 
 $string['lsu_bad_file'] = 'Provide a *.wsdl* file';
 $string['lsu_no_file'] = 'The WSDL does not exists in wsdl_location.';
-$string['bad_url'] = 'Provide a valid url';
-$string['bad_resp'] = 'Invalid credentials in credential location request';
+$string['lsu_bad_url'] = 'Provide a valid url (define either a http or https protocol)';
+$string['lsu_bad_resp'] = 'Invalid credentials in credential location request';

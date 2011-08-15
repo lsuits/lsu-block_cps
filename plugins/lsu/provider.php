@@ -28,10 +28,8 @@ class lsu_enrollment_provider extends enrollment_provider {
 
         require_once $CFG->libdir . '/filelib.php';
 
-        $curl = new curl;
-        $curl->request($this->url);
-
-        $resp = $curl->getResponse();
+        $curl = new curl(array('cache' => true));
+        $resp = $curl->get($this->url);
 
         list($username, $password) = explode("\n", $resp);
 
