@@ -105,3 +105,36 @@ class lsu_courses extends lsu_source implements course_processor {
         return $courses;
     }
 }
+
+class lsu_teachers extends lsu_source implements teacher_processor {
+    var $serviceId = 'MOODLE_INSTRUCTORS';
+
+    function teachers($course_nbr, $course_dept, $section_nbr, $semester_year, $semester_name) {
+        $semester_term = $this->encode_semester($semester_year, $semester_name);
+
+        $params = array($course_nbr, $section_nbr, $course_dept, '01', $semester_term);
+
+        $xml_teachers = $this->invoke($params);
+
+        $teacher_mapper = function ($xml_teacher) {
+            list($lastname, $first) = $this->parse_name($xml_teacher->INDIV_NAME);
+
+            $primary_flag = trim($xml_teacher->PRIMARY_INSTRUCTOR);
+
+            $teacher = new stdClass;
+
+            $teacher->username = $xml_teacher->PRIMARY_ACCESS_ID;
+            $teacher->idnumber = $xml_teacher->LSU_ID;
+            $teacher->firstname = $first;
+            $teacher->lastname = $lastname;
+
+            $teacher->primary_flag = empty($primary_flag) ? 0 : 1;
+
+            return $teacher;
+        };
+
+        return empty($xml_teachers->ROW) ?
+            array() :
+            array_map($teacher_mapper, $xml_teachers->ROW);
+    }
+}
