@@ -60,27 +60,44 @@ class lsu_enrollment_provider extends enrollment_provider {
         );
     }
 
+    function source_params() {
+        return array(
+            'username' => $this->username,
+            'password' => $this->password,
+            'wsdl' => $this->wsdl
+        );
+    }
+
     function semester_source() {
-        return new lsu_semesters();
+        $source = new lsu_semesters();
+        return $source->set_params($this->source_params());
     }
 
     function course_source() {
-        return new lsu_courses();
+        $source = new lsu_courses();
+        return $source->set_params($this->source_params());
     }
 
     function teacher_source() {
-        return new lsu_teachers();
+        $source = new lsu_teachers();
+        return $source->set_params($this->source_params());
     }
 
     function student_source() {
-        return new lsu_students();
+        $source = new lsu_students();
+        return $source->set_params($this->source_params());
+    }
+
+    function student_data_source() {
+        $source = new lsu_student_data();
+        return $source->set_params($this->source_params());
     }
 
     function postprocess() {
         // Get dynamic semesters, eventually
         $semesters = array();
 
-        $source = new lsu_student_data();
+        $source = $this->student_data_source();
         foreach ($semesters as $semester) {
             $datas = $source->student_data($semester->year, $semester->name);
 

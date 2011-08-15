@@ -47,8 +47,12 @@ XML;
         return $contents;
     }
 
-    public function node($element, $field) {
-        return sprintf('%s', $element->$field);
+    public function set_params(array $params) {
+        foreach ($params as $key => $value) {
+            $this->$key = $value;
+        }
+
+        return $this;
     }
 
     public function invoke($params) {
