@@ -15,9 +15,6 @@ interface enrollment_factory {
 }
 
 abstract class enrollment_provider implements enrollment_factory {
-    function get_name() {
-        return current(explode('_enrollment_provider', get_called_class()));
-    }
 
     function get_setting($key, $default=false) {
         $moodle_setting = $this->get_name() . '_' . $key;
@@ -45,18 +42,22 @@ abstract class enrollment_provider implements enrollment_factory {
         return true;
     }
 
+    public static function get_name() {
+        return current(explode('_enrollment_provider', get_called_class()));
+    }
+
     /**
      * Return key / value pair of potential $CFG->$name_key_$key values
      * The values become default values. Entries are assumed to be textboxes
      */
-    function settings() {
+    public static function settings() {
         return array();
     }
 
     /**
      * Return admin_setting_* classes for the $ADMIN config tree
      */
-    function adv_settings() {
+    public static function adv_settings() {
         return array();
     }
 }

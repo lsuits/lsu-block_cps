@@ -43,7 +43,7 @@ class enrol_cps_plugin extends enrol_plugin {
         return array_combine($plugins, array_map($provide_append, $plugins));
     }
 
-    public static function create_provider() {
+    public static function provider_class() {
         $provider_name = get_config('enrol_cps', 'enrollment_provider');
 
         if (!$provider_name) {
@@ -66,6 +66,12 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $provider_class = "{$provider_name}_enrollment_provider";
 
-        return new $provider_class();
+        return $provider_class;
+    }
+
+    public static function create_provider() {
+        $provider_class = self::provider_class();
+
+        return $provider_class ? new $provider_class() : false;
     }
 }
