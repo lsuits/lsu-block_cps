@@ -74,3 +74,34 @@ class lsu_semesters extends lsu_source implements semester_processor {
         return $semesters;
     }
 }
+
+class lsu_courses extends lsu_source implements course_processor {
+    var $serviceId = 'MOODLE_COURSES';
+
+    function courses($semester_year, $semester_name, $semester_campus) {
+        $semester_term = $this->encode_semester($semester_year, $semester_name);
+
+        // LSU and LAW ... Might change the query
+        $courses = array();
+        foreach (array('01', '08') as $campus) {
+            $xml_courses = $this->invoke(array($campus, $semester_term));
+
+            foreach ($xml_courses->ROW as $xml_course) {
+                $course = new stdClass;
+                $course->department = (string) $xml_course->DEPT_CODE;
+                $course->course_number = (string) $xml_course->COURSE_NBR;
+                $course->fullname = (string) $xml_course->COURSE_TITLE;
+                $course->section_number = (string) $xml_course->SECTION_NBR;
+
+                // Course Meta
+                $course->course_type = (string) $xml_course->CLASS_TYPE;
+                $course->grade_type = (string) $xml_course->GRADE_SYSTEM_CODE;
+                $course->first_year = (int) $xml_course->COURSE_NBR < 5200 ? 1 : 0;
+
+                $courses[] = $course;
+            }
+        }
+
+        return $courses;
+    }
+}
