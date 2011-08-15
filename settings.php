@@ -44,12 +44,7 @@ if ($ADMIN->fulltree) {
             // Attempting to create the provider
             new $provider();
         } catch (Exception $e) {
-            $provider_name = $provider::get_name();
-            $problem = $_s($provider_name . '_' . $e->getMessage());
-
-            $a = new stdClass;
-            $a->pluginname = $_s($provider_name.'_name');
-            $a->problem = $problem;
+            $a = enrol_cps_plugin::translate_error($e);
 
             $settings->add(new admin_setting_heading('provider_problem',
                 $_s('provider_problems'), $_s('provider_problems_desc', $a)));

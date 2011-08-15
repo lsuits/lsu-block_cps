@@ -24,6 +24,8 @@ $string['no_provider'] = 'No Enrollment Provider selected.';
 
 $string['provider_settings'] = '{$a} Settings';
 
+$string['provider_cron_problem'] = 'Could not instantiate {$a->pluginname}: {$a->problem}. Check provider configuration.';
+
 /** Behavior Strings go here */
 $string['lsu_name'] = 'LSU Enrollment Provider';
 
@@ -34,6 +36,6 @@ $string['lsu_wsdl_location'] = 'SOAP WSDL';
 $string['lsu_wsdl_location_desc'] = 'This is the wsdl used in SOAP requests to LSU\'s Data Access Service. The Moodle data directory *{$a->dataroot}* is assumed as the path base.';
 
 $string['lsu_bad_file'] = 'Provide a *.wsdl* file';
-$string['lsu_no_file'] = 'The WSDL does not exists in wsdl_location.';
+$string['lsu_no_file'] = 'The WSDL does not exists in wsdl_location';
 $string['lsu_bad_url'] = 'Provide a valid url (define either a http or https protocol)';
 $string['lsu_bad_resp'] = 'Invalid credentials in credential location request';
