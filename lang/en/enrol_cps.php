@@ -1,9 +1,10 @@
 <?php
 
 $string['pluginname'] = 'CPS Enollment';
-$string['pluginname_desc'] = 'The CPS (Course Preference System) enrollment module is a pluggable enrollment system that adheres to common university criterion including Semesters, Courses, Sections tied to coures and teacher and student enrollment tied to Sections.
+$string['pluginname_desc'] = 'The CPS (Course Preference System) enrollment module is a pluggable enrollment system that adheres to common university
+criterion including Semesters, Courses, Sections tied to coures, and teacher and student enrollment tied to Sections.
 
-The Moodle enrollment module will scan for behaviors defined in *enrol/cps/plugins*. A fully defined behavior will show up in the dropdown below.';
+The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
 $string['provider'] = 'Enrollment Provider';
 $string['provider_desc'] = 'This enrollment provider will be used to pull enrollment data.';
 

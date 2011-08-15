@@ -9,7 +9,7 @@ if ($ADMIN->fulltree) {
 
     $_s = enrol_cps_plugin::gen_str();
 
-    $settings->add(new admin_setting_heading('enrol_cps_settings', '', $_s('pluginname_desc')));
+    $settings->add(new admin_setting_heading('enrol_cps_settings', '', $_s('pluginname_desc', enrol_cps_plugin::plugin_base())));
 
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
         $_s('provider'), $_s('provider_desc'), 'lsu', $plugins));
