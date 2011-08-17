@@ -1,25 +1,73 @@
 <?php
 
 abstract class cps_dao {
-    abstract public static function required_fields();
+    /** Private static helper function to maintain calling class static
+     * overrides
+     */
+    private static function with_class($fun) {
+        return $fun(get_called_class());
+    }
 
+    private static function call($fun, $params = array()) {
+        return self::with_class(function ($class) use ($fun, $params) {
+            return call_user_func(array($class, $fun), $params);
+        });
+    }
+
+    /** Public api to interact with cps_dao's */
     public static function get_meta($parentid) {
         global $DB;
 
-        $params = array(self::get_name().'id' => $parentid);
-        $res = $DB->get_records(self::metatablename(), $params);
+        $params = array(self::call('get_name'). 'id' => $parentid);
+        $res = $DB->get_records(self::call('metatablename'), $params);
 
         return $res;
     }
 
-    public static function get($meta = false, array $params) {
-        return current(self::get_all($meta, $params));
+    public static function get(array $params, $meta = false, $fields = '*') {
+        return self::with_class(function ($class) use ($params, $meta, $fields) {
+            return current($class::get_all($params, $meta, $fields));
+        });
     }
 
-    public static function get_all($meta = false, array $params = array()) {
+    public static function get_all(array $params = array(), $meta = false, $fields = '*') {
         global $DB;
 
-        $res = $DB->get_records(self::tablename(), $params);
+        $meta_fields = self::call('meta_fields', $params);
+
+        $tablename = self::call('tablename');
+
+        if ($meta_fields) {
+            $z_fields = array_map(function($field) { return 'z.' . $field; },
+                explode(',', $fields));
+
+            $alpha = range('a', 'x');
+
+            $name = self::call('get_name');
+
+            $tables = array('{'.$tablename.'} z');
+            $filters = array('z.id = a.'.self::call('get_name').'id');
+
+            foreach ($meta_fields as $i => $key) {
+                $letter = $alpha[$i];
+                $tables[] = '{'.self::call('metatablename').'} '.$letter;
+                $filters[] = $letter.'.name' . " = '" . $key ."'";
+                $filters[] = $letter.'.value' . " = '" . $params[$key] . "'";
+
+                if ($i > 0) {
+                    $i --;
+                    $prev = $alpha[$i];
+                    $filters[] = "{$letter}.{$name}id = {$prev}.{$name}id";
+                }
+            }
+
+            $sql = "SELECT ". implode(',', $z_fields) . ' FROM ' .
+                implode(',', $tables) . ' WHERE ' . implode(' AND ', $filters);
+
+            $res = $DB->get_records_sql($sql);
+        } else {
+            $res = $DB->get_records($tablename, $params, '', $fields);
+        }
 
         $ret = array();
         foreach ($res as $r) {
@@ -39,37 +87,38 @@ abstract class cps_dao {
     }
 
     public static function tablename() {
-        return sprintf('enrol_cps_%s', self::get_name().'s');
+        return sprintf('enrol_cps_%s', self::call('get_name').'s');
     }
 
     public static function metatablename() {
-        return sprintf('enrol_cps_%smeta', self::get_name());
+        return sprintf('enrol_cps_%smeta', self::call('get_name'));
     }
 
     public static function upgrade($db_object) {
-        $calling = get_called_class();
+        return self::with_class(function ($class) use ($db_object) {
 
-        $fields = $db_object ? get_object_vars($db_object) : array();
+            $fields = $db_object ? get_object_vars($db_object) : array();
 
-        // Children can handle their own instantiation
-        $self = new $calling($fields);
+            // Children can handle their own instantiation
+            $self = new $class($fields);
 
-        return $self->fill_params($fields);
+            return $self->fill_params($fields);
+        });
     }
 
     public static function delete($id) {
         global $DB;
 
-        $params = array(self::get_name().'id' => $id);
-        $DB->delete_records(self::metatablename(), $params);
+        $params = array(self::call('get_name').'id' => $id);
+        $DB->delete_records(self::call('metatablename'), $params);
 
-        return $DB->delete_records(self::tablename(), array('id' => $id));
+        return $DB->delete_records(self::call('tablename'), array('id' => $id));
     }
 
     public static function delete_all(array $params = array()) {
         global $DB;
 
-        $to_delete = $DB->get_records(self::tablename(), $params);
+        $to_delete = $DB->get_records(self::call('tablename'), $params);
 
         if (empty($to_delete)) {
             return true;
@@ -80,9 +129,10 @@ abstract class cps_dao {
         $DB->delete_records_select(self::metatablename(),
             self::get_name().'id in ('.$ids.')');
 
-        return $DB->delete_records(self::tablename(), $params);
+        return $DB->delete_records(self::call('tablename'), $params);
     }
 
+    /** Instance based ineteraction */
     public function fill_params(array $params = array()) {
         if (!empty($params)) {
             foreach ($params as $field => $value) {
@@ -94,36 +144,29 @@ abstract class cps_dao {
     }
 
     public function fill_meta() {
-        $meta = self::get_meta($this->id);
+        $meta = self::call('get_meta', $this->id);
 
         foreach ($meta as $m) {
             $this->{$m->name} = $m->value;
         }
+
+        return $this;
     }
 
     public function save() {
         global $DB;
 
-        $db_object = new stdClass;
-
-        $required = $this->required_fields();
-        foreach ($required as $key) {
-            if (isset($this->$key)) {
-                $db_object->$key = $this->$key;
-            }
-        }
+        $tablename = self::call('tablename');
 
         if (!isset($this->id)) {
-            $this->id = $DB->insert_record(self::tablename(), $db_object, true);
+            $this->id = $DB->insert_record($tablename, $this, true);
         } else {
-            $db_object->id = $this->id;
-            $DB->update_record(self::tablename(), $db_object);
+            $DB->update_record($tablename, $this);
         }
 
         $fields = get_object_vars($this);
-        unset($fields['id']);
 
-        $extra = array_diff(array_keys($fields), $required);
+        $extra = $this->meta_fields($fields);
 
         if (empty($extra)) {
             return true;
@@ -140,10 +183,10 @@ abstract class cps_dao {
     private function save_meta($meta) {
         global $DB;
 
-        $dbs = self::get_meta($this->id);
+        $dbs = self::call('get_meta', $this->id);
 
-        $metatable = self::metatablename();
-        $parentref = self::get_name();
+        $metatable = self::call('metatablename');
+        $parentref = self::call('get_name');
 
         // Update Pre-existing changes
         foreach ($dbs as $db) {
@@ -173,4 +216,16 @@ abstract class cps_dao {
             $this->{$db->name} = $db->value;
         }
     }
+
+    public static function meta_fields($fields) {
+
+        $name = self::call('get_name');
+
+        return array_filter(array_keys($fields), function ($field) use ($name) {
+            if ($field == 'id') return false;
+
+            return preg_match('/^'.$name.'_/', $field);
+        });
+    }
+
 }
