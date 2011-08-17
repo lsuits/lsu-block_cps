@@ -19,24 +19,113 @@ class cps_enrollment {
     }
 
     public function full_process() {
+
+        $lib = self::base('classes/dao');
+
+        require_once $lib . '/lib.php';
+        require_once $lib . '/daos.php';
+
         $now = strftime('%Y-%m-%d', time());
 
         $this->provider->preprocess();
 
         $semesters = $this->provider->semester_source()->semesters($now);
 
-        foreach ($semesters as $semester) {
-            // insert or update record
+        $processed_semesters = $this->process_semesters($semesters);
+
+        foreach ($processed_semesters as $semester) {
 
             $courses = $this->provider->course_source()->courses($semester);
 
-            foreach ($courses as $course) {
+            $process_courses = $this->process_courses($semester, $courses);
+
+            foreach ($process_courses as $course) {
                 $this->process_course_enrollment($semester, $course);
             }
         }
 
         $this->provider->postprocess();
         return true;
+    }
+
+    public function process_semesters($semesters) {
+        $processed = array();
+
+        foreach ($semesters as $semester) {
+            try {
+                $params = array(
+                    'year' => $semester->year,
+                    'name' => $semester->name,
+                    'campus' => $semester->campus,
+                    'session_key' => $semester->session_key
+                );
+
+                $cps = cps_semester::upgrade($semester);
+
+                if ($prev = cps_semester::get($params)) {
+                    $cps->id = $prev->id;
+                }
+
+                $cps->save();
+
+                $processed[] = $cps;
+            } catch (Exception $e) {
+                $this->errors[] = $e->getMessage();
+            }
+        }
+
+        return $processed;
+    }
+
+    public function process_courses($semester, $courses) {
+        $processed = array();
+
+        foreach ($courses as $course) {
+            try {
+                $params = array(
+                    'department' => $course->department,
+                    'cou_number' => $course->number
+                );
+
+                $sections = $courses->sections;
+
+                unset($courses->sections);
+
+                $cps_course = cps_course::upgrade($course);
+
+                if ($prev = cps_course::get($params, true)) {
+                    $cps_course->id = $prev->id;
+                }
+
+                $cps_course->save();
+
+                $cps_course->sections = array();
+
+                foreach ($sections as $section) {
+                    $params = array(
+                        'courseid' => $cps_course->id,
+                        'semesterid' => $semester->id,
+                        'sec_number' => $section->sec_number
+                    );
+
+                    $cps_section = cps_section::upgrade($section);
+
+                    if ($prev = cps_section::get($params, true)) {
+                        $cps_section->id = $prev->id;
+                    }
+
+                    $cps_section->save();
+
+                    $cps_course->sections[] = $cps_section;
+                }
+
+                $processed[] = $cps_course;
+            } catch (Exception $e) {
+                $this->errors[] = $e->getMessage();
+            }
+        }
+
+        return $processed;
     }
 
     /**
