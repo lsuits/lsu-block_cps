@@ -28,14 +28,10 @@ class cps_enrollment {
         foreach ($semesters as $semester) {
             // insert or update record
 
-            $course_source = $this->provider->course_source();
-
-            $courses = $course_source->courses($semester->year, $semester->name, $semester->campus);
+            $courses = $this->provider->course_source()->courses($semester);
 
             foreach ($courses as $course) {
-                $this->process_course_enrollment($course->course_number,
-                    $course->department, $course->section_number, $semester->year,
-                    $semester->name);
+                $this->process_course_enrollment($semester, $course);
             }
         }
 
@@ -46,10 +42,10 @@ class cps_enrollment {
     /**
      * Could be used to process a single course upon request
      */
-    public function process_course_enrollment($course_nbr, $course_dept, $section_nbr, $year, $name) {
+    public function process_course_enrollment($semester, $course) {
         $teacher_source = $this->provider->teacher_source();
 
-        $teachers = $teacher_source->teachers($course_nbr, $course_dept, $section_nbr, $year, $name);
+        $teachers = $teacher_source->teachers($semester, $course);
 
         foreach ($teachers as $teacher) {
             // Insert or update teacher users here
@@ -57,7 +53,7 @@ class cps_enrollment {
 
         $student_source = $this->provider->student_source();
 
-        $students = $student_source->students($course_nbr, $course_dept, $section_nbr, $year, $name);
+        $students = $student_source->students($semester, $course);
 
         foreach ($students as $student) {
             // Insert or update student users here

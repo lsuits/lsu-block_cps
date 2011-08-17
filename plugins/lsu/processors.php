@@ -29,7 +29,9 @@ class lsu_semesters extends lsu_source implements semester_processor {
         foreach($xml_semesters->ROW as $xml_semester) {
             $code = $xml_semester->CODE_VALUE;
 
-            $term = sprintf('%s', $xml_semester->TERM_CODE);
+            $term = (string) $xml_semester->TERM_CODE;
+
+            $session = (string) $xml_semester->SESSION;
 
             $date = $this->parse_date($xml_semester->CALENDAR_DATE);
 
@@ -58,12 +60,16 @@ class lsu_semesters extends lsu_source implements semester_processor {
                 $semester->year = $year;
                 $semester->name = $name;
                 $semester->campus = $campus;
+                $semester->session_key = $session;
                 $semester->class_start = $date;
 
                 $semesters[] = $semester;
-            } else if (isset($lookup[$campus][$term])) {
+            } else if (isset($lookup[$campus][$term]) and
+                $lookup[$campus][$term]->session_key == $session) {
+
                 $semester =& $lookup[$campus][$term];
                 $semester->grades_due = $date;
+
             } else {
                 continue;
             }
@@ -78,13 +84,13 @@ class lsu_semesters extends lsu_source implements semester_processor {
 class lsu_courses extends lsu_source implements course_processor {
     var $serviceId = 'MOODLE_COURSES';
 
-    function courses($semester_year, $semester_name, $semester_campus) {
-        $semester_term = $this->encode_semester($semester_year, $semester_name);
+    function courses(stdClass $semester) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         // LSU and LAW ... Might change the query
         $courses = array();
         foreach (array('01', '08') as $campus) {
-            $xml_courses = $this->invoke(array($campus, $semester_term));
+            $xml_courses = $this->invoke(array($campus, $semester_term, $semester->session_key));
 
             foreach ($xml_courses->ROW as $xml_course) {
                 $course = new stdClass;
@@ -109,10 +115,11 @@ class lsu_courses extends lsu_source implements course_processor {
 class lsu_teachers extends lsu_source implements teacher_processor {
     var $serviceId = 'MOODLE_INSTRUCTORS';
 
-    function teachers($course_nbr, $course_dept, $section_nbr, $semester_year, $semester_name) {
-        $semester_term = $this->encode_semester($semester_year, $semester_name);
+    function teachers(stdClass $semester, stdClass $course) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
 
-        $params = array($course_nbr, $section_nbr, $course_dept, '01', $semester_term);
+        $params = array($course->cou_number, $course->sec_number,
+            $course->department, '01', $semester_term, $semester->session_key);
 
         $xml_teachers = $this->invoke($params);
 
@@ -123,8 +130,8 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 
             $teacher = new stdClass;
 
-            $teacher->username = $xml_teacher->PRIMARY_ACCESS_ID;
-            $teacher->idnumber = $xml_teacher->LSU_ID;
+            $teacher->username = (string) $xml_teacher->PRIMARY_ACCESS_ID;
+            $teacher->idnumber = (string) $xml_teacher->LSU_ID;
             $teacher->firstname = $first;
             $teacher->lastname = $lastname;
 
@@ -142,10 +149,11 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 class lsu_students extends lsu_source implements student_processor {
     var $serviceId = 'MOODLE_STUDENTS_1';
 
-    function students($course_nbr, $course_dept, $section_nbr, $semester_year, $semester_name) {
-        $semester_term = $this->encode_semester($semester_year, $semester_name);
+    function students(stdClass $semester, stdClass $course) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
 
-        $params = array('01', $semester_term, $course_dept, $course_nbr, $section_nbr);
+        $params = array('01', $semester_term, $course->department,
+            $course->cou_number, $course->sec_number, $semester->session_key);
 
         $xml_students = $this->invoke($params);
 
@@ -154,11 +162,11 @@ class lsu_students extends lsu_source implements student_processor {
 
             $student = new stdClass;
 
-            $student->username = $xml_student->PRIMARY_ACCESS_ID;
-            $student->idnumber = $xml_student->LSU_ID;
+            $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
+            $student->idnumber = (string) $xml_student->LSU_ID;
 
-            $student->credit_hours = $xml_student->CREDIT_HRS;
-            $student->ferpa = $xml_student->WITHHOLD_DIR_FLG;
+            $student->credit_hours = (string) $xml_student->CREDIT_HRS;
+            $student->ferpa = (string) $xml_student->WITHHOLD_DIR_FLG;
 
             return $student;
         };
@@ -172,7 +180,9 @@ class lsu_students extends lsu_source implements student_processor {
 class lsu_student_data extends lsu_source {
     var $serviceId = 'MOODLE_STUDENTS_2';
 
-    function student_data($semester_year, $semester_name) {
+    function student_data(stdClass $semester) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
+
         $student_data = array();
         foreach (array('1590', '1595') as $instituition) {
             $xml_data = $this->invoke(array($semester_term, $instituition));
@@ -182,12 +192,12 @@ class lsu_student_data extends lsu_source {
 
                 $reg = trim($xml_student_data->REGISTRATION_DATE);
 
-                $stud_data->year = $xml_student_data->YEAR_CLASS;
-                $stud_data->college = $xml_student_data->COLLEGE_CODE;
-                $stud_data->major = $xml_student_data->CURRIC_CODE;
+                $stud_data->year = (string) $xml_student_data->YEAR_CLASS;
+                $stud_data->college = (string) $xml_student_data->COLLEGE_CODE;
+                $stud_data->major = (string) $xml_student_data->CURRIC_CODE;
                 $stud_data->reg_status = empty($reg) ? NULL : $this->parse_date($reg);
-                $stud_data->keypadid = $xml_student_data->KEYPADID;
-                $stud_data->idnumber = $xml_student_data->LSU_ID;
+                $stud_data->keypadid = (string) $xml_student_data->KEYPADID;
+                $stud_data->idnumber = (string) $xml_student_data->LSU_ID;
 
                 $student_data[] = $stud_data;
             }
