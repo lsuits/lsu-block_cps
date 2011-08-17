@@ -24,6 +24,15 @@ abstract class cps_dao {
         return $res;
     }
 
+    public static function get_meta_names() {
+        global $DB;
+
+        $meta = self::call('metatablename');
+        $names = $DB->get_records_sql('SELECT DISTINCT(name) FROM {'.$meta.'}');
+
+        return array_keys($names);
+    }
+
     public static function get(array $params, $meta = false, $fields = '*') {
         return self::with_class(function ($class) use ($params, $meta, $fields) {
             return current($class::get_all($params, $meta, $fields));
@@ -71,7 +80,7 @@ abstract class cps_dao {
 
         $ret = array();
         foreach ($res as $r) {
-            $temp = self::upgrade($r);
+            $temp = self::call('upgrade', $r);
             if ($meta) {
                 $temp->fill_meta();
             }
