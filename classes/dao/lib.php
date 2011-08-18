@@ -39,6 +39,21 @@ abstract class cps_dao {
         });
     }
 
+    public static function get_select($filters, $meta = false) {
+        global $DB;
+
+        $where = is_array($filters) ? implode(' AND ', $filters) : $filters;
+
+        $records = $DB->get_records_select(self::call('tablename'), $where);
+
+        $ret = array();
+        foreach ($records as $record) {
+            $ret[$record->id] = self::call('upgrade', $record);
+        }
+
+        return $ret;
+    }
+
     public static function get_all(array $params = array(), $meta = false, $fields = '*') {
         global $DB;
 
@@ -115,13 +130,23 @@ abstract class cps_dao {
         });
     }
 
+    public static function upgrade_and_get($object, array $params) {
+        return self::with_class(function ($class) use ($object, $params) {
+            $cps = $class::upgrade($object);
+
+            if ($prev = $class::get($params)) {
+                $cps->id = $prev->id;
+            }
+
+            return $cps;
+        }
+    }
+
     public static function delete($id) {
         global $DB;
 
-        $params = array(self::call('get_name').'id' => $id);
-        $DB->delete_records(self::call('metatablename'), $params);
-
-        return $DB->delete_records(self::call('tablename'), array('id' => $id));
+        $params = array('id' => $id);
+        return self::call('delete_all', $params);
     }
 
     public static function delete_all(array $params = array()) {
@@ -135,10 +160,42 @@ abstract class cps_dao {
 
         $ids = implode(',', array_keys($to_delete));
 
-        $DB->delete_records_select(self::metatablename(),
+        $DB->delete_records_select(self::call('metatablename'),
             self::get_name().'id in ('.$ids.')');
 
         return $DB->delete_records(self::call('tablename'), $params);
+    }
+
+    public static function delete_meta(array $params) {
+        global $DB;
+
+        $meta_fields = self::call('meta_fields', $params);
+
+        $query_params = array();
+        if ($meta_fields) {
+            foreach ($meta_fields as $field) {
+                $query_params[$field] = $params[$field];
+                unset($params[$field]);
+            }
+        }
+
+        $to_delete = $DB->get_records(self::call('tablename'), $params);
+
+        foreach ($to_delete as $record) {
+            $query_params[self::call('get_name').'id'] = $record->id;
+            $DB->delete_records(self::metatablename, $query_params);
+        }
+    }
+
+    public static function delete_all_meta(array $params = array()) {
+        global $DB;
+
+        $to_delete = $DB->get_records(self::call('tablename'), $params);
+
+        $ids = implode(',', array_keys($to_delete));
+
+        return $DB->delete_records_select(self::call('metatablename'), null,
+            self::call('get_name').'id in ('.$ids.')');
     }
 
     /** Instance based ineteraction */
