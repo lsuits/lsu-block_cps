@@ -139,7 +139,7 @@ abstract class cps_dao {
             }
 
             return $cps;
-        }
+        });
     }
 
     public static function delete($id) {
