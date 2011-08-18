@@ -50,3 +50,19 @@ $string['lsu_bad_file'] = 'Provide a *.wsdl* file';
 $string['lsu_no_file'] = 'The WSDL does not exists in wsdl_location';
 $string['lsu_bad_url'] = 'Provide a valid url (define either a http or https protocol)';
 $string['lsu_bad_resp'] = 'Invalid credentials in credential location request';
+
+// Fake for testing
+$string['fake_name'] = 'Fake Source Enrollment Provider';
+$string['fake_course_variant'] = 'Course Variations';
+$string['fake_course_variant_desc'] = 'These are course department variations.';
+$string['fake_section_variant'] = 'Section Variation';
+$string['fake_section_variant_desc'] = 'These are the section varation for each course department.';
+$string['fake_teacher_variant'] = 'Teacher Variation';
+$string['fake_teacher_variant_desc'] = 'Teachers per section (min: 1)';
+$string['fake_student_variant'] = 'Student Variation';
+$string['fake_student_variant_desc'] = 'Students per section (min: 10)';
+
+$string['fake_invalid_student'] = 'Must have at least one student';
+$string['fake_invalid_teacher'] = 'Must have at least one teacher';
+$string['fake_invalid_course'] = 'Must have at least one course';
+$string['fake_invalid_sections'] = 'Must have at least one section';
