@@ -9,9 +9,9 @@ interface course_processor {
 }
 
 interface teacher_processor {
-    function teachers(stdClass $semester, stdClass $course);
+    function teachers(stdClass $semester, stdClass $course, stdClass $section);
 }
 
 interface student_processor {
-    function students(stdClass $semester, stdClass $course);
+    function students(stdClass $semester, stdClass $course, stdClass $section);
 }
