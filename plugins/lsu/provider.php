@@ -94,15 +94,27 @@ class lsu_enrollment_provider extends enrollment_provider {
     }
 
     function postprocess() {
-        // Get dynamic semesters, eventually
-        $semesters = array();
+        $semesters_in_session = cps_semester::in_session();
 
         $source = $this->student_data_source();
-        foreach ($semesters as $semester) {
-            $datas = $source->student_data($semester->year, $semester->name);
+
+        foreach ($semesters_in_session as $semester) {
+            $datas = $source->student_data($semester);
 
             foreach ($datas as $data) {
-                // Update each student record
+                try {
+                    $params = array('idnumber' => $user->idnumber);
+
+                    $user = cps_user::upgrade_and_get($data, $params);
+
+                    if (empty($user->id)) {
+                        continue;
+                    }
+
+                    $user->save();
+                } catch (Exception $e) {
+                    $this->errors[] = $e->getMessage();
+                }
             }
         }
     }
