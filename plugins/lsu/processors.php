@@ -87,25 +87,40 @@ class lsu_courses extends lsu_source implements course_processor {
     function courses(stdClass $semester) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
-        // LSU and LAW ... Might change the query
         $courses = array();
-        foreach (array('01', '08') as $campus) {
-            $xml_courses = $this->invoke(array($campus, $semester_term, $semester->session_key));
 
-            foreach ($xml_courses->ROW as $xml_course) {
+        $campus = ($semester->campus == 'LSU') ? '01' : '08';
+
+        $xml_courses = $this->invoke(array($campus, $semester_term, $semester->session_key));
+
+        foreach ($xml_courses->ROW as $xml_course) {
+            $department = (string) $xml_course->DEPT_CODE;
+            $course_number = (string) $xml_course->COURSE_NBR;
+
+            $is_unique = function ($course) use ($department, $course_number) {
+                return ($course->department != $department and
+                    $course->cou_number != $course_number);
+            };
+
+            if (!$course or !$is_unique($course)) {
                 $course = new stdClass;
-                $course->department = (string) $xml_course->DEPT_CODE;
-                $course->course_number = (string) $xml_course->COURSE_NBR;
+                $course->department = $department;
+                $course->cou_number = $course_number;
                 $course->fullname = (string) $xml_course->COURSE_TITLE;
-                $course->section_number = (string) $xml_course->SECTION_NBR;
 
-                // Course Meta
                 $course->course_type = (string) $xml_course->CLASS_TYPE;
-                $course->grade_type = (string) $xml_course->GRADE_SYSTEM_CODE;
-                $course->first_year = (int) $xml_course->COURSE_NBR < 5200 ? 1 : 0;
+                $course->course_grade_type = (string) $xml_course->GRADE_SYSTEM_CODE;
+                $course->course_first_year = (int) $xml_course->COURSE_NBR < 5200 ? 1 : 0;
+
+                $course->sections = array();
 
                 $courses[] = $course;
             }
+
+            $section = new stdClass;
+            $section->sec_number= (string) $xml_course->SECTION_NBR;
+
+            $course->sections[] = $section;
         }
 
         return $courses;
@@ -115,10 +130,10 @@ class lsu_courses extends lsu_source implements course_processor {
 class lsu_teachers extends lsu_source implements teacher_processor {
     var $serviceId = 'MOODLE_INSTRUCTORS';
 
-    function teachers(stdClass $semester, stdClass $course) {
+    function teachers(stdClass $semester, stdClass $course, stdClass $section) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
-        $params = array($course->cou_number, $course->sec_number,
+        $params = array($course->cou_number, $section->sec_number,
             $course->department, '01', $semester_term, $semester->session_key);
 
         $xml_teachers = $this->invoke($params);
@@ -149,11 +164,11 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 class lsu_students extends lsu_source implements student_processor {
     var $serviceId = 'MOODLE_STUDENTS_1';
 
-    function students(stdClass $semester, stdClass $course) {
+    function students(stdClass $semester, stdClass $course, stdClass $section) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         $params = array('01', $semester_term, $course->department,
-            $course->cou_number, $course->sec_number, $semester->session_key);
+            $course->cou_number, $section->sec_number, $semester->session_key);
 
         $xml_students = $this->invoke($params);
 
@@ -165,8 +180,8 @@ class lsu_students extends lsu_source implements student_processor {
             $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
             $student->idnumber = (string) $xml_student->LSU_ID;
 
-            $student->credit_hours = (string) $xml_student->CREDIT_HRS;
-            $student->ferpa = (string) $xml_student->WITHHOLD_DIR_FLG;
+            $student->student_credit_hours = (string) $xml_student->CREDIT_HRS;
+            $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG;
 
             return $student;
         };
@@ -192,11 +207,11 @@ class lsu_student_data extends lsu_source {
 
                 $reg = trim($xml_student_data->REGISTRATION_DATE);
 
-                $stud_data->year = (string) $xml_student_data->YEAR_CLASS;
-                $stud_data->college = (string) $xml_student_data->COLLEGE_CODE;
-                $stud_data->major = (string) $xml_student_data->CURRIC_CODE;
-                $stud_data->reg_status = empty($reg) ? NULL : $this->parse_date($reg);
-                $stud_data->keypadid = (string) $xml_student_data->KEYPADID;
+                $stud_data->user_year = (string) $xml_student_data->YEAR_CLASS;
+                $stud_data->user_college = (string) $xml_student_data->COLLEGE_CODE;
+                $stud_data->user_major = (string) $xml_student_data->CURRIC_CODE;
+                $stud_data->user_reg_status = empty($reg) ? NULL : $this->parse_date($reg);
+                $stud_data->user_keypadid = (string) $xml_student_data->KEYPADID;
                 $stud_data->idnumber = (string) $xml_student_data->LSU_ID;
 
                 $student_data[] = $stud_data;
