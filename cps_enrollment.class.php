@@ -95,7 +95,7 @@ class cps_enrollment {
                         'sec_number' => $section->sec_number
                     );
 
-                    $cps_section = cps_section::upgrade($section, $params);
+                    $cps_section = cps_section::upgrade_and_get($section, $params);
 
                     $cps_section->status = 'processed';
 
