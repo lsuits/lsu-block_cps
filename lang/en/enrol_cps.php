@@ -5,6 +5,17 @@ $string['pluginname_desc'] = 'The CPS (Course Preference System) enrollment modu
 criterion including Semesters, Courses, Sections tied to coures, and teacher and student enrollment tied to Sections.
 
 The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
+
+$string['user_settings'] = 'User Creation Settings';
+$string['user_email'] = 'E-mail suffix';
+$string['user_email_desc'] = 'The created user will have this email domain appended to their username.';
+$string['user_confirm'] = 'Confirmed';
+$string['user_confirm_desc'] = 'The user will be "confirmed" upon creation.';
+$string['user_city'] = 'City/town';
+$string['user_city_desc'] = 'The created user will have this default city assigned to them.';
+$string['user_country'] = 'Country';
+$string['user_country_desc'] = 'The created user will have this default country assigned to them.';
+
 $string['provider'] = 'Enrollment Provider';
 $string['provider_desc'] = 'This enrollment provider will be used to pull enrollment data.';
 
