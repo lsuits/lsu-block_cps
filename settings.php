@@ -15,6 +15,22 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
         $_s('provider'), $_s('provider_desc'), 'lsu', $plugins));
 
+    $settings->add(new admin_setting_heading('enrol_cps_user_settings',
+        $_s('user_settings'), ''));
+
+    $settings->add(new admin_setting_configtext('enrol_cps/user_email',
+        $_s('user_email'), $_s('user_email_desc'), '@example.com'));
+
+    $settings->add(new admin_setting_configcheckbox('enrol_cps/user_confirm',
+        $_s('user_confirm'), $_s('user_confirm_desc'), 1));
+
+    $settings->add(new admin_setting_configtext('enrol_cps/user_city',
+        $_s('user_city'), $_s('user_city_desc'), ''));
+
+    $countries = get_string_manager()->get_list_of_countries();
+    $settings->add(new admin_setting_configselect('enrol_cps/user_country',
+        $_s('user_country'), $_s('user_country_desc'), $CFG->country, $countries));
+
     $provider = cps_enrollment::provider_class();
 
     if ($provider) {
