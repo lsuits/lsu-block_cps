@@ -37,6 +37,14 @@ $string['provider_settings'] = '{$a} Settings';
 
 $string['provider_cron_problem'] = 'Could not instantiate {$a->pluginname}: {$a->problem}. Check provider configuration.';
 
+$string['enrol_settings'] = 'User Enrollment Settings';
+$string['student_role'] = 'Students';
+$string['student_role_desc'] = 'CPS students will be enrolled in this Moodle role';
+$string['editingteacher_role'] = 'Primary Instructor';
+$string['editingteacher_role_desc'] = 'CPS *primary* teachers will be enrolled in this Moodle role';
+$string['teacher_role'] = 'Non-Primary Instructor';
+$string['teacher_role_desc'] = 'CPS *non-primary* teachers will be enrolled in this Moodle role';
+
 /** Behavior Strings go here */
 $string['lsu_name'] = 'LSU Enrollment Provider';
 
