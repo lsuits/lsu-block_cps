@@ -3,6 +3,7 @@
 require_once dirname(__FILE__) . '/lib.php';
 
 class cps_semester extends cps_dao {
+    var $sections;
 
     public static function in_session() {
         $now = time();
@@ -14,12 +15,37 @@ class cps_semester extends cps_dao {
 
         return self::get_select($filters, true);
     }
+
+    public function sections() {
+        if (empty($this->sections)) {
+            $sections = cps_section::get_all(array('semesterid' => $this->id));
+
+            $this->sections = $sections;
+        }
+
+        return $this->sections;
+    }
 }
 
 class cps_course extends cps_dao {
+    var $sections;
 
     public static function by_department($dept) {
         return cps_course::get_all(array('department' => $dept), true);
+    }
+
+    public function sections($semester = null) {
+        if (empty($this->sections)) {
+            $by_params = array('courseid' => $this->id);
+
+            if ($semester) {
+                $by_params['semesterid'] = $semester->id;
+            }
+
+            $this->sections = cps_section::get_all($by_params);
+        }
+
+        return $this->sections;
     }
 }
 
@@ -45,6 +71,18 @@ class cps_section extends cps_dao {
         }
 
         return $this->course;
+    }
+
+    /** Expects a Moodle course, returns an optionally full cps_section */
+    public static function from_course(stdClass $course, $fill = true) {
+        $section = cps_section::get(array('idnumber' => $course->idnumber));
+
+        if ($section and $fill) {
+            $section->semester();
+            $section->course();
+        }
+
+        return $section;
     }
 }
 

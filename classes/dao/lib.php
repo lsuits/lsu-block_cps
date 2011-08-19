@@ -106,6 +106,12 @@ abstract class cps_dao {
         return $ret;
     }
 
+    public static function count(array $params = array()) {
+        global $DB;
+
+        return $DB->count_records(self::call('tablename'), $params);
+    }
+
     public static function get_name() {
         return end(explode('cps_', get_called_class()));
     }
