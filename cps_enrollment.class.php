@@ -46,6 +46,8 @@ class cps_enrollment {
         }
 
         $this->provider->postprocess();
+
+        print_R($this->errors);
     }
 
     public function process_semesters($semesters) {
@@ -66,7 +68,7 @@ class cps_enrollment {
 
                 $processed[] = $cps;
             } catch (Exception $e) {
-                $this->errors[] = $e->getMessage();
+                $this->errors[] = $e->error;
             }
         }
 
@@ -80,7 +82,7 @@ class cps_enrollment {
             try {
                 $params = array(
                     'department' => $course->department,
-                    'cou_number' => $course->number
+                    'cou_number' => $course->cou_number
                 );
 
                 $cps_course = cps_course::upgrade_and_get($course, $params);
@@ -97,6 +99,8 @@ class cps_enrollment {
 
                     $cps_section = cps_section::upgrade_and_get($section, $params);
 
+                    $cps_section->courseid = $cps_course->id;
+                    $cps_section->semesterid = $semester->id;
                     $cps_section->status = 'processed';
 
                     $cps_section->save();
@@ -109,7 +113,7 @@ class cps_enrollment {
 
                 $processed[] = $cps_course;
             } catch (Exception $e) {
-                $this->errors[] = $e->getMessage();
+                $this->errors[] = $e->error;
             }
         }
 
@@ -130,11 +134,11 @@ class cps_enrollment {
             $students = $student_source->students($semester, $course, $section);
 
             try {
-                $this->process_teachers($teachers);
+                $this->process_teachers($section, $teachers);
 
-                $this->process_students($students);
+                $this->process_students($section, $students);
             } catch (Exception $e) {
-                $this->errors[] = $e->getMessage();
+                $this->errors[] = $e->error;
             }
         }
     }
@@ -165,8 +169,8 @@ class cps_enrollment {
         } else if ($prev = cps_user::get($by_username, true)) {
             $user->id = $prev->id;
         } else {
-            $user->email = $user->username . $this->settting('user_email');
-            $user->confirmed = $this->settting('user_confirm');
+            $user->email = $user->username . $this->setting('user_email');
+            $user->confirmed = $this->setting('user_confirm');
             $user->city = $this->setting('user_city');
             $user->country = $this->setting('user_country');
             $user->firstaccess = time();
@@ -204,6 +208,8 @@ class cps_enrollment {
                 $cps_type->id = $prev->id;
             }
 
+            $cps_type->userid = $cps_user->id;
+            $cps_type->sectionid = $section->id;
             $cps_type->status = 'enroll';
 
             $cps_type->save();

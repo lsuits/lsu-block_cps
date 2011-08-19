@@ -66,3 +66,10 @@ $string['fake_invalid_student'] = 'Must have at least one student';
 $string['fake_invalid_teacher'] = 'Must have at least one teacher';
 $string['fake_invalid_course'] = 'Must have at least one course';
 $string['fake_invalid_sections'] = 'Must have at least one section';
+
+$string['fake_linkables'] = 'Fake Provider External Links';
+$string['fake_cleanup'] = 'Cleanup';
+$string['fake_cleanup_desc'] = 'Warning: this runs truncate on all the CPS tables.';
+
+$string['fake_cleanuprun'] = 'Cleanup on run';
+$string['fake_cleanuprun_desc'] = 'Runs "Cleanup" in provider `postprocess`';

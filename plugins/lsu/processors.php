@@ -84,7 +84,7 @@ class lsu_semesters extends lsu_source implements semester_processor {
 class lsu_courses extends lsu_source implements course_processor {
     var $serviceId = 'MOODLE_COURSES';
 
-    function courses(stdClass $semester) {
+    function courses($semester) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         $courses = array();
@@ -130,7 +130,7 @@ class lsu_courses extends lsu_source implements course_processor {
 class lsu_teachers extends lsu_source implements teacher_processor {
     var $serviceId = 'MOODLE_INSTRUCTORS';
 
-    function teachers(stdClass $semester, stdClass $course, stdClass $section) {
+    function teachers($semester, $course, $section) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         $params = array($course->cou_number, $section->sec_number,
@@ -164,7 +164,7 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 class lsu_students extends lsu_source implements student_processor {
     var $serviceId = 'MOODLE_STUDENTS_1';
 
-    function students(stdClass $semester, stdClass $course, stdClass $section) {
+    function students($semester, $course, $section) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         $params = array('01', $semester_term, $course->department,
@@ -180,7 +180,7 @@ class lsu_students extends lsu_source implements student_processor {
             $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
             $student->idnumber = (string) $xml_student->LSU_ID;
 
-            $student->student_credit_hours = (string) $xml_student->CREDIT_HRS;
+            $student->credit_hours = (string) $xml_student->CREDIT_HRS;
             $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG;
 
             return $student;
@@ -195,7 +195,7 @@ class lsu_students extends lsu_source implements student_processor {
 class lsu_student_data extends lsu_source {
     var $serviceId = 'MOODLE_STUDENTS_2';
 
-    function student_data(stdClass $semester) {
+    function student_data($semester) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
 
         $student_data = array();

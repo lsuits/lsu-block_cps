@@ -5,13 +5,13 @@ interface semester_processor {
 }
 
 interface course_processor {
-    function courses(stdClass $semester);
+    function courses($semester);
 }
 
 interface teacher_processor {
-    function teachers(stdClass $semester, stdClass $course, stdClass $section);
+    function teachers($semester, $course, $section);
 }
 
 interface student_processor {
-    function students(stdClass $semester, stdClass $course, stdClass $section);
+    function students($semester, $course, $section);
 }
