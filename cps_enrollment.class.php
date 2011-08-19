@@ -46,8 +46,6 @@ class cps_enrollment {
         }
 
         $this->provider->postprocess();
-
-        print_R($this->errors);
     }
 
     public function process_semesters($semesters) {
