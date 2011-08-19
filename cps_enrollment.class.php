@@ -41,7 +41,7 @@ class cps_enrollment {
             $process_courses = $this->process_courses($semester, $courses);
 
             foreach ($process_courses as $course) {
-                $this->process_course_enrollment($semester, $course);
+                $this->process_enrollment($semester, $course);
             }
         }
 
@@ -63,6 +63,8 @@ class cps_enrollment {
                 $cps = cps_semester::upgrade_and_get($semester, $params);
 
                 $cps->save();
+
+                events_trigger('cps_semester_process', $cps);
 
                 $processed[] = $cps;
             } catch (Exception $e) {
@@ -87,6 +89,8 @@ class cps_enrollment {
 
                 $cps_course->save();
 
+                events_trigger('cps_course_process', $cps_course);
+
                 $processed_sections = array();
                 foreach ($cps_course->sections as $section) {
                     $params = array(
@@ -99,7 +103,7 @@ class cps_enrollment {
 
                     $cps_section->courseid = $cps_course->id;
                     $cps_section->semesterid = $semester->id;
-                    $cps_section->status = 'processed';
+                    $cps_section->status = 'pending';
 
                     $cps_section->save();
 
@@ -121,7 +125,7 @@ class cps_enrollment {
     /**
      * Could be used to process a single course upon request
      */
-    public function process_course_enrollment($semester, $course) {
+    public function process_enrollment($semester, $course) {
         $teacher_source = $this->provider->teacher_source();
 
         $student_source = $this->provider->student_source();
@@ -135,10 +139,174 @@ class cps_enrollment {
                 $this->process_teachers($section, $teachers);
 
                 $this->process_students($section, $students);
+
+                // Process section only if teachers can be processed
+                // take into consideration outside forces manipulating
+                // processed numbers through event handlers
+                $by_processed = array(
+                    'status' => 'processed',
+                    'sectionid' => $section->id
+                );
+
+                $processed_teachers = cps_teacher::count($by_processed);
+
+                if (!empty($processed_teachers)) {
+                    $section->status = 'process';
+                    $section->save();
+
+                    events_trigger('cps_section_process', $section);
+                }
+
             } catch (Exception $e) {
                 $this->errors[] = $e->error;
             }
         }
+    }
+
+    private function manifestation($semester, $course, $section) {
+        // Check for instructor changes
+        $teacher_params = array(
+            'sectionid' => $section->id,
+            'primary_flag' => 1
+        );
+
+        $new_primary = cps_teacher::get($teacher_params + array(
+            'status' => 'processed'
+        ));
+
+        $old_primary = cps_teacher::get($teacher_params + array(
+            'status' => 'pending'
+        ));
+
+        // Campuses may want to handle primary instructor changes differently
+        if ($new_primary and $old_primary) {
+            events_trigger('cps_primary_change', array(
+                'section' => $section,
+                'old_teacher' => $old_teacher,
+                'new_teacher' => $new_teacher
+            ));
+        }
+
+        // For certain we are working with a real course
+        $moodle_course = $this->manifest_course($semester, $course, $section);
+
+        $this->manifest_course_enrollment($moodle_course, $course, $section);
+    }
+
+    private function manifest_course_enrollment($moodle_course, $course, $section) {
+
+        foreach (array('teacher', 'student') as $type) {
+            $class = 'cps_' . $type;
+            $general_params = array('sectionid' => $section->id);
+
+            $unenroll_params = $general_params + array('status' => 'pending');
+            $enroll_params = $general_params + array('status' => 'processed');
+
+            $unenroll_count = $class::count($unenroll_params);
+            $enroll_count = $class::count($enroll_params);
+
+            if (empty($unenroll_count) and empty($enroll_count)) {
+                continue;
+            }
+
+            $group = $this->manifest_group($moodle_course, $course, $section);
+
+            if ($unenroll_count) {
+                $to_unenroll = $class::get_all($unenroll_params);
+                // Moodle unenroll
+            }
+
+            if ($enroll_count) {
+                $to_enroll = $class::get_all($enroll_params);
+                // Moodle enroll
+            }
+        }
+    }
+
+    private function manifest_group($moodle_course, $course, $section) {
+        global $DB;
+
+        $group_params = array(
+            'course' => $moodle_course->id,
+            'name' => "{$course->department} {$course->cou_number} {$section->sec_number}"
+        );
+
+        if (!$group = $DB->get_records('groups', $group_params)) {
+            $group = (object) $group_params;
+            $group->id = groups_create_group($group);
+        }
+
+        return $group;
+    }
+
+    private function manifest_course($semester, $course, $section) {
+        global $DB;
+
+        $teacher_params = array(
+            'sectionid' => $section->id,
+            'primary_flag' => 1,
+            'status' => 'processed'
+        );
+
+        $primary_teacher = cps_teacher::get($teacher_params);
+
+        $assumed_idnumber = $semester->year . $semester->name .
+            $course->department . $semester->session_key . $course->cou_number .
+            $section->sec_number . $primary_teacher->userid;
+
+        // Take into consideration of outside forces manipulating idnumbers
+        // Therefore we must check the section's idnumber before creating one
+        // Possibility the course was deleted externally
+
+        $idnumber = $section->idnumber ? $section->idnumber : $assumed_idnumber;
+
+        $course_params = array('idnumber' => $idnumber);
+
+        $moodle_course = $DB->get_record('course', $course_params);
+
+        if (!$moodle_course) {
+            $user = $primary_teacher->user();
+
+            $session = empty($semester->session_key) ? '' :
+                '(' . $semester->session_key . ')';
+
+            $assumed_fullname = sprintf('%s %s %s %s %s for %s', $semester->year,
+                $semester->name, $course->department, $session, $course->cou_number,
+                fullname($user));
+
+            $category = $this->manifest_category($course);
+
+            $moodle_course->idnumber = $idnumber;
+            $moodle_course->shortname = $idnumber;
+            $moodle_course->fullname = $assumed_fullname;
+            $moodle_course->category = $category->id;
+            $moodle_course->summary = $course->fullname;
+
+            $moodle_course = create_course($moodle_course);
+
+            events_trigger('cps_course_create', $moodle_course);
+        }
+
+        return $moodle_course;
+    }
+
+    private function manifest_category($course) {
+        global $DB;
+
+        $cat_params = array('name' => $course->department);
+        $category = $DB->get_record('course_categories', $cat_params);
+
+        if (!$category) {
+            $category = new stdClass;
+
+            $category->name = $course->department;
+            $category->sortorder = 999;
+            $category->parent = 0;
+            $category->description = 'Courses under ' . $course->department;
+            $category->id = $DB->insert_record('course_categories', $category);
+        }
+
+        return $category;
     }
 
     public function process_teachers($section, $users) {
@@ -172,9 +340,22 @@ class cps_enrollment {
             $user->city = $this->setting('user_city');
             $user->country = $this->setting('user_country');
             $user->firstaccess = time();
+
+            $created = true;
         }
 
         $user->save();
+
+        // TODO: should we fire updated ???
+        if ($created) {
+            events_trigger('user_created', $user);
+        } else if ($prev and
+            (fullname($prev) != fullname($user) and
+            $prev->username != $user->username and
+            $prev->idnumber != $user->idnumber)) {
+
+            events_trigger('user_updated', $user);
+        }
 
         return $user;
     }
@@ -208,10 +389,13 @@ class cps_enrollment {
 
             $cps_type->userid = $cps_user->id;
             $cps_type->sectionid = $section->id;
-            $cps_type->status = 'enroll';
+            $cps_type->status = 'process';
 
             $cps_type->save();
+
+            events_trigger($class . '_process', $cps_type);
         }
+
     }
 
     public static function gen_str() {
