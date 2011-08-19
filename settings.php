@@ -31,6 +31,18 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('enrol_cps/user_country',
         $_s('user_country'), $_s('user_country_desc'), $CFG->country, $countries));
 
+    $settings->add(new admin_setting_heading('enrol_cps_enrol_settings',
+        $_s('enrol_settings'), ''));
+
+    $roles = $DB->get_records_menu('role', null, '', 'id, name');
+
+    foreach (array('editingteacher', 'teacher', 'student') as $shortname) {
+        $typeid = $DB->get_field('role', 'id', array('shortname' => $shortname));
+
+        $settings->add(new admin_setting_configselect('enrol_cps/'.$shortname.'_role',
+            $_s($shortname.'_role'), $_s($shortname.'_role_desc'), $typeid ,$roles));
+    }
+
     $provider = cps_enrollment::provider_class();
 
     if ($provider) {
