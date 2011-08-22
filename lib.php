@@ -381,7 +381,7 @@ class enrol_cps_plugin extends enrol_plugin {
                 'cps_user' => $user
             );
 
-            events_trigger('cps_' . $shortname . '_enroll', $event_params);
+            events_trigger('cps_' . $shortname . '_unenroll', $event_params);
         }
     }
 
