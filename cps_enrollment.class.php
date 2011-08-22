@@ -194,33 +194,43 @@ class cps_enrollment {
     }
 
     private function manifest_course_enrollment($moodle_course, $course, $section) {
+        $group = $this->manifest_group($moodle_course, $course, $section);
+
+        $general_params = array('sectionid' => $section->id);
+
+        $actions = array('pending' => 'unenroll', 'processed' => 'enroll');
 
         foreach (array('teacher', 'student') as $type) {
             $class = 'cps_' . $type;
-            $general_params = array('sectionid' => $section->id);
 
-            $unenroll_params = $general_params + array('status' => 'pending');
-            $enroll_params = $general_params + array('status' => 'processed');
+            foreach ($actions as $status => $action) {
+                $action_params = $general_params + array('status' => $action);
+                $action_count = $class::count($action_params);
 
-            $unenroll_count = $class::count($unenroll_params);
-            $enroll_count = $class::count($enroll_params);
-
-            if (empty($unenroll_count) and empty($enroll_count)) {
-                continue;
+                if ($action_count) {
+                    $to_action = $class::get_all($action_params);
+                    $this->{$status . '_users'}($group, $to_action);
+                }
             }
 
-            $group = $this->manifest_group($moodle_course, $course, $section);
-
-            if ($unenroll_count) {
-                $to_unenroll = $class::get_all($unenroll_params);
-                // Moodle unenroll
-            }
-
-            if ($enroll_count) {
-                $to_enroll = $class::get_all($enroll_params);
-                // Moodle enroll
-            }
         }
+    }
+
+    private function enroll_users($group, $users) {
+        foreach ($users as $user) {
+            $roleid = $this->determine_role($user);
+
+        }
+    }
+
+    private function determine_role($user) {
+        if (isset($user->primary_flag)) {
+            $role = $user->primary_flag ? 'editingteacher' : 'teacher';
+        } else {
+            $role = 'student';
+        }
+
+        return $this->setting($role . '_role');
     }
 
     private function manifest_group($moodle_course, $course, $section) {
