@@ -3,17 +3,20 @@
 defined('MOODLE_INTERNAL') or die();
 
 if ($ADMIN->fulltree) {
-    require_once dirname(__FILE__) . '/cps_enrollment.class.php';
+    require_once dirname(__FILE__) . '/lib.php';
 
-    $plugins = cps_enrollment::list_plugins();
+    $plugins = enrol_cps_plugin::list_plugins();
 
-    $_s = cps_enrollment::gen_str();
+    $_s = enrol_cps_plugin::gen_str();
 
     $settings->add(new admin_setting_heading('enrol_cps_settings', '',
-        $_s('pluginname_desc', cps_enrollment::plugin_base())));
+        $_s('pluginname_desc', enrol_cps_plugin::plugin_base())));
 
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
         $_s('provider'), $_s('provider_desc'), 'lsu', $plugins));
+
+    $settings->add(new admin_setting_configcheckbox('enrol_cps/cron_run',
+        $_s('cron_run'), $_s('cron_run_desc'), 1));
 
     $settings->add(new admin_setting_heading('enrol_cps_user_settings',
         $_s('user_settings'), ''));
@@ -31,6 +34,16 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('enrol_cps/user_country',
         $_s('user_country'), $_s('user_country_desc'), $CFG->country, $countries));
 
+    $settings->add(new admin_setting_heading('enrol_cps_course_settings',
+        $_s('course_settings'), ''));
+
+    $settings->add(new admin_setting_configtext('enrol_cps/course_shortname',
+        get_string('shortname'), $_s('course_shortname_desc'),
+        $_s('course_shortname')));
+
+    $settings->add(new admin_setting_configcheckbox('enrol_cps/course_visible',
+        get_string('visible'), $_s('course_visible_desc'), 0));
+
     $settings->add(new admin_setting_heading('enrol_cps_enrol_settings',
         $_s('enrol_settings'), ''));
 
@@ -43,7 +56,7 @@ if ($ADMIN->fulltree) {
             $_s($shortname.'_role'), $_s($shortname.'_role_desc'), $typeid ,$roles));
     }
 
-    $provider = cps_enrollment::provider_class();
+    $provider = enrol_cps_plugin::provider_class();
 
     if ($provider) {
         $reg_settings = $provider::settings();
@@ -74,7 +87,7 @@ if ($ADMIN->fulltree) {
             // Attempting to create the provider
             new $provider();
         } catch (Exception $e) {
-            $a = cps_enrollment::translate_error($e);
+            $a = enrol_cps_plugin::translate_error($e);
 
             $settings->add(new admin_setting_heading('provider_problem',
                 $_s('provider_problems'), $_s('provider_problems_desc', $a)));
