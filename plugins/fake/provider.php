@@ -200,7 +200,7 @@ class fake_enrollment_provider extends enrollment_provider {
     public static function adv_settings() {
         require_once dirname(__FILE__) . '/adminlib.php';
 
-        $_s = enrol_cps_plugin::gen_str();
+        $_s = cps::gen_str();
 
         return array(
             new admin_setting_heading('enrol_cps_fake_linkables',

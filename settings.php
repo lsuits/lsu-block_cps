@@ -3,14 +3,14 @@
 defined('MOODLE_INTERNAL') or die();
 
 if ($ADMIN->fulltree) {
-    require_once dirname(__FILE__) . '/lib.php';
+    require_once dirname(__FILE__) . '/publiclib.php';
 
-    $plugins = enrol_cps_plugin::list_plugins();
+    $plugins = cps::list_plugins();
 
-    $_s = enrol_cps_plugin::gen_str();
+    $_s = cps::gen_str();
 
     $settings->add(new admin_setting_heading('enrol_cps_settings', '',
-        $_s('pluginname_desc', enrol_cps_plugin::plugin_base())));
+        $_s('pluginname_desc', cps::plugin_base())));
 
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
         $_s('provider'), $_s('provider_desc'), 'lsu', $plugins));
@@ -56,7 +56,7 @@ if ($ADMIN->fulltree) {
             $_s($shortname.'_role'), $_s($shortname.'_role_desc'), $typeid ,$roles));
     }
 
-    $provider = enrol_cps_plugin::provider_class();
+    $provider = cps::provider_class();
 
     if ($provider) {
         $reg_settings = $provider::settings();
@@ -87,7 +87,7 @@ if ($ADMIN->fulltree) {
             // Attempting to create the provider
             new $provider();
         } catch (Exception $e) {
-            $a = enrol_cps_plugin::translate_error($e);
+            $a = cps::translate_error($e);
 
             $settings->add(new admin_setting_heading('provider_problem',
                 $_s('provider_problems'), $_s('provider_problems_desc', $a)));

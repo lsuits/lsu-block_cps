@@ -2,6 +2,8 @@
 
 defined('MOODLE_INTERNAL') or die();
 
+require_once dirname(__FILE__) . '/publiclib.php';
+
 class enrol_cps_plugin extends enrol_plugin {
     const PENDING = 'pending';
     const PROCESSED = 'processed';
@@ -23,18 +25,17 @@ class enrol_cps_plugin extends enrol_plugin {
         global $CFG;
 
         try {
-            $this->provider = self::create_provider();
+            $this->provider = cps::create_provider();
 
-            $lib = self::base('classes/dao');
+            $lib = cps::base('classes/dao');
 
-            require_once $lib . '/lib.php';
-            require_once $lib . '/daos.php';
+            cps::require_daos();
             require_once $CFG->dirroot . '/group/lib.php';
 
         } catch (Exception $e) {
-            $a = self::translate_error($e);
+            $a = cps::translate_error($e);
 
-            $this->errors[] = self::_s('provider_cron_problem', $a);
+            $this->errors[] = cps::_s('provider_cron_problem', $a);
         }
     }
 
@@ -74,11 +75,15 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $this->process_all();
 
+        $this->handle_enrollments();
+
+        $this->provider->postprocess();
+    }
+
+    public function handle_enrollments() {
         $this->handle_pending_sections();
 
         $this->handle_processed_sections();
-
-        $this->provider->postprocess();
     }
 
     public function process_all() {
@@ -600,89 +605,5 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         return $role;
-    }
-
-    public static function gen_str() {
-        return function ($key, $a=null) {
-            return get_string($key, 'enrol_cps', $a);
-        };
-    }
-
-    public static function _s($key, $a=null) {
-        return get_string($key, 'enrol_cps', $a);
-    }
-
-    public static function plugin_base() {
-        return self::base('plugins');
-    }
-
-    public static function base($dir='') {
-        return dirname(__FILE__) . (empty($dir) ? '' : '/'.$dir);
-    }
-
-    public static function list_plugins() {
-
-        $base = self::plugin_base();
-
-        $all_files_folders = scandir($base);
-
-        $plugins = array_filter($all_files_folders, function ($file) use ($base) {
-            return is_dir($base . '/' . $file) and !preg_match('/^\./', $file);
-        });
-
-        if (empty($plugins)) {
-            return array();
-        }
-
-        $provide_append = function ($name) {
-            return enrol_cps_plugin::_s("{$name}_name");
-        };
-
-        return array_combine($plugins, array_map($provide_append, $plugins));
-    }
-
-    public static function provider_class() {
-        $provider_name = get_config('enrol_cps', 'enrollment_provider');
-
-        if (!$provider_name) {
-            return false;
-        }
-
-        $class_file = self::plugin_base() . '/' . $provider_name . '/provider.php';
-
-        if (!file_exists($class_file)) {
-            return false;
-        }
-
-        // Require library code
-        $lib_base = self::base('classes');
-        require_once $lib_base . '/provider.php';
-        require_once $lib_base . '/processors.php';
-
-        // Require client code
-        require_once $class_file;
-
-        $provider_class = "{$provider_name}_enrollment_provider";
-
-        return $provider_class;
-    }
-
-    public static function create_provider() {
-        $provider_class = self::provider_class();
-
-        return $provider_class ? new $provider_class() : false;
-    }
-
-    public static function translate_error($e) {
-        $provider_class = self::provider_class();
-        $provider_name = $provider_class::get_name();
-
-        $problem = self::_s($provider_name . '_' . $e->getMessage());
-
-        $a = new stdClass;
-        $a->pluginname = self::_s($provider_name.'_name');
-        $a->problem = $problem;
-
-        return $a;
     }
 }
