@@ -52,6 +52,7 @@ class cps_course extends cps_dao {
 class cps_section extends cps_dao {
     var $semester;
     var $course;
+    var $moodle;
 
     public function semester() {
         if (empty($this->semester)) {
@@ -73,16 +74,42 @@ class cps_section extends cps_dao {
         return $this->course;
     }
 
-    /** Expects a Moodle course, returns an optionally full cps_section */
-    public static function from_course(stdClass $course, $fill = true) {
-        $section = cps_section::get(array('idnumber' => $course->idnumber));
+    public function moodle() {
+        if (empty($this->moodle)) {
+            global $DB;
 
-        if ($section and $fill) {
-            $section->semester();
-            $section->course();
+            $course_params = array('idnumber' => $this->idnumber);
+            $this->moodle = $DB->get_record('course', $course_params);
         }
 
-        return $section;
+        return $this->moodle;
+    }
+
+    public function is_manifested() {
+        global $DB;
+
+        // Clearly it hasn't
+        if (empty($this->idnumber)) {
+            return false;
+        }
+
+        $moodle = $this->moodle();
+
+        return $moodle ? true : false;
+    }
+
+    /** Expects a Moodle course, returns an optionally full cps_section */
+    public static function from_course(stdClass $course, $fill = true) {
+        $sections = cps_section::get_all(array('idnumber' => $course->idnumber));
+
+        if ($sections and $fill) {
+            foreach ($sections as $section) {
+                $section->course();
+                $section->semester();
+            }
+        }
+
+        return $sections;
     }
 }
 
