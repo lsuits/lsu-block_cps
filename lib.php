@@ -64,6 +64,10 @@ class enrol_cps_plugin extends enrol_plugin {
         }
     }
 
+    public function setting($key) {
+        return get_config('enrol_cps', $key);
+    }
+
     public function full_process() {
 
         $this->provider->preprocess();
@@ -100,44 +104,6 @@ class enrol_cps_plugin extends enrol_plugin {
 
             foreach ($process_courses as $course) {
                 $this->process_enrollment($semester, $course);
-            }
-        }
-    }
-
-    private function handle_pending_sections() {
-        $sections = cps_section::get_all(array('status' => $this::PENDING));
-
-        foreach ($sections as $section) {
-            if ($section->is_manifested()) {
-                $course = $section->moodle();
-
-                $course->visible = 0;
-
-                $DB->update_record('course', $course);
-
-                events_trigger('cps_course_severed', $course);
-
-                $section->idnumber = null;
-            }
-            $section->status = 'skipped';
-
-            $section->save();
-        }
-    }
-
-    private function handle_processed_sections() {
-        $sections = cps_section::get_all(array('status' => $this::PROCESSED));
-
-        foreach ($sections as $section) {
-            $semester = $section->semester();
-
-            $course = $section->course();
-
-            $success = $this->manifestation($semester, $course, $section);
-
-            if ($success) {
-                $section->status = $this::MANIFESTED;
-                $section->save();
             }
         }
     }
@@ -257,6 +223,54 @@ class enrol_cps_plugin extends enrol_plugin {
         }
     }
 
+    public function process_teachers($section, $users) {
+        return $this->fill_role('teacher', $section, $users, function($user) {
+            return array('primary_flag' => $user->primary_flag);
+        });
+    }
+
+    public function process_students($section, $users) {
+        return $this->fill_role('student', $section, $users);
+    }
+
+    private function handle_pending_sections() {
+        $sections = cps_section::get_all(array('status' => $this::PENDING));
+
+        foreach ($sections as $section) {
+            if ($section->is_manifested()) {
+                $course = $section->moodle();
+
+                $course->visible = 0;
+
+                $DB->update_record('course', $course);
+
+                events_trigger('cps_course_severed', $course);
+
+                $section->idnumber = null;
+            }
+            $section->status = 'skipped';
+
+            $section->save();
+        }
+    }
+
+    private function handle_processed_sections() {
+        $sections = cps_section::get_all(array('status' => $this::PROCESSED));
+
+        foreach ($sections as $section) {
+            $semester = $section->semester();
+
+            $course = $section->course();
+
+            $success = $this->manifestation($semester, $course, $section);
+
+            if ($success) {
+                $section->status = $this::MANIFESTED;
+                $section->save();
+            }
+        }
+    }
+
     private function manifestation($semester, $course, $section) {
         // Check for instructor changes
         $teacher_params = array(
@@ -371,39 +385,6 @@ class enrol_cps_plugin extends enrol_plugin {
         }
     }
 
-    private function get_instance($courseid) {
-        global $DB;
-
-        $instances = enrol_get_instances($courseid, true);
-
-        $attempt = array_filter($instances, function($in) {
-            return $in->enrol == 'cps';
-        });
-
-        // Cannot enrol without an instance
-        if (empty($attempt)) {
-            $course_params = array('id' => $courseid);
-            $course = $DB->get_record('course', $course_params, MUST_EXIST);
-
-            $id = $this->add_instance($course);
-
-            return $DB->get_record('enrol', array('id' => $id));
-        } else {
-            return current($attempt);
-        }
-
-    }
-
-    private function determine_role($user) {
-        if (isset($user->primary_flag)) {
-            $role = $user->primary_flag ? 'editingteacher' : 'teacher';
-        } else {
-            $role = 'student';
-        }
-
-        return $role;
-    }
-
     private function manifest_group($moodle_course, $course, $section) {
         global $DB;
 
@@ -513,17 +494,7 @@ class enrol_cps_plugin extends enrol_plugin {
         return $category;
     }
 
-    public function process_teachers($section, $users) {
-        return $this->fill_role('teacher', $section, $users, function($user) {
-            return array('primary_flag' => $user->primary_flag);
-        });
-    }
-
-    public function process_students($section, $users) {
-        return $this->fill_role('student', $section, $users);
-    }
-
-    public function create_user($u) {
+    private function create_user($u) {
         $by_idnumber = array('idnumber' => $u->idnumber);
 
         $by_username = array('username' => $u->username);
@@ -564,10 +535,6 @@ class enrol_cps_plugin extends enrol_plugin {
         return $user;
     }
 
-    public function setting($key) {
-        return get_config('enrol_cps', $key);
-    }
-
     private function fill_role($type, $section, $users, $extra_params = null) {
         $class = 'cps_'.$type;
 
@@ -600,6 +567,39 @@ class enrol_cps_plugin extends enrol_plugin {
             events_trigger($class . '_process', $cps_type);
         }
 
+    }
+
+    private function get_instance($courseid) {
+        global $DB;
+
+        $instances = enrol_get_instances($courseid, true);
+
+        $attempt = array_filter($instances, function($in) {
+            return $in->enrol == 'cps';
+        });
+
+        // Cannot enrol without an instance
+        if (empty($attempt)) {
+            $course_params = array('id' => $courseid);
+            $course = $DB->get_record('course', $course_params, MUST_EXIST);
+
+            $id = $this->add_instance($course);
+
+            return $DB->get_record('enrol', array('id' => $id));
+        } else {
+            return current($attempt);
+        }
+
+    }
+
+    private function determine_role($user) {
+        if (isset($user->primary_flag)) {
+            $role = $user->primary_flag ? 'editingteacher' : 'teacher';
+        } else {
+            $role = 'student';
+        }
+
+        return $role;
     }
 
     public static function gen_str() {
