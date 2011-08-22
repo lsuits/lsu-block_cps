@@ -117,6 +117,13 @@ abstract class user_handler extends cps_dao {
     var $section;
     var $user;
 
+    protected function qualified() {
+        return array(
+            'userid' => $this->userid,
+            'status' => 'enrolled'
+        );
+    }
+
     public function section() {
         if (empty($this->section)) {
             $section = cps_section::get(array('id' => $this->sectionid));
@@ -140,11 +147,48 @@ abstract class user_handler extends cps_dao {
 }
 
 class cps_teacher extends user_handler {
-    // Teacher related methods go here
+    var $sections;
+
+    public function sections($is_primary = false) {
+        if (empty($this->sections)) {
+            $qualified = $this->qualified();
+
+            if ($is_primary) {
+                $qualified['primary_flag'] = 1;
+            }
+
+            $all_teaching = cps_teacher::get_all($qualified);
+            $sections = array();
+            foreach ($all_teaching as $teacher) {
+                $section = $teacher->section();
+                $sections[$section->id] = $section;
+            }
+
+            $this->sections = $sections;
+        }
+
+        return $this->sections;
+    }
 }
 
-class cps_student extends cps_dao {
-    // Student related methods go here
+class cps_student extends user_handler {
+    var $sections;
+
+    public function sections() {
+        if (empty($this->sections)) {
+            $all_students = cps_student::get_all($this->qualified());
+
+            $sections = array();
+            foreach ($all_students as $student) {
+                $section = $student->section();
+                $sections[$section->id] = $section;
+            }
+
+            $this->sections = $sections;
+        }
+
+        return $this->sections;
+    }
 }
 
 class cps_user extends cps_dao {
