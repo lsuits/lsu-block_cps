@@ -6,6 +6,9 @@ criterion including Semesters, Courses, Sections tied to coures, and teacher and
 
 The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
 
+$string['cron_run'] = 'Enable Cron';
+$string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
+
 $string['user_settings'] = 'User Creation Settings';
 $string['user_email'] = 'E-mail suffix';
 $string['user_email_desc'] = 'The created user will have this email domain appended to their username.';
@@ -15,6 +18,11 @@ $string['user_city'] = 'City/town';
 $string['user_city_desc'] = 'The created user will have this default city assigned to them.';
 $string['user_country'] = 'Country';
 $string['user_country_desc'] = 'The created user will have this default country assigned to them.';
+
+$string['course_settings'] = 'Course Creation Settings';
+$string['course_visible_desc'] = 'Upon creation the course will be visible to students.';
+$string['course_shortname_desc'] = 'Generated Shortname for the course';
+$string['course_shortname'] = '{year} {name} {department} {course_number} for {fullname}';
 
 $string['provider'] = 'Enrollment Provider';
 $string['provider_desc'] = 'This enrollment provider will be used to pull enrollment data.';
