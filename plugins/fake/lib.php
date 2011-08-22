@@ -40,4 +40,5 @@ function cleanup_fake_data($output = true) {
     foreach ($users as $user) {
         delete_user($user);
     }
+
 }
