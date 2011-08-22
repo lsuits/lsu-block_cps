@@ -14,6 +14,18 @@ function cleanup_fake_data($output = true) {
             mtrace("\tCleaning up {$table}...");
         }
 
+        if ($table == 'sections') {
+            $sections = $DB->get_records('enrol_cps_sections');
+
+            foreach ($sections as $section) {
+                $course = $DB->get_record('course', array('idnumber' => $section->idnumber));
+
+                if ($course) {
+                    delete_course($course, false);
+                }
+            }
+        }
+
         $sql = 'TRUNCATE {enrol_cps_' . $table .'}';
 
         $DB->execute($sql);

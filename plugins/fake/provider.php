@@ -79,6 +79,7 @@ class fake_teachers implements teacher_processor {
     );
 
     function __construct($teacher_variant) {
+        $this->current_course = null;
         $this->teacher_variant = $teacher_variant;
     }
 
@@ -88,6 +89,15 @@ class fake_teachers implements teacher_processor {
         $num = end(str_split($section->sec_number));
 
         $i = rand(0, 10);
+
+        if ($this->current_course != $course) {
+            $this->current_course = $course;
+            $this->previd = $i;
+        } else {
+            $roulette = rand(0, 1);
+            $i = $roulette ? $this->previd : $i;
+        }
+
 
         list($firstname, $lastname) = explode(' ', $this->teacher_names[$i]);
 
@@ -190,7 +200,7 @@ class fake_enrollment_provider extends enrollment_provider {
     public static function adv_settings() {
         require_once dirname(__FILE__) . '/adminlib.php';
 
-        $_s = cps_enrollment::gen_str();
+        $_s = enrol_cps_plugin::gen_str();
 
         return array(
             new admin_setting_heading('enrol_cps_fake_linkables',
