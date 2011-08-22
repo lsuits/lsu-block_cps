@@ -112,6 +112,45 @@ abstract class cps_dao {
         return $DB->count_records(self::call('tablename'), $params);
     }
 
+    public static function update(array $fields, array $params = array()) {
+        global $DB;
+
+        $map = function ($key, $field) { return "$key = :$field"; };
+
+        $trans = function ($new_key, $fields) use ($map) {
+            $oldkeys = array_keys($fields);
+
+            $newnames = function ($field) use ($new_key) {
+                return "{$new_key}_{$field}";
+            };
+
+            $newkeys = array_map($newnames, $oldkeys);
+
+            $params = array_map($map, $oldkeys, $newkeys);
+
+            $new_params = array_combine($newkeys, array_values($fields));
+            return array($new_params, $params);
+        };
+
+
+        list($set_params, $set_keys) = $trans('set', $fields);
+
+        $set = implode(' ,', $set_keys);
+
+        $sql = 'UPDATE {' . self::call('tablename') .'} SET ' . $set;
+
+        if ($params) {
+            $where_keys = array_keys($params);
+            $where_params = array_map($map, $where_keys, $where_keys);
+
+            $where = implode(' AND ', $where_params);
+
+            $sql .= ' WHERE ' . $where;
+        }
+
+        return $DB->execute($sql, $set_params + $params);
+    }
+
     public static function get_name() {
         return end(explode('cps_', get_called_class()));
     }
