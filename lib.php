@@ -248,7 +248,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
                 $section->idnumber = null;
             }
-            $section->status = 'skipped';
+            $section->status = $this::SKIPPED;
 
             $section->save();
         }
