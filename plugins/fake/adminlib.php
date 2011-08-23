@@ -3,15 +3,15 @@
 class admin_setting_link extends admin_setting {
     function __construct($name, $visiblename, $description, $url) {
         $this->url = new moodle_url($url);
-        parent::__construct($name, $visiblename, $description, '');
+        parent::__construct($name, $visiblename, $description, $url);
     }
 
     public function write_setting($data) {
-        return '';
+        return $this->url;
     }
 
     public function get_setting() {
-        return NULL;
+        return $this->url;
     }
 
     function output_html($data, $query='') {
