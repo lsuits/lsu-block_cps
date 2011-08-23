@@ -42,6 +42,15 @@ abstract class enrollment_provider implements enrollment_factory {
         return true;
     }
 
+    function supports_reverse_lookups() {
+        return !empty($this->teacher_source());
+    }
+
+    // Optionally return a source for reverse lookups
+    function teacher_info_source() {
+        return null;
+    }
+
     public static function get_name() {
         return current(explode('_enrollment_provider', get_called_class()));
     }

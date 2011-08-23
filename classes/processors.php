@@ -15,3 +15,7 @@ interface teacher_processor {
 interface student_processor {
     function students($semester, $course, $section);
 }
+
+interface teacher_info_processor {
+    function teacher_info($semester, $teacher);
+}
