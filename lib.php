@@ -40,17 +40,15 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function is_cron_required() {
-        //TODO: Make sure we first start at 2:30 or 3:00 AM
-        /**
-         * $now = (int)date('H');
-         * if ($now >= 2 and $now <= 3) {
-         *     return parent::is_cron_required();
-         * }
-         *
-         * return false;
-         */
-        $is_enabled = $this->setting('cron_run');
-        return ($is_enabled and parent::is_cron_required());
+        $now = (int)date('H');
+
+        if ($now >= 2 and $now <= 3) {
+            $is_enabled = $this->setting('cron_run');
+
+            return ($is_enabled and parent::is_cron_required());
+        }
+
+        return false;
     }
 
     public function cron() {
