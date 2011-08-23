@@ -144,6 +144,18 @@ abstract class user_handler extends cps_dao {
 
         return $this->user;
     }
+
+    public static function reset_status($section, $to = 'pending', $from = 'enrolled') {
+        $class = 'cps_' . self::call('get_name');
+
+        $class::update(
+            array('status' => $to),
+            array(
+                'sectionid' => $section->id,
+                'status' => $from
+            )
+        );
+    }
 }
 
 class cps_teacher extends user_handler {
