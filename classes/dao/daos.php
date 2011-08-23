@@ -25,6 +25,11 @@ class cps_semester extends cps_dao {
 
         return $this->sections;
     }
+
+    public function __toString() {
+        $session = !empty($this->session_key) ? ' Session '. $this->session_key : '';
+        return sprintf('%s %s%s at %s', $this->year, $this->name, $session, $this->campus);
+    }
 }
 
 class cps_course extends cps_dao {
@@ -46,6 +51,10 @@ class cps_course extends cps_dao {
         }
 
         return $this->sections;
+    }
+
+    public function __toString() {
+        return sprintf('%s %s', $this->department, $this->cou_number);
     }
 }
 
@@ -98,6 +107,18 @@ class cps_section extends cps_dao {
         return $moodle ? true : false;
     }
 
+    public function __toString() {
+        if ($this->course and $this->semester) {
+            $course = $this->course;
+            $semester = $this->semester;
+
+            return sprintf('%s %s %s %s %s', $semester->year, $semester->name,
+                $course->department, $course->cou_number, $this->sec_number);
+        }
+
+        return 'Section '. $this->sec_number;
+    }
+
     /** Expects a Moodle course, returns an optionally full cps_section */
     public static function from_course(stdClass $course, $fill = true) {
         $sections = cps_section::get_all(array('idnumber' => $course->idnumber));
@@ -146,14 +167,11 @@ abstract class user_handler extends cps_dao {
     }
 
     public static function reset_status($section, $to = 'pending', $from = 'enrolled') {
-        $class = 'cps_' . self::call('get_name');
+        $class = get_called_class();
 
         $class::update(
             array('status' => $to),
-            array(
-                'sectionid' => $section->id,
-                'status' => $from
-            )
+            array('sectionid' => $section->id, 'status' => $from)
         );
     }
 }
