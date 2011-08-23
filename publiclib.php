@@ -23,18 +23,20 @@ abstract class cps {
         require_once $classes . '/provider.php';
     }
 
-    public static function reprocess_course($course) {
+    public static function reprocess_course($course, $silent = true) {
         $sections = cps_section::from_course($course, true);
 
-        return self::reprocess_sections($sections);
+        return self::reprocess_sections($sections, $silent);
     }
 
-    public static function reprocess_sections($sections) {
+    public static function reprocess_sections($sections, $silent = true) {
         $enrol = enrol_get_plugin('cps');
 
         if (!$enrol or $enrol->errors) {
             return false;
         }
+
+        $enrol->is_silent = $silent;
 
         foreach ($sections as $section) {
             $section->status = $enrol::PENDING;
@@ -50,7 +52,7 @@ abstract class cps {
         return true;
     }
 
-    public static function reprocess_for($teacher) {
+    public static function reprocess_for($teacher, $silent = true) {
         $cps_user = $teacher->user();
 
         $provider = self::create_provider();
@@ -81,7 +83,7 @@ abstract class cps {
             return true;
         }
 
-        return self::reprocess_sections($teacher->sections());
+        return self::reprocess_sections($teacher->sections(), $silent);
     }
 
     public static function gen_str() {

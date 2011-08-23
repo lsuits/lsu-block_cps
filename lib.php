@@ -16,10 +16,15 @@ class enrol_cps_plugin extends enrol_plugin {
     const ENROLLED = 'enrolled';
     const UNENROLLED = 'unenrolled';
 
-    /** Typical errolog for cron run */
+    /** Typical errorlog for cron run */
     var $errors = array();
 
+    /** Typical email log for cron runs */
+    var $emaillog = array();
+
     var $provider;
+
+    var $is_silent = false;
 
     function __construct() {
         global $CFG;
@@ -40,27 +45,62 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function is_cron_required() {
-        $now = (int)date('H');
+        $automatic = $this->setting('cron_run');
 
-        if ($now >= 2 and $now <= 3) {
-            $is_enabled = $this->setting('cron_run');
+        if ($automatic) {
+            $now = (int)date('H');
 
-            return ($is_enabled and parent::is_cron_required());
+            $right_time = ($now >= 2 and $now <= 3);
+
+            return ($right_time and parent::is_cron_required());
         }
 
-        return false;
+        return true;
     }
 
     public function cron() {
 
-        // TODO: clock processes
+        $admins = get_admins();
+
         if ($this->provider) {
+            $this->log("
+     ________  ____  ____              ____               __
+    / ___/ _ \/ __/ / __/__  _______  / / /_ _  ___ ___  / /_
+   / /__/ ___/\ \  / _// _ \/ __/ _ \/ / /  ' \/ -_) _ \/ __/
+   \___/_/  /___/ /___/_//_/_/  \___/_/_/_/_/_/\__/_//_/\__/
+            ");
+
+            $start = microtime();
+
             $this->full_process();
+
+            $end = microtime();
+
+            $how_long = microtime_diff($start, $end);
+
+            $this->log('------------------------------------------------');
+            $this->log('CPS enrollment took: ' . $how_long . ' secs');
+            $this->log('------------------------------------------------');
+
+            $email_text = implode("\n", $this->emaillog);
+
+            if ($this->setting('email_report')) {
+                foreach ($admins as $admin) {
+                    email_to_user($admin, $CFG->noreplyaddress,
+                        'CPS Enrollment Log', $email_text);
+                }
+            }
         }
 
         if (!empty($this->errors)) {
-            //TODO: report errors
+            $error_text = implode("\n", $this->errors);
+
+            foreach ($admins as $admin) {
+                email_to_user($admin, $CFG->noreplyaddress,
+                    '[SEVERE] CPS Enrollment Errors', $error_text);
+            }
         }
+
     }
 
     public function setting($key) {
@@ -71,8 +111,13 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $this->provider->preprocess();
 
-        $this->process_all();
+        $provider_name = $this->provider->get_name();
 
+        $this->log('Pulling information from ' . cps::_s($provider_name . '_name'));
+        $this->process_all();
+        $this->log('------------------------------------------------');
+
+        $this->log('Begin manifestation ...');
         $this->handle_enrollments();
 
         $this->provider->postprocess();
@@ -95,23 +140,38 @@ class enrol_cps_plugin extends enrol_plugin {
             array('status' => $this::MANIFESTED)
         );
 
+        $this->log('Pulling Semesters for ' . $now . '...');
         $semesters = $this->provider->semester_source()->semesters($now);
 
+        $this->log('Processing ' . count($semesters) . " Semesters...\n");
         $processed_semesters = $this->process_semesters($semesters);
 
+        $total_sections = 0;
         foreach ($processed_semesters as $semester) {
+            $section_count = 0;
 
+            $this->log('Pulling Courses / Sections for ' . $semester);
             $courses = $this->provider->course_source()->courses($semester);
 
+            $this->log('Processing ' . count($courses) . " Courses...\n");
             $process_courses = $this->process_courses($semester, $courses);
 
             foreach ($process_courses as $course) {
 
                 foreach ($course->sections as $section) {
+                    $section_count ++;
+                    if ($section_count % 10 == 0) {
+                        $this->log('Processed ' . $section_count . ' Sections');
+                    }
                     $this->process_enrollment($semester, $course, $section);
                 }
             }
+
+            $total_sections += $section_count;
+            $this->log('Finished processing ' . $section_count . " Sections\n");
         }
+
+        $this->log('Finished processing ' . $total_sections . " Sections\n");
     }
 
     public function process_semesters($semesters) {
@@ -242,7 +302,12 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     private function handle_pending_sections() {
+        global $DB;
         $sections = cps_section::get_all(array('status' => $this::PENDING));
+
+        if ($sections) {
+            $this->log('Found ' . count($sections) . ' Sections that will not be manifested.');
+        }
 
         foreach ($sections as $section) {
             if ($section->is_manifested()) {
@@ -252,6 +317,8 @@ class enrol_cps_plugin extends enrol_plugin {
 
                 $DB->update_record('course', $course);
 
+                $this->log('Unloading ' . $course->idnumber);
+
                 events_trigger('cps_course_severed', $course);
 
                 $section->idnumber = null;
@@ -260,10 +327,16 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $section->save();
         }
+
+        $this->log('');
     }
 
     private function handle_processed_sections() {
         $sections = cps_section::get_all(array('status' => $this::PROCESSED));
+
+        if ($sections) {
+            $this->log('Found ' . count($sections) . ' Sections ready to be manifested.');
+        }
 
         foreach ($sections as $section) {
             $semester = $section->semester();
@@ -276,6 +349,8 @@ class enrol_cps_plugin extends enrol_plugin {
                 $section->status = $this::MANIFESTED;
                 $section->save();
             }
+
+            $this->log('');
         }
     }
 
@@ -321,6 +396,9 @@ class enrol_cps_plugin extends enrol_plugin {
             $this::PROCESSED => 'enroll'
         );
 
+        $this->log('Manifesting enrollment for: ' . $moodle_course->idnumber .
+            ' ' . $section->sec_number);
+
         foreach (array('teacher', 'student') as $type) {
             $class = 'cps_' . $type;
 
@@ -329,6 +407,9 @@ class enrol_cps_plugin extends enrol_plugin {
                 $action_count = $class::count($action_params);
 
                 if ($action_count) {
+                    $this->log('Found ' . $action_count . ' ' . $type .
+                        '(s) to be ' . $action . 'ed');
+
                     $to_action = $class::get_all($action_params);
                     $this->{$action . '_users'}($group, $to_action);
                 }
@@ -466,7 +547,8 @@ class enrol_cps_plugin extends enrol_plugin {
             $moodle_course->summary = $course->fullname;
             $moodle_course->startdate = $semester->classes_start;
             $moodle_course->visible = $this->setting('course_visible');
-            //TODO: make more general course creation settings
+            $moodle_course->format = $this->setting('course_format');
+            $moodle_course->numsections = $this->setting('course_numsections');
 
             $moodle_course = create_course($moodle_course);
 
@@ -608,5 +690,13 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         return $role;
+    }
+
+    private function log($what) {
+        if ($is_silent) {
+            mtrace($what);
+        }
+
+        $this->emaillog[] = $what;
     }
 }
