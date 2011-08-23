@@ -6,8 +6,11 @@ criterion including Semesters, Courses, Sections tied to coures, and teacher and
 
 The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
 
-$string['cron_run'] = 'Enable Cron';
+$string['cron_run'] = 'Nightly Cron';
 $string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
+
+$string['email_report'] = 'Email Logs';
+$string['email_report_desc'] = 'Email CPS execution log to all admins. **Note**: any errors will be reported regardless.';
 
 $string['user_settings'] = 'User Creation Settings';
 $string['user_email'] = 'E-mail suffix';
@@ -23,6 +26,8 @@ $string['course_settings'] = 'Course Creation Settings';
 $string['course_visible_desc'] = 'Upon creation the course will be visible to students.';
 $string['course_shortname_desc'] = 'Generated Shortname for the course';
 $string['course_shortname'] = '{year} {name} {department} {course_number} for {fullname}';
+$string['course_format_desc'] = 'Creates a course that uses this format as its default.';
+$string['course_numsections_desc'] = 'Creates a course with this many sections as its default.';
 
 $string['provider'] = 'Enrollment Provider';
 $string['provider_desc'] = 'This enrollment provider will be used to pull enrollment data.';
