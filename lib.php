@@ -228,12 +228,16 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function process_teachers($section, $users) {
+        cps_teacher::reset_status($section);
+
         return $this->fill_role('teacher', $section, $users, function($user) {
             return array('primary_flag' => $user->primary_flag);
         });
     }
 
     public function process_students($section, $users) {
+        cps_student::reset_status($section);
+
         return $this->fill_role('student', $section, $users);
     }
 
