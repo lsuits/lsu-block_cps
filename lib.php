@@ -108,6 +108,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $process_courses = $this->process_courses($semester, $courses);
 
             foreach ($process_courses as $course) {
+
                 foreach ($course->sections as $section) {
                     $this->process_enrollment($semester, $course, $section);
                 }

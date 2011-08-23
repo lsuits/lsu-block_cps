@@ -51,7 +51,37 @@ abstract class cps {
     }
 
     public static function reprocess_for($teacher) {
-        // TODO: fill in stub
+        $cps_user = $teacher->user();
+
+        $provider = self::create_provider();
+
+        if ($provider and $provider->supports_reverse_lookups()) {
+            $enrol = enrol_get_plugin('cps');
+
+            $info = $provider->teacher_info_source();
+
+            $semesters = cps_semester::in_session();
+
+            foreach ($semesters as $semester) {
+                $courses = $info->teacher_info($semester, $cps_user);
+
+                $processed = $enrol->process_courses($semester, $courses);
+
+                foreach ($processed as $course) {
+
+                    foreach ($course->sections as $section) {
+                        $enrol->process_enrollment(
+                            $semester, $course, $section
+                        );
+                    }
+                }
+            }
+
+            $enrol->handle_enrollments();
+            return true;
+        }
+
+        return self::reprocess_sections($teacher->sections());
     }
 
     public static function gen_str() {
