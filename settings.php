@@ -18,6 +18,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_cps/cron_run',
         $_s('cron_run'), $_s('cron_run_desc'), 1));
 
+    $settings->add(new admin_setting_configcheckbox('enrol_cps/email_report',
+        $_s('email_report'), $_s('email_report_desc'), 1));
+
     $settings->add(new admin_setting_heading('enrol_cps_user_settings',
         $_s('user_settings'), ''));
 
@@ -40,6 +43,19 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('enrol_cps/course_shortname',
         get_string('shortname'), $_s('course_shortname_desc'),
         $_s('course_shortname')));
+
+    $courseformats = get_plugin_list('format');
+    $formats = array();
+    foreach ($courseformats as $format => $dir) {
+        $formats[$format] = get_string('pluginname', 'format_' . $format);
+    }
+
+    $settings->add(new admin_setting_configselect('enrol_cps/course_format',
+        get_string('format'), $_s('course_format_desc'), 'weeks', $formats));
+
+    $options = array_combine(range(1, 52), range(1, 52));
+    $settings->add(new admin_setting_configselect('enrol_cps/course_numsections',
+        get_string('numberweeks'), $_s('course_numsections_desc'), 17, $options));
 
     $settings->add(new admin_setting_configcheckbox('enrol_cps/course_visible',
         get_string('visible'), $_s('course_visible_desc'), 0));
