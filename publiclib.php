@@ -41,7 +41,7 @@ abstract class cps {
             $section->save();
 
             $enrol->process_enrollment(
-                $section->semester, $section->course, $section
+                $section->semester(), $section->course(), $section
             );
         }
 
