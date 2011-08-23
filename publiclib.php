@@ -24,11 +24,30 @@ abstract class cps {
     }
 
     public static function reprocess_course($course) {
-        // TODO: fill in stub
+        $sections = cps_section::from_course($course, true);
+
+        return self::reprocess_sections($sections);
     }
 
     public static function reprocess_sections($sections) {
-        // TODO: fill in stub
+        $enrol = enrol_get_plugin('cps');
+
+        if (!$enrol or $enrol->errors) {
+            return false;
+        }
+
+        foreach ($sections as $section) {
+            $section->status = $enrol::PENDING;
+            $section->save();
+
+            $enrol->process_enrollment(
+                $section->semester, $section->course, $section
+            );
+        }
+
+        $enrol->handle_enrollments();
+
+        return true;
     }
 
     public static function reprocess_for($teacher) {

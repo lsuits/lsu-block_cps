@@ -108,7 +108,9 @@ class enrol_cps_plugin extends enrol_plugin {
             $process_courses = $this->process_courses($semester, $courses);
 
             foreach ($process_courses as $course) {
-                $this->process_enrollment($semester, $course);
+                foreach ($course->sections as $section) {
+                    $this->process_enrollment($semester, $course, $section);
+                }
             }
         }
     }
@@ -190,41 +192,39 @@ class enrol_cps_plugin extends enrol_plugin {
     /**
      * Could be used to process a single course upon request
      */
-    public function process_enrollment($semester, $course) {
+    public function process_enrollment($semester, $course, $section) {
         $teacher_source = $this->provider->teacher_source();
 
         $student_source = $this->provider->student_source();
 
-        foreach ($course->sections as $section) {
-            $teachers = $teacher_source->teachers($semester, $course, $section);
+        $teachers = $teacher_source->teachers($semester, $course, $section);
 
-            $students = $student_source->students($semester, $course, $section);
+        $students = $student_source->students($semester, $course, $section);
 
-            try {
-                $this->process_teachers($section, $teachers);
+        try {
+            $this->process_teachers($section, $teachers);
 
-                $this->process_students($section, $students);
+            $this->process_students($section, $students);
 
-                // Process section only if teachers can be processed
-                // take into consideration outside forces manipulating
-                // processed numbers through event handlers
-                $by_processed = array(
-                    'status' => $this::PROCESSED,
-                    'sectionid' => $section->id
-                );
+            // Process section only if teachers can be processed
+            // take into consideration outside forces manipulating
+            // processed numbers through event handlers
+            $by_processed = array(
+                'status' => $this::PROCESSED,
+                'sectionid' => $section->id
+            );
 
-                $processed_teachers = cps_teacher::count($by_processed);
+            $processed_teachers = cps_teacher::count($by_processed);
 
-                if (!empty($processed_teachers)) {
-                    $section->status = $this::PROCESSED;
-                    $section->save();
+            if (!empty($processed_teachers)) {
+                $section->status = $this::PROCESSED;
+                $section->save();
 
-                    events_trigger('cps_section_process', $section);
-                }
-
-            } catch (Exception $e) {
-                $this->errors[] = $e->error;
+                events_trigger('cps_section_process', $section);
             }
+
+        } catch (Exception $e) {
+            $this->errors[] = $e->error;
         }
     }
 
