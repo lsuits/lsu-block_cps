@@ -206,7 +206,7 @@ abstract class cps_dao extends cps_base implements meta_information {
         return $saved;
     }
 
-    private function save_meta($meta) {
+    public function save_meta($meta) {
         global $DB;
 
         $dbs = self::call('get_meta', $this->id);
