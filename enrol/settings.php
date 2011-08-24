@@ -13,7 +13,7 @@ if ($ADMIN->fulltree) {
         $_s('pluginname_desc', cps::plugin_base())));
 
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
-        $_s('provider'), $_s('provider_desc'), 'lsu', $plugins));
+        $_s('provider'), $_s('provider_desc'), 'fake', $plugins));
 
     $settings->add(new admin_setting_configcheckbox('enrol_cps/cron_run',
         $_s('cron_run'), $_s('cron_run_desc'), 1));
