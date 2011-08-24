@@ -11,9 +11,9 @@ abstract class cps {
     public static function require_daos() {
         $dao = self::base('classes/dao');
 
+        require_once $dao . '/base.php';
         require_once $dao . '/lib.php';
         require_once $dao . '/daos.php';
-
     }
 
     public static function require_extensions() {

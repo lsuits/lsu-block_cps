@@ -422,8 +422,12 @@ class enrol_cps_plugin extends enrol_plugin {
         if (!$DB->count_records('groups_members', $count_params)) {
             $event_params = array(
                 'section' => $section,
-                'group' => $group->id
+                'group' => $group
             );
+
+            // Going ahead and delete as delete
+            groups_delete_group($group);
+
             events_trigger('cps_group_emptied', $event_params);
         }
     }
