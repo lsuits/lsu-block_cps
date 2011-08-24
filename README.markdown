@@ -19,6 +19,8 @@ Installation is simple:
 cd ~
 git clone git@github.com:lsuits/cps.git
 mv cps/enrol {MOODLE_ROOT}/enrol/cps
+
+# Optional install
 mv cps/block {MOODLE_ROOT}/blocks/cps
 ```
 
@@ -26,4 +28,4 @@ As an admin in the system, run the *Notifications*, and installation is
 complete.
 
 Feel free to contribute, via pull request, or write issues in the
-[issue tracker](https://github.com/lsuits/cps/issues)
+[issue tracker](https://github.com/lsuits/cps/issues).
