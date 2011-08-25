@@ -16,7 +16,8 @@ function cps_group_emptied_handler($params) {
     return true;
 }
 
-function cps_course_severed_handler($params) {
+function cps_course_severed_handler($course) {
+    print_r($course);
     return true;
 }
 

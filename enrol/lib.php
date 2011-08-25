@@ -124,9 +124,13 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function handle_enrollments() {
-        $this->handle_pending_sections();
+        $pending = cps_section::get_all(array('status' => $this::PENDING));
 
-        $this->handle_processed_sections();
+        $this->handle_pending_sections($pending);
+
+        $processed = cps_section::get_all(array('status' => $this::PROCESSED));
+
+        $this->handle_processed_sections($processed);
     }
 
     public function process_all() {
@@ -301,9 +305,8 @@ class enrol_cps_plugin extends enrol_plugin {
         return $this->fill_role('student', $section, $users);
     }
 
-    private function handle_pending_sections() {
+    public function handle_pending_sections($sections) {
         global $DB;
-        $sections = cps_section::get_all(array('status' => $this::PENDING));
 
         if ($sections) {
             $this->log('Found ' . count($sections) . ' Sections that will not be manifested.');
@@ -311,15 +314,42 @@ class enrol_cps_plugin extends enrol_plugin {
 
         foreach ($sections as $section) {
             if ($section->is_manifested()) {
+
+                $params = array('idnumber' => $section->idnumber);
+
                 $course = $section->moodle();
 
-                $course->visible = 0;
+                $last_section = cps_section::count($params) == 1;
 
-                $DB->update_record('course', $course);
+                $cps_course = $section->course();
 
-                $this->log('Unloading ' . $course->idnumber);
+                $group = $this->manifest_group($course, $cps_course, $section);
 
-                events_trigger('cps_course_severed', $course);
+                foreach (array('student', 'teacher') as $type) {
+                    $class = 'cps_' . $type;
+
+                    $params = array(
+                        'sectionid' => $section->id, 'status' => 'enrolled'
+                    );
+
+                    if ($last_section and $type == 'teacher') {
+                        $params['primary_flag'] = 0;
+                    }
+
+                    $users = $class::get_all($params);
+
+                    $this->unenroll_users($group, $users);
+                }
+
+                if ($last_section) {
+                    $course->visible = 0;
+
+                    $DB->update_record('course', $course);
+
+                    $this->log('Unloading ' . $course->idnumber);
+
+                    events_trigger('cps_course_severed', $course);
+                }
 
                 $section->idnumber = null;
             }
@@ -331,9 +361,7 @@ class enrol_cps_plugin extends enrol_plugin {
         $this->log('');
     }
 
-    private function handle_processed_sections() {
-        $sections = cps_section::get_all(array('status' => $this::PROCESSED));
-
+    public function handle_processed_sections($sections) {
         if ($sections) {
             $this->log('Found ' . count($sections) . ' Sections ready to be manifested.');
         }
@@ -415,21 +443,6 @@ class enrol_cps_plugin extends enrol_plugin {
                 }
             }
         }
-
-        global $DB;
-
-        $count_params = array('groupid' => $group->id);
-        if (!$DB->count_records('groups_members', $count_params)) {
-            $event_params = array(
-                'section' => $section,
-                'group' => $group
-            );
-
-            // Going ahead and delete as delete
-            groups_delete_group($group);
-
-            events_trigger('cps_group_emptied', $event_params);
-        }
     }
 
     private function enroll_users($group, $users) {
@@ -456,25 +469,55 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     private function unenroll_users($group, $users) {
+        global $DB;
+
         $instance = $this->get_instance($group->courseid);
+
+        $course = $DB->get_record('course', array('id' => $group->courseid));
 
         foreach ($users as $user) {
             $shortname = $this->determine_role($user);
-            $roleid = $this->setting($shortname . '_role');
 
-            $this->unenrol_user($instance, $user->userid, $roleid);
+            $class = 'cps_' . $shortname;
+
+            $roleid = $this->setting($shortname . '_role');
 
             groups_remove_member($group->id, $user->userid);
 
-            $user->status = $this::UNENROLLED;
+            $to_status = $user->status == $this::PENDING ?
+                $this::UNENROLLED :
+                $this::PROCESSED;
+
+            $sections = $user->sections();
+
+            $enrolled_sections = array_filter($sections, function($section) use ($course) {
+                return $section->idnumber == $course->idnumber;
+            });
+
+            if (!count($enrolled_sections)) {
+                $this->unenrol_user($instance, $user->userid, $roleid);
+            }
+
+            $user->status = $to_status;
             $user->save();
 
-            $event_params = array(
-                'group' => $group,
-                'cps_user' => $user
-            );
+            if ($to_status == $this::UNENROLLED) {
+                $event_params = array(
+                    'group' => $group,
+                    'cps_user' => $user
+                );
 
-            events_trigger('cps_' . $shortname . '_unenroll', $event_params);
+                events_trigger('cps_' . $shortname . '_unenroll', $event_params);
+            }
+        }
+
+        $count_params = array('groupid' => $group->id);
+        if (!$DB->count_records('groups_members', $count_params)) {
+
+            // Going ahead and delete as delete
+            groups_delete_group($group);
+
+            events_trigger('cps_group_emptied', $group);
         }
     }
 
@@ -486,7 +529,7 @@ class enrol_cps_plugin extends enrol_plugin {
             'name' => "{$course->department} {$course->cou_number} {$section->sec_number}"
         );
 
-        if (!$group = $DB->get_records('groups', $group_params)) {
+        if (!$group = $DB->get_record('groups', $group_params)) {
             $group = (object) $group_params;
             $group->id = groups_create_group($group);
         }
@@ -554,11 +597,12 @@ class enrol_cps_plugin extends enrol_plugin {
             $moodle_course->format = $this->setting('course_format');
             $moodle_course->numsections = $this->setting('course_numsections');
 
+            // Actually needs to happen, before the create call
+            events_trigger('cps_course_create', $moodle_course);
+
             $moodle_course = create_course($moodle_course);
 
             $this->add_instance($moodle_course);
-
-            events_trigger('cps_course_create', $moodle_course);
         }
 
         if (!$section->idnumber) {
@@ -697,7 +741,7 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     private function log($what) {
-        if ($is_silent) {
+        if (!$this->is_silent) {
             mtrace($what);
         }
 

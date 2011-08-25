@@ -23,6 +23,56 @@ abstract class cps {
         require_once $classes . '/provider.php';
     }
 
+    public static function inject_manifest(array $sections, $inject = null, $silent = true) {
+        self::unenroll_users($sections, $silent);
+
+        if ($inject) {
+            foreach ($sections as $section) {
+                $inject($section);
+            }
+        }
+
+        self::enroll_users($sections, $silent);
+    }
+
+    // Note: this will erase the idnumber of the sections
+    public static function unenroll_users(array $sections, $silent = true) {
+        $enrol = enrol_get_plugin('cps');
+
+        $enrol->is_silent = $silent;
+
+        foreach ($sections as $section) {
+            $section->status = $enrol::PENDING;
+            $section->save();
+        }
+
+        $enrol->handle_pending_sections($sections);
+
+        return $enrol->errors;
+    }
+
+    // Note: this will cause manifestation (course creation if need be)
+    public static function enroll_users(array $sections, $silent = true) {
+        $enrol = enrol_get_plugin('cps');
+
+        $enrol->is_silent = $silent;
+
+        foreach ($sections as $section) {
+            foreach (array('teacher', 'student') as $type) {
+                $class = 'cps_' . $type;
+
+                $class::reset_status($section, $enrol::PROCESSED);
+            }
+
+            $section->status = $enrol::PROCESSED;
+            $section->save();
+        }
+
+        $enrol->handle_processed_sections($sections);
+
+        return $enrol->errors;
+    }
+
     public static function reprocess_course($course, $silent = true) {
         $sections = cps_section::from_course($course, true);
 
