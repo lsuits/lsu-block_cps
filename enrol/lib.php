@@ -5,17 +5,6 @@ defined('MOODLE_INTERNAL') or die();
 require_once dirname(__FILE__) . '/publiclib.php';
 
 class enrol_cps_plugin extends enrol_plugin {
-    const PENDING = 'pending';
-    const PROCESSED = 'processed';
-
-    // Section is created
-    const MANIFESTED = 'manifested';
-    const SKIPPED = 'skipped';
-
-    // Teacher / Student manifestation
-    const ENROLLED = 'enrolled';
-    const UNENROLLED = 'unenrolled';
-
     /** Typical errorlog for cron run */
     var $errors = array();
 
@@ -124,11 +113,11 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function handle_enrollments() {
-        $pending = cps_section::get_all(array('status' => $this::PENDING));
+        $pending = cps_section::get_all(array('status' => cps::PENDING));
 
         $this->handle_pending_sections($pending);
 
-        $processed = cps_section::get_all(array('status' => $this::PROCESSED));
+        $processed = cps_section::get_all(array('status' => cps::PROCESSED));
 
         $this->handle_processed_sections($processed);
     }
@@ -140,8 +129,8 @@ class enrol_cps_plugin extends enrol_plugin {
         // The provisioning process will mark those that were skipped to
         // be processed if necessary
         cps_section::update(
-            array('status' => $this::PENDING),
-            array('status' => $this::MANIFESTED)
+            array('status' => cps::PENDING),
+            array('status' => cps::MANIFESTED)
         );
 
         $this->log('Pulling Semesters for ' . $now . '...');
@@ -233,7 +222,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
                     $cps_section->courseid = $cps_course->id;
                     $cps_section->semesterid = $semester->id;
-                    $cps_section->status = $this::PENDING;
+                    $cps_section->status = cps::PENDING;
 
                     $cps_section->save();
 
@@ -273,14 +262,14 @@ class enrol_cps_plugin extends enrol_plugin {
             // take into consideration outside forces manipulating
             // processed numbers through event handlers
             $by_processed = array(
-                'status' => $this::PROCESSED,
+                'status' => cps::PROCESSED,
                 'sectionid' => $section->id
             );
 
             $processed_teachers = cps_teacher::count($by_processed);
 
             if (!empty($processed_teachers)) {
-                $section->status = $this::PROCESSED;
+                $section->status = cps::PROCESSED;
                 $section->save();
 
                 events_trigger('cps_section_process', $section);
@@ -353,7 +342,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
                 $section->idnumber = null;
             }
-            $section->status = $this::SKIPPED;
+            $section->status = cps::SKIPPED;
 
             $section->save();
         }
@@ -374,7 +363,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $success = $this->manifestation($semester, $course, $section);
 
             if ($success) {
-                $section->status = $this::MANIFESTED;
+                $section->status = cps::MANIFESTED;
                 $section->save();
             }
 
@@ -390,11 +379,11 @@ class enrol_cps_plugin extends enrol_plugin {
         );
 
         $new_primary = cps_teacher::get($teacher_params + array(
-            'status' => $this::PROCESSED
+            'status' => cps::PROCESSED
         ));
 
         $old_primary = cps_teacher::get($teacher_params + array(
-            'status' => $this::PENDING
+            'status' => cps::PENDING
         ));
 
         // Campuses may want to handle primary instructor changes differently
@@ -420,8 +409,8 @@ class enrol_cps_plugin extends enrol_plugin {
         $general_params = array('sectionid' => $section->id);
 
         $actions = array(
-            $this::PENDING => 'unenroll',
-            $this::PROCESSED => 'enroll'
+            cps::PENDING => 'unenroll',
+            cps::PROCESSED => 'enroll'
         );
 
         $this->log('Manifesting enrollment for: ' . $moodle_course->idnumber .
@@ -456,7 +445,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
             groups_add_member($group->id, $user->userid);
 
-            $user->status = $this::ENROLLED;
+            $user->status = cps::ENROLLED;
             $user->save();
 
             $event_params = array(
@@ -484,9 +473,9 @@ class enrol_cps_plugin extends enrol_plugin {
 
             groups_remove_member($group->id, $user->userid);
 
-            $to_status = $user->status == $this::PENDING ?
-                $this::UNENROLLED :
-                $this::PROCESSED;
+            $to_status = $user->status == cps::PENDING ?
+                cps::UNENROLLED :
+                cps::PROCESSED;
 
             $sections = $user->sections();
 
@@ -501,7 +490,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $user->status = $to_status;
             $user->save();
 
-            if ($to_status == $this::UNENROLLED) {
+            if ($to_status == cps::UNENROLLED) {
                 $event_params = array(
                     'group' => $group,
                     'cps_user' => $user
@@ -543,7 +532,7 @@ class enrol_cps_plugin extends enrol_plugin {
         $teacher_params = array(
             'sectionid' => $section->id,
             'primary_flag' => 1,
-            'status' => $this::PROCESSED
+            'status' => cps::PROCESSED
         );
 
         $primary_teacher = cps_teacher::get($teacher_params);
@@ -698,7 +687,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $cps_type->userid = $cps_user->id;
             $cps_type->sectionid = $section->id;
-            $cps_type->status = $this::PROCESSED;
+            $cps_type->status = cps::PROCESSED;
 
             $cps_type->save();
 

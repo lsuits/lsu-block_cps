@@ -3,6 +3,17 @@
 defined('MOODLE_INTERNAL') or die();
 
 abstract class cps {
+    const PENDING = 'pending';
+    const PROCESSED = 'processed';
+
+    // Section is created
+    const MANIFESTED = 'manifested';
+    const SKIPPED = 'skipped';
+
+    // Teacher / Student manifestation
+    const ENROLLED = 'enrolled';
+    const UNENROLLED = 'unenrolled';
+
     public static function require_libs() {
         self::require_daos();
         self::require_extensions();
@@ -42,7 +53,7 @@ abstract class cps {
         $enrol->is_silent = $silent;
 
         foreach ($sections as $section) {
-            $section->status = $enrol::PENDING;
+            $section->status = self::PENDING;
             $section->save();
         }
 
@@ -61,10 +72,10 @@ abstract class cps {
             foreach (array('teacher', 'student') as $type) {
                 $class = 'cps_' . $type;
 
-                $class::reset_status($section, $enrol::PROCESSED);
+                $class::reset_status($section, self::PROCESSED);
             }
 
-            $section->status = $enrol::PROCESSED;
+            $section->status = self::PROCESSED;
             $section->save();
         }
 
@@ -89,7 +100,7 @@ abstract class cps {
         $enrol->is_silent = $silent;
 
         foreach ($sections as $section) {
-            $section->status = $enrol::PENDING;
+            $section->status = self::PENDING;
             $section->save();
 
             $enrol->process_enrollment(
