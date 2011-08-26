@@ -4,6 +4,7 @@ defined('MOODLE_INTERNAL') or die();
 
 if ($ADMIN->fulltree) {
     require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
+    require_once $CFG->dirroot . '/blocks/cps/settingslib.php';
 
     // using the public lib for string generation
     $_s = cps::gen_str('block_cps');
@@ -15,14 +16,16 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('block_cps/course_severed',
         $_s('course_severed'), $_s('course_severed_desc'), 0));
 
-    $days = array_combine(range(1, 120), range(1, 120));
+    $cps_settings = array('creation', 'unwant', 'material', 'split', 'crosslist', 'team_request');
 
-    
+    foreach ($cps_settings as $setting) {
+        $settings->add(new admin_setting_heading('block_cps_'.$setting.'_settings',
+            $_s($setting), ''));
 
-    $settings->add(new admin_setting_configselect('block_cps/create_days',
-        $_s('create_days'), $_s('create_days_desc'), 30, $days));
+        $settings->add(new admin_setting_configcheckbox('block_cps/'.$setting,
+            $_s('enabled'), $_s('enabled_desc'), 1));
 
-    $settings->add(new admin_setting_configselect('block_cps/enroll_days',
-        $_s('enroll_days'), $_s('enroll_days_desc'), 14, $days));
-
+        setting_processor::$setting($settings, $_s);
+    }
 }
+
