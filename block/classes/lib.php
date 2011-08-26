@@ -3,6 +3,27 @@
 cps::require_daos();
 
 abstract class cps_preferences extends cps_base {
+    public static function settings() {
+        $settings = array('creation', 'split', 'crosslist',
+            'team_request', 'material', 'unwant');
+
+        $_s = cps::gen_str('block_cps');
+
+        $remaining_settings = array();
+
+        foreach ($settings as $setting) {
+            $class = 'cps_' . $setting;
+
+            if (!$class::is_enabled()) {
+                continue;
+            }
+
+            $remaining_settings[$setting] = $_s($setting);
+        }
+
+        return $remaining_settings;
+    }
+
     public static function get_all(array $params = array(), $fields = '*') {
         return self::get_all_internal($params, $fields);
     }
@@ -17,6 +38,12 @@ abstract class cps_preferences extends cps_base {
 
     public static function delete_all(array $params = array()) {
         return self::delete_all_internal($params);
+    }
+
+    public static function is_enabled() {
+        $setting = self::call('get_name');
+
+        return get_config('block_cps', $setting);
     }
 }
 
