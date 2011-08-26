@@ -227,4 +227,16 @@ class cps_user extends cps_dao {
         return self::get_name();
     }
 
+    public static function is_teacher($userid = null) {
+        if (!$userid) {
+            global $USER;
+            $userid = $USER->id;
+        }
+
+        $count = cps_teacher::count(array(
+            'userid' => $userid, 'status' => 'enrolled'
+        ));
+
+        return !empty($count);
+    }
 }
