@@ -136,9 +136,9 @@ abstract class cps {
         return self::reprocess_sections($teacher->sections(), $silent);
     }
 
-    public static function gen_str() {
-        return function ($key, $a=null) {
-            return get_string($key, 'enrol_cps', $a);
+    public static function gen_str($plugin = 'enrol_cps') {
+        return function ($key, $a=null) use ($plugin) {
+            return get_string($key, $plugin, $a);
         };
     }
 
