@@ -1,30 +1,44 @@
 <?php
 
-function cps_primary_change_handler($params) {
-    return true;
-}
+abstract class cps_event_handler {
 
-function cps_student_enroll_handler($params) {
-    return true;
-}
+    public static function cps_primary_change($params) {
+        return true;
+    }
 
-function cps_student_unenroll_handler($params) {
-    return true;
-}
+    public static function cps_student_process($params) {
+        return true;
+    }
 
-function cps_group_emptied_handler($params) {
-    return true;
-}
+    public static function cps_teacher_process($params) {
+        return true;
+    }
 
-function cps_course_severed_handler($course) {
-    print_r($course);
-    return true;
-}
+    public static function cps_section_process($params) {
+        return true;
+    }
 
-function cps_course_create_handler($params) {
-    return true;
-}
+    public static function cps_course_create($params) {
+        return true;
+    }
 
-function cps_section_process_handler($params) {
-    return true;
+    public static function cps_course_severed($course) {
+        return true;
+    }
+
+    public static function cps_group_emptied($params) {
+        return true;
+    }
+
+    public static function cps_student_enroll($params) {
+        return true;
+    }
+
+    public static function cps_student_unenroll($params) {
+        return true;
+    }
+
+    public static function user_updated($user) {
+        return true;
+    }
 }
