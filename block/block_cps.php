@@ -16,7 +16,6 @@ class block_cps extends block_list {
 
         global $CFG;
 
-        require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
         require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
         if (!cps_user::is_teacher()) {

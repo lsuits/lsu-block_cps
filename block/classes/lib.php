@@ -1,13 +1,12 @@
 <?php
 
+require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
 cps::require_daos();
 
 abstract class cps_preferences extends cps_base {
     public static function settings() {
         $settings = array('creation', 'split', 'crosslist',
             'team_request', 'material', 'unwant');
-
-        $_s = cps::gen_str('block_cps');
 
         $remaining_settings = array();
 
@@ -18,7 +17,7 @@ abstract class cps_preferences extends cps_base {
                 continue;
             }
 
-            $remaining_settings[$setting] = $_s($setting);
+            $remaining_settings[$setting] = $class::name();
         }
 
         return $remaining_settings;
@@ -44,6 +43,10 @@ abstract class cps_preferences extends cps_base {
         $setting = self::call('get_name');
 
         return get_config('block_cps', $setting);
+    }
+
+    public static function name() {
+        return get_string(self::call('get_name'), 'block_cps');
     }
 }
 

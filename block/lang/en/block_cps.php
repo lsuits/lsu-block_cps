@@ -17,6 +17,13 @@ $string['nonprimary'] = 'Allow Non-Primaries';
 $string['nonprimary_desc'] = 'If checked, then Non-Primaries will be able to
 configure the CPS settings.';
 
+// Error Strings
+$string['not_enabled'] = 'CPS Setting <strong>{$a}</strong> is not enabled.';
+$string['not_teacher'] = 'You are not enrolled or set to be enrolled in any course.
+If you believe that you should be, please contact the Moodle administrator for
+immediate assistance.';
+$string['no_section'] = 'You do not own any section in the capable role. If you believe that you do, please contact the Moodle administrator for immediate assistance.';
+
 // Setting names
 $string['creation'] = 'Creation / Enrollment';
 
