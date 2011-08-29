@@ -17,12 +17,45 @@ abstract class cps_event_handler {
     }
 
     public static function cps_section_process($section) {
-        // Creation and Enrollment interjection
-
         // Unwanted interjection
         $unwanted = cps_unwant::get(array('sectionid' => $section->id));
         if ($unwanted) {
             $section->status = cps::PENDING;
+            return true;
+        }
+
+        // Creation and Enrollment interjection
+        $primary = cps_teacher::get(array(
+            'sectionid' => $section->id,
+            'primary_flag' => 1
+            'status' => cps::PROCESSED
+        ));
+
+        $creation_params = array(
+            'userid' => $primary->userid,
+            'semesterid' => $section->semesterid,
+            'courseid' => $section->courseid
+        );
+
+        $creation = cps_creation::get($creation_params);
+        if (!$creation) {
+            $creation = new cps_creation();
+            $creation->create_days = get_config('block_cps', 'create_days');
+            $creation->enroll_days = get_config('block_cps', 'enroll_days');
+        }
+
+        $classes_start = $section->semester->classes_start;
+        $diff = $classes_start - $now;
+
+        $diff_days = ($diff / 60 / 60 / 24);
+
+        if ($diff_days > $creation->create_days) {
+            $section->status = cps::PENDING;
+            return true;
+        }
+
+        if ($diff_days > $creation->enroll_days) {
+            cps_student::reset_status($section, cps::PENDING, cps::PROCESSED);
         }
 
         return true;
