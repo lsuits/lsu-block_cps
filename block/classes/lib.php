@@ -28,7 +28,7 @@ abstract class cps_preferences extends cps_base {
     }
 
     public static function get(array $params, $fields = '*') {
-        return self::get_all($params, $fields);
+        return current(self::get_all($params, $fields));
     }
 
     public static function get_select($filters) {
