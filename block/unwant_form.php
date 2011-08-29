@@ -47,10 +47,18 @@ class unwant_form extends moodleform {
 
                 $name = $semester->year . ' ' . $semester->name . ' ' . $section;
 
-                $m->addElement('checkbox', $section->id, '', $name, array(
-                    'id' => $id
-                ));
+                $m->addElement('checkbox', 'section_'.$section->id, '', $name,
+                    array('id' => $id));
             }
         }
+
+        $buttons = array(
+            $m->createElement('submit', 'save', get_string('savechanges')),
+            $m->createElement('cancel')
+        );
+
+        $m->addGroup($buttons, 'buttons', '', array(' '), false);
+
+        $m->closeHeaderBefore('buttons');
     }
 }

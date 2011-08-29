@@ -22,6 +22,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
+// TODO: add jquery and appropriate script
 $_s = cps::gen_str('block_cps');
 
 $blockname = $_s('pluginname');
@@ -35,10 +36,58 @@ $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/unwant.php');
 
+$form = new unwant_form(null, array('sections' => $sections));
+
+// TODO: do the apply and unapply
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/my'));
+} else if ($data = $form->get_data()) {
+
+    $unwants = cps_unwant::get_all(array('userid' => $USER->id));
+
+    // Perform Selected
+    $fields = get_object_vars($data);
+    foreach ($fields as $name => $value) {
+        if (preg_match('/^section_(\d+)/', $name, $matches)) {
+            $sectionid = $matches[1];
+
+            $params = array('userid' => $USER->id, 'sectionid' => $sectionid);
+            $unwant = cps_unwant::get($params);
+
+            if (!$unwant) {
+                $unwant = new cps_unwant();
+                $unwant->fill_params($params);
+            }
+
+            $unwant->save();
+
+            unset($unwants[$unwant->id]);
+        }
+    }
+
+    // Erase deselected
+    foreach ($unwants as $unwant) {
+        cps_unwant::delete($unwant->id);
+    }
+
+    $success = true;
+}
+
+$unwants = cps_unwant::get_all(array('userid' => $USER->id));
+$form_data = array();
+
+foreach ($unwants as $unwant) {
+    $form_data['section_' . $unwant->sectionid] = 1;
+}
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
 
-$form = new unwant_form(null, array('sections' => $sections));
+if (isset($success) and $success) {
+    echo $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');
+}
+
+$form->set_data($form_data);
 $form->display();
 
 echo $OUTPUT->footer();
