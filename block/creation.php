@@ -6,8 +6,8 @@ require_once 'creation_form.php';
 
 require_login();
 
-if (!cps_unwant::is_enabled()) {
-    print_error('not_enabled', 'block_cps', '', cps_unwant::name());
+if (!cps_creation::is_enabled()) {
+    print_error('not_enabled', 'block_cps', '', cps_creation::name());
 }
 
 if (!cps_user::is_teacher()) {
