@@ -69,7 +69,7 @@ class creation_form extends moodleform {
                     $m->createElement('text', 'enroll_days_'.$id, '')
                 );
 
-                $m->addGroup($group, 'create_group_'.$id, $course, array(' '));
+                $m->addGroup($group, 'create_group_'.$id, $course, $spacer(1));
             }
         }
 
@@ -83,9 +83,6 @@ class creation_form extends moodleform {
     }
 
     function validation($data) {
-        $default_create_days = get_config('block_cps', 'create_days');
-        $default_enroll_days = get_config('block_cps', 'enroll_days');
-
         $create_days = array();
         $enroll_days = array();
 
