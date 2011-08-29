@@ -25,6 +25,7 @@ immediate assistance.';
 $string['no_section'] = 'You do not own any section in the capable role. If you believe that you do, please contact the Moodle administrator for immediate assistance.';
 
 // Setting names
+$string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
 
 $string['create_days'] = 'Days before Creation';
@@ -33,6 +34,9 @@ $string['create_days_desc'] = 'The number of days before sections are created.';
 $string['enroll_days'] = 'Days before Enrollment';
 $string['enroll_days_desc'] = 'The number of days before **created** sections
 are enrolled.';
+
+$string['default_create_days'] = 'Days before classes to create courses';
+$string['default_enroll_days'] = 'Days before classes to enroll students';
 
 $string['unwant'] = 'Unwanted';
 $string['material'] = 'Materials Course';
