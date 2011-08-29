@@ -81,4 +81,67 @@ class creation_form extends moodleform {
         $m->addGroup($buttons, 'buttons', '', $spacer(1), false);
         $m->closeHeaderBefore('buttons');
     }
+
+    function validation($data) {
+        $default_create_days = get_config('block_cps', 'create_days');
+        $default_enroll_days = get_config('block_cps', 'enroll_days');
+
+        $create_days = array();
+        $enroll_days = array();
+
+        $errors = array();
+
+        $fill = function (&$collection, $semesterid, $courseid, $value) {
+            if (!isset($collection[$semesterid])) {
+                $collection[$semesterid] = array();
+            }
+
+            if (trim($value) === '' or $value > 0) {
+                $collection[$semesterid][$courseid] = $value;
+                return true;
+            } else {
+                return false;
+            }
+        };
+
+        $_s = cps::gen_str('block_cps');
+
+        foreach ($data as $gname => $group) {
+            if (preg_match('/^create_group_(\d+)_(\d+)/', $gname, $matches)) {
+                $semesterid = $matches[1];
+                $courseid = $matches[2];
+
+                foreach ($group as $name => $value) {
+                    if (preg_match('/^create_days/', $name)) {
+                        $success = $fill($create_days, $semesterid,
+                            $courseid, $value);
+                    } else {
+                        $success = $fill($enroll_days, $semesterid,
+                            $courseid, $value);
+
+
+                        if (isset($create_days[$semesterid][$courseid])) {
+                            $valid =
+                                ($create_days[$semesterid][$courseid] >= $value);
+                        } else {
+                            $valid = true;
+                        }
+
+                        if ($success and empty($valid)) {
+                            $errors[$gname] = $_s('err_enrol_days');
+                        }
+                    }
+
+                    if (!$success) {
+                        $errors[$gname] = $_s('err_number');
+                    }
+                }
+            }
+        }
+
+        $this->create_days = $create_days;
+        $this->enroll_days = $enroll_days;
+
+        return $errors;
+    }
 }
