@@ -1,5 +1,7 @@
 <?php
 
+require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
+
 abstract class cps_event_handler {
 
     public static function cps_primary_change($params) {
@@ -14,7 +16,15 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_section_process($params) {
+    public static function cps_section_process($section) {
+        // Creation and Enrollment interjection
+
+        // Unwanted interjection
+        $unwanted = cps_unwant::get(array('sectionid' => $section->id));
+        if ($unwanted) {
+            $section->status = cps::PENDING;
+        }
+
         return true;
     }
 
