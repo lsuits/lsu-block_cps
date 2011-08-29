@@ -24,6 +24,9 @@ If you believe that you should be, please contact the Moodle administrator for
 immediate assistance.';
 $string['no_section'] = 'You do not own any section in the capable role. If you believe that you do, please contact the Moodle administrator for immediate assistance.';
 
+$string['err_enrol_days'] = 'Enrollments days cannot be >= Create Days.';
+$string['err_number'] = 'Days entered must be greater than 0.';
+
 // Setting names
 $string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
