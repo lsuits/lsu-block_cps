@@ -42,7 +42,10 @@ $string['default_create_days'] = 'Days before classes to create courses';
 $string['default_enroll_days'] = 'Days before classes to enroll students';
 
 $string['unwant'] = 'Unwanted';
+
 $string['material'] = 'Materials Course';
+$string['creating_materials'] = 'Create master courses';
+
 $string['split'] = 'Splliting';
 
 $string['shortname_desc'] = 'Split course creation uses these defaults.';
