@@ -125,6 +125,12 @@ abstract class cps_dao extends cps_base implements meta_information {
         });
     }
 
+    public static function delete($id) {
+        self::delete_meta(array(self::call('get_name').'id' => $id));
+
+        return parent::delete($id);
+    }
+
     public static function delete_all(array $params = array()) {
 
         $metatable = self::call('metatablename');
@@ -160,7 +166,7 @@ abstract class cps_dao extends cps_base implements meta_information {
 
         foreach ($to_delete as $record) {
             $query_params[self::call('get_name').'id'] = $record->id;
-            $DB->delete_records(self::metatablename, $query_params);
+            $DB->delete_records(self::call('metatablename'), $query_params);
         }
     }
 
