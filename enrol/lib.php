@@ -269,10 +269,16 @@ class enrol_cps_plugin extends enrol_plugin {
             $processed_teachers = cps_teacher::count($by_processed);
 
             if (!empty($processed_teachers)) {
-                $section->status = cps::PROCESSED;
-                $section->save();
+                // Full section
+                $section->semester = $semester;
+                $section->course = $course;
 
+                $section->status = cps::PROCESSED;
+
+                // Allow outside interaction
                 events_trigger('cps_section_process', $section);
+
+                $section->save();
             }
 
         } catch (Exception $e) {
