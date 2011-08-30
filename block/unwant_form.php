@@ -10,19 +10,11 @@ class unwant_form extends moodleform {
 
         $sections = $this->_customdata['sections'];
 
-        $courses = array();
-        foreach ($sections as $section) {
-            if (!isset($courses[$section->courseid])) {
-                $courses[$section->courseid] = array();
-            }
-
-            $courses[$section->courseid][$section->id] = $section;
-        }
+        $courses = cps_course::merge_sections($sections);
 
         unset($sections);
 
-        foreach ($courses as $courseid => $c_sections) {
-            $course = cps_course::get(array('id' => $courseid));
+        foreach ($courses as $courseid => $course) {
 
             $m->addElement('header', 'course_'.$courseid, $course);
 
@@ -41,7 +33,7 @@ class unwant_form extends moodleform {
 
             $m->addElement('static', 'all_none_'.$courseid, '', $clean_links);
 
-            foreach ($c_sections as $section) {
+            foreach ($course->sections as $section) {
                 $semester = $semesters[$section->semesterid];
                 $id = 'course'.$courseid.'_section'.$section->id;
 

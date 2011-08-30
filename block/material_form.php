@@ -10,14 +10,7 @@ class material_form extends moodleform {
 
         $sections = $this->_customdata['sections'];
 
-        $courses = array();
-        foreach ($sections as $section) {
-            $courseid = $section->courseid;
-
-            if (!isset($courses[$courseid])) {
-                $courses[$courseid] = $section->course();
-            }
-        }
+        $courses = cps_course::merge_sections($sections);
 
         $_s = cps::gen_str('block_cps');
 
@@ -28,7 +21,7 @@ class material_form extends moodleform {
                 'userid' => $USER->id, 'courseid' => $course->id
             ));
 
-            $checkbox =& $m->addElement('checkbox', 'material_'.$course->id, 
+            $checkbox =& $m->addElement('checkbox', 'material_'.$course->id,
                 '', $course);
 
             if ($material) {

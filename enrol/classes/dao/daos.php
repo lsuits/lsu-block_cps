@@ -39,6 +39,24 @@ class cps_course extends cps_dao {
         return cps_course::get_all(array('department' => $dept), true);
     }
 
+    public static function merge_sections(array $sections) {
+        $courses = array();
+
+        foreach ($sections as $section) {
+            $courseid = $section->courseid;
+
+            if (!isset($courses[$courseid])) {
+                $course = $section->course();
+                $course->sections = array();
+                $courses[$courseid] = $course;
+            }
+
+            $courses[$courseid]->sections[$section->id] = $section;
+        }
+
+        return $courses;
+    }
+
     public function sections($semester = null) {
         if (empty($this->sections)) {
             $by_params = array('courseid' => $this->id);
