@@ -48,10 +48,28 @@ abstract class cps_preferences extends cps_base {
     public static function name() {
         return get_string(self::call('get_name'), 'block_cps');
     }
+
+}
+
+interface immediate_application {
+    function apply();
 }
 
 // Begin Concrete classes
 class cps_unwant extends cps_preferences {
+    public function active_sections_for($teacher, $is_primary = true) {
+        $sections = $teacher->sections($is_primary);
+
+        $unwants = cps_unwant::get_all(array('userid' => $teacher->userid));
+
+        foreach ($unwants as $unwant) {
+            if (isset($sections[$unwant->sectionid])) {
+                unset($sections[$unwant->sectionid]);
+            }
+        }
+
+        return $sections;
+    }
 }
 
 class cps_material extends cps_preferences {
@@ -64,6 +82,11 @@ class cps_setting extends cps_preferences {
 }
 
 class cps_split extends cps_preferences {
+    public static function filter_valid($courses) {
+        return array_filter($courses, function ($course) {
+            return count($course->sections) > 1;
+        });
+    }
 }
 
 class cps_crosslist extends cps_preferences {
