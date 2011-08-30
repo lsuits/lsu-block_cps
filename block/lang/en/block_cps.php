@@ -24,8 +24,15 @@ If you believe that you should be, please contact the Moodle administrator for
 immediate assistance.';
 $string['no_section'] = 'You do not own any section in the capable role. If you believe that you do, please contact the Moodle administrator for immediate assistance.';
 
+$string['no_courses'] = 'You do have have any courses with at least two active
+sections.';
+
 $string['err_enrol_days'] = 'Enrollments days cannot be >= Create Days.';
 $string['err_number'] = 'Days entered must be greater than 0.';
+
+$string['err_select'] = 'The selected course does not exist.';
+$string['err_split_number'] = 'The selected course does not have two sections.';
+$string['err_select_one'] = 'You must select a course to continue.';
 
 // Setting names
 $string['default_settings'] = 'Default Settings';
@@ -47,6 +54,10 @@ $string['material'] = 'Materials Course';
 $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splliting';
+$string['split_select'] = 'Select a course to split';
+$string['split_how_many'] = 'How many separate course shells would you like to have created?';
+$string['next'] = 'Next';
+$string['back'] = 'Back';
 
 $string['shortname_desc'] = 'Split course creation uses these defaults.';
 $string['split_shortname'] = '{year} {name} {department} {course_number}
