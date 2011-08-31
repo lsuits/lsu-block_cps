@@ -45,6 +45,7 @@ $PAGE->set_url('/blocks/cps/split.php');
 $PAGE->set_pagetype('cps-split');
 
 $PAGE->requires->js('/lib/jquery.js');
+$PAGE->requires->js('/blocks/cps/js/split.js');
 
 $form = split_form::create($valid_courses);
 
