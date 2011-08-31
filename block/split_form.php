@@ -23,7 +23,7 @@ abstract class split_form extends moodleform {
     }
 
     public static function next_from($data, $courses) {
-        $form = self::create($courses, $data->next);
+        $form = self::create($courses, $data->next, $data);
 
         $data->current = $form->state;
         $data->prev = $form->prev;
@@ -34,12 +34,16 @@ abstract class split_form extends moodleform {
         return $form;
     }
 
-    public static function create($courses, $state = null) {
+    public static function create($courses, $state = null, $extra= null) {
         $state = $state ? $state : self::current();
 
         $class = 'split_form_' . $state;
 
         $data = $class::build($courses);
+
+        if ($extra) {
+            $data += get_object_vars($extra);
+        }
 
         return new $class(null, $data);
     }
@@ -116,7 +120,7 @@ class split_form_select extends split_form {
         $m->closeHeaderBefore('buttons');
     }
 
-    function valiadation($data) {
+    function validation($data) {
         $courses = $this->_customdata['courses'];
 
         $errors = array();
@@ -152,7 +156,7 @@ class split_form_shells extends split_form {
 
         $course = $this->_customdata['course'];
 
-        $semester = current($course->sections)->semester();
+        $semester = reset($course->sections)->semester();
 
         $display = $this->format_course($semester, $course);
 
@@ -172,9 +176,6 @@ class split_form_shells extends split_form {
         $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
         $m->closeHeaderBefore('buttons');
     }
-
-    function valiadation($data) {
-    }
 }
 
 class split_form_decide extends split_form {
@@ -189,6 +190,8 @@ class split_form_decide extends split_form {
     }
 
     function definition() {
+        global $USER;
+
         $m =& $this->_form;
 
         $course = $this->_customdata['course'];
@@ -199,10 +202,64 @@ class split_form_decide extends split_form {
 
         $m->addElement('header', 'selected_course', $display);
 
-        // TODO: add html
-        $m->addElement('html', '
-            Fill this in
+        // TODO: filter split ones
+        $before = array();
+
+        foreach ($course->sections as $section) {
+            $before[$section->id] = "Section $section->sec_number";
+        }
+
+        $previous_label =& $m->createElement('static', 'available_sections',
+            '', $this->_s('available_sections'));
+
+        $previous =& $m->createElement('select', 'before', '', $before);
+        $previous->setMultiple(true);
+
+        $previous_html =& $m->createElement('html', '
+            <div class="split_available_sections">
+                '.$previous_label->toHtml().'<br/>
+                '.$previous->toHtml().'
+            </div>
         ');
+
+        $move_left =& $m->createElement('button', 'move_left', $this->_s('move_left'));
+        $move_right =& $m->createElement('button', 'move_right', $this->_s('move_right'));
+
+        $button_html =& $m->createElement('html', '
+            <div class="split_movers">
+                '.$move_left->toHtml().'<br/>
+                '.$move_right->toHtml().'
+            </div>
+        ');
+
+        $shells = array();
+
+        foreach (range(1, $this->_customdata['shells']) as $groupingid) {
+            // TODO: fill in split ones
+            $shell_label =& $m->createElement('static', 'shell_' . $groupingid .
+                '_label', '', $display . ' Course ' . $groupingid);
+            $shell =& $m->createElement('select', 'shell_'.$groupingid, '', array());
+            $shell->setMultiple(true);
+
+            $link = html_writer::link('shell_'.$groupingid, $this->_s('customize_name'));
+
+            $radio =& $m->createElement('radio', 'selected_shell', '', '');
+
+            $for = ' for ' . fullname($USER);
+
+            $shells[] = $shell_label->toHtml() . $for . ' (' . $link . ')<br/>' .
+                $radio->toHtml() . $shell->toHtml();
+        }
+
+        $shell_html =& $m->createElement('html', '
+            <div class="split_bucket_sections">
+                '. implode('<br/>', $shells) . '
+            </div>
+        ');
+
+        $shifters = array($previous_html, $button_html, $shell_html);
+
+        $m->addGroup($shifters, 'shifters', '', array(' '), false);
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'selected', '');
@@ -211,6 +268,52 @@ class split_form_decide extends split_form {
 
         $buttons = $this->generate_buttons($m);
 
+        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
+        $m->closeHeaderBefore('buttons');
+    }
+}
+
+class split_form_confirm extends split_form {
+    var $state = self::CONFIRM;
+    var $next = self::FINISHED;
+    var $prev = self::DECIDE;
+
+    public static function build($courses) {
+        return split_form_decide::build($courses);
+    }
+
+    function definition() {
+        $m =& $this->_form;
+
+        $course = $this->_customdata['course'];
+
+        $semester = reset($course->sections)->semester();
+
+        $display = $this->format_course($semester, $course);
+
+        $m->addElement('header', 'selected_course', $display);
+
+        $m->addElement('static', 'chosen', $this->_s('chosen'), '');
+
+        // TODO map to bucket names
+        $sections = array_map(function ($section) {
+            return "<li>Seciton $section->sec_number</li>";
+        }, $course->sections);
+
+        $m->addElement('html', '
+            <ul class="split_review_sections">
+                '.implode('', $sections).'
+            </ul>
+        ');
+
+        // TODO: build bucket values
+
+        $m->addElement('hidden', 'shells', '');
+        $m->addElement('hidden', 'selected', '');
+
+        $this->generate_states($m);
+
+        $buttons = $this->generate_buttons($m);
         $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
         $m->closeHeaderBefore('buttons');
     }

@@ -59,6 +59,13 @@ $string['split_how_many'] = 'How many separate course shells would you like to h
 $string['next'] = 'Next';
 $string['back'] = 'Back';
 
+$string['chosen'] = 'Please review your selections.';
+$string['available_sections'] = 'Your Sections:';
+$string['move_left'] = '<';
+$string['move_right'] = '>';
+
+$string['customize_name'] = 'Customize name';
+
 $string['shortname_desc'] = 'Split course creation uses these defaults.';
 $string['split_shortname'] = '{year} {name} {department} {course_number}
 {shell_name} for {fullname}';

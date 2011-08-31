@@ -7,7 +7,7 @@ require_once 'split_form.php';
 require_login();
 
 if (!cps_split::is_enabled()) {
-    print_error('not_enabled', 'block_cps', '', cps_material::name());
+    print_error('not_enabled', 'block_cps', '', cps_split::name());
 }
 
 if (!cps_user::is_teacher()) {
@@ -42,6 +42,9 @@ $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/split.php');
+$PAGE->set_pagetype('cps-split');
+
+$PAGE->requires->js('/lib/jquery.js');
 
 $form = split_form::create($valid_courses);
 
