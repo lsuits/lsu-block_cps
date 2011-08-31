@@ -53,7 +53,7 @@ $string['unwant'] = 'Unwanted';
 $string['material'] = 'Materials Course';
 $string['creating_materials'] = 'Create master courses';
 
-$string['split'] = 'Splliting';
+$string['split'] = 'Splitting';
 $string['split_select'] = 'Select a course to split';
 $string['split_how_many'] = 'How many separate course shells would you like to have created?';
 $string['next'] = 'Next';
