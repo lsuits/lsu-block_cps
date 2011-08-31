@@ -215,6 +215,8 @@ class split_form_decide extends split_form {
         $previous =& $m->createElement('select', 'before', '', $before);
         $previous->setMultiple(true);
 
+        $m->addElement('html', '<div id="split_error"></div>');
+
         $previous_html =& $m->createElement('html', '
             <div class="split_available_sections">
                 '.$previous_label->toHtml().'<br/>
@@ -236,19 +238,32 @@ class split_form_decide extends split_form {
 
         foreach (range(1, $this->_customdata['shells']) as $groupingid) {
             // TODO: fill in split ones
+            $shell_name_value = 'Course ' . $groupingid;
             $shell_label =& $m->createElement('static', 'shell_' . $groupingid .
-                '_label', '', $display . ' Course ' . $groupingid);
+                '_label', '', $display . ' <span id="shell_name_'.$groupingid.'">'
+                . $shell_name_value . '</span>');
             $shell =& $m->createElement('select', 'shell_'.$groupingid, '', array());
             $shell->setMultiple(true);
 
+            $shell_name_params = array('style' => 'display: none;');
+            $shell_name =& $m->createElement('text', 'shell_name_' . $groupingid,
+                '', $shell_name_params);
+            $shell_name->setValue($shell_name_value);
+
             $link = html_writer::link('shell_'.$groupingid, $this->_s('customize_name'));
 
-            $radio =& $m->createElement('radio', 'selected_shell', '', '');
+            $radio_params = array('id' => 'selected_shell_'.$groupingid);
+            $radio =& $m->createElement('radio', 'selected_shell', '', '', $groupingid, $radio_params);
+
+            $radio->setChecked($groupingid == 1);
 
             $for = ' for ' . fullname($USER);
 
             $shells[] = $shell_label->toHtml() . $for . ' (' . $link . ')<br/>' .
-                $radio->toHtml() . $shell->toHtml();
+                $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
+
+            $m->addElement('hidden', 'shell_values_'.$groupingid, '');
+            $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
         }
 
         $shell_html =& $m->createElement('html', '
@@ -259,7 +274,7 @@ class split_form_decide extends split_form {
 
         $shifters = array($previous_html, $button_html, $shell_html);
 
-        $m->addGroup($shifters, 'shifters', '', array(' '), false);
+        $m->addGroup($shifters, 'shifters', '', array(' '), true);
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'selected', '');
@@ -279,15 +294,29 @@ class split_form_confirm extends split_form {
     var $prev = self::DECIDE;
 
     public static function build($courses) {
-        return split_form_decide::build($courses);
+        $data = split_form_decide::build($courses);
+
+        $extra = array();
+        foreach (range(1, $data['shells']) as $number) {
+            $namekey = 'shell_name_'.$number.'_hidden';
+            $valuekey = 'shell_values_'.$number;
+
+            $extra[$namekey] = required_param($namekey, PARAM_TEXT);
+            $extra[$valuekey] = required_param($valuekey, PARAM_RAW);
+        }
+
+        return $data + $extra;
     }
 
     function definition() {
+        global $USER;
         $m =& $this->_form;
 
         $course = $this->_customdata['course'];
 
-        $semester = reset($course->sections)->semester();
+        $sections = $course->sections;
+
+        $semester = reset($sections)->semester();
 
         $display = $this->format_course($semester, $course);
 
@@ -295,18 +324,25 @@ class split_form_confirm extends split_form {
 
         $m->addElement('static', 'chosen', $this->_s('chosen'), '');
 
-        // TODO map to bucket names
-        $sections = array_map(function ($section) {
-            return "<li>Seciton $section->sec_number</li>";
-        }, $course->sections);
+        foreach (range(1, $this->_customdata['shells']) as $number) {
+            $namekey = 'shell_name_' . $number . '_hidden';
+            $valuekey = 'shell_values_' . $number;
 
-        $m->addElement('html', '
-            <ul class="split_review_sections">
-                '.implode('', $sections).'
-            </ul>
-        ');
+            $name = $this->_customdata[$namekey];
 
-        // TODO: build bucket values
+            $values = $this->_customdata[$valuekey];
+
+            $html = '<ul class="split_review_sections">';
+            foreach (explode(',', $values) as $sectionid) {
+                $html .= '<li>Section ' . $sections[$sectionid]->sec_number . '</li>';
+            }
+            $html .= '</ul>';
+
+            $m->addElement('static', 'shell_label_' . $number, $display . ' ' .$name, $html);
+
+            $m->addElement('hidden', $namekey, '');
+            $m->addElement('hidden', $valuekey, '');
+        }
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'selected', '');
