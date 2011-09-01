@@ -83,6 +83,18 @@ abstract class split_form extends moodleform {
 
         return $n;
     }
+
+    protected function forge_split_all($course) {
+
+        $grouping = 1;
+        foreach ($course->sections as $section) {
+            $_POST['shell_name_'.$grouping.'_hidden'] = $section->sec_number;
+            $_POST['shell_values_'.$grouping] = $section->id;
+            $grouping ++;
+        }
+
+        $_POST['shells'] = count($course->sections);
+    }
 }
 
 class split_form_select extends split_form {
@@ -141,6 +153,12 @@ class split_form_select extends split_form {
             $errors['selected'] = $this->_s('err_split_number');
         }
 
+        if ($section_count == 2) {
+            $this->next = self::CONFIRM;
+
+            $this->forge_split_all($course);
+        }
+
         $this->next = cps_split::exists($course) ? self::UPDATE : $this->next;
 
         return $errors;
@@ -182,6 +200,18 @@ class split_form_shells extends split_form {
 
         $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
         $m->closeHeaderBefore('buttons');
+    }
+
+    function validation($data) {
+        $course = $this->_customdata['course'];
+
+        if ($data['shells'] == count($course->sections)) {
+            $this->next = self::CONFIRM;
+
+            $this->forge_split_all($course);
+        }
+
+        return true;
     }
 }
 
@@ -328,13 +358,13 @@ class split_form_decide extends split_form {
                 $shell_name_value = 'Course ' . $groupingid;
                 $shell_values = '';
 
-                $shell_sections = array();
+                $shell_options = array();
             }
 
             $shell_label =& $m->createElement('static', 'shell_' . $groupingid .
                 '_label', '', $display . ' <span id="shell_name_'.$groupingid.'">'
                 . $shell_name_value . '</span>');
-            $shell =& $m->createElement('select', 'shell_'.$groupingid, '', $shell_sections);
+            $shell =& $m->createElement('select', 'shell_'.$groupingid, '', $shell_options);
             $shell->setMultiple(true);
 
             $shell_name_params = array('style' => 'display: none;');
@@ -457,11 +487,11 @@ class split_form_confirm extends split_form {
 
             $m->addElement('static', 'shell_label_' . $number, $display . ' ' .$name, $html);
 
-            $m->addElement('hidden', $namekey, '');
-            $m->addElement('hidden', $valuekey, '');
+            $m->addElement('hidden', $namekey, $this->_customdata[$namekey]);
+            $m->addElement('hidden', $valuekey, $this->_customdata[$valuekey]);
         }
 
-        $m->addElement('hidden', 'shells', '');
+        $m->addElement('hidden', 'shells', $this->_customdata['shells']);
         $m->addElement('hidden', 'selected', '');
 
         $this->generate_states($m);
@@ -469,6 +499,20 @@ class split_form_confirm extends split_form {
         $buttons = $this->generate_buttons($m);
         $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
         $m->closeHeaderBefore('buttons');
+    }
+
+    function validation($data) {
+        $course = $this->_customdata['course'];
+
+        $section_count = count($course->sections);
+
+        if ($section_count == 2) {
+            $this->prev = self::SELECT;
+        } else if ($this->_customdata['shells'] == $section_count) {
+            $this->prev = self::SHELLS;
+        }
+
+        return true;
     }
 }
 
@@ -504,7 +548,6 @@ class split_form_finish {
                 $split_params = array(
                     'userid' => $USER->id,
                     'sectionid' => $sectionid,
-                    'groupingid' => $grouping
                 );
 
                 if (!$split = cps_split::get($split_params)) {
@@ -512,6 +555,7 @@ class split_form_finish {
                     $split->fill_params($split_params);
                 }
 
+                $split->groupingid = $grouping;
                 $split->shell_name = $shell_name;
                 $split->save();
 

@@ -54,7 +54,7 @@ if ($form->is_cancelled()) {
 } else if ($data = $form->get_data()) {
 
     if (isset($data->back)) {
-        $form->next = $data->prev;
+        $form->next = $form->prev;
 
     } else if ($form->next == split_form::FINISHED) {
         $form = new split_form_finish();
