@@ -32,7 +32,7 @@ abstract class cps_preferences extends cps_base {
     }
 
     public static function get_select($filters) {
-        return self::get_select_internal($params, $fields);
+        return self::get_select_internal($filters);
     }
 
     public static function delete_all(array $params = array()) {
@@ -85,6 +85,47 @@ class cps_split extends cps_preferences {
     public static function filter_valid($courses) {
         return array_filter($courses, function ($course) {
             return count($course->sections) > 1;
+        });
+    }
+
+    public static function in_course($course) {
+        global $USER;
+
+        if (empty($course->sections)) {
+            $course->sections = array();
+
+            $teacher = cps_teacher::get(array('id' => $USER->id));
+
+            $sections = cps_unwant::active_sections_for($teacher, true);
+
+            foreach ($sections as $section) {
+                $course->sections[$section->id] = $section;
+            }
+        }
+
+        $course_section_ids = implode(',', array_keys($course->sections));
+
+        $split_filters = array(
+            'userid' => $USER->id,
+            'sectionid IN (' . $course_section_ids . ')'
+        );
+
+        $splits = self::get_select($split_filters);
+
+        return $splits;
+    }
+
+    public static function exists($course) {
+        return self::in_course($course) ? true : false;
+    }
+
+    public static function groups($splits) {
+        if (empty($splits)) {
+            return 0;
+        }
+
+        return array_reduce($splits, function ($in, $split) {
+            return $split->groupingid > $in ? $split->groupingid : $in;
         });
     }
 }
