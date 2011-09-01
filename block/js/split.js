@@ -1,6 +1,6 @@
 (function() {
   $(document).ready(function() {
-    var available, bucket, changed, move_selected, selected;
+    var available, bucket, changed, move_selected, move_to_available, move_to_bucket, selected;
     $("input[name^='shell_name_']").keyup(function() {
       var id, value;
       value = $(this).val();
@@ -29,28 +29,30 @@
     bucket = function() {
       return $("select[name^='shell_" + selected() + "']");
     };
-    move_selected = function(from, to, post) {
-      return function() {
-        var children;
-        children = $(from).children(":selected");
-        $(to).append(children);
-        return post();
+    changed = function() {
+      var compressed, id, toValue, values;
+      id = selected();
+      values = $("input[name='shell_values_" + id + "']");
+      toValue = function(i, child) {
+        return $(child).val();
       };
+      compressed = $(bucket()).children().map(toValue);
+      return values.val($(compressed).toArray().join(","));
     };
-    changed = function(select) {
-      return function() {
-        var compressed, id, toValue, values;
-        id = selected();
-        values = $("input[name='shell_values_" + id + "']");
-        toValue = function(i, child) {
-          return $(child).val();
-        };
-        compressed = $(select).children().map(toValue);
-        return values.val($(compressed).toArray().join(","));
-      };
+    move_selected = function(from, to) {
+      var children;
+      children = $(from).children(":selected");
+      $(to).append(children);
+      return changed();
     };
-    $("input[name='move_right']").click(move_selected(available, bucket(), changed(bucket())));
-    $("input[name='move_left']").click(move_selected(bucket(), available, changed(bucket())));
+    move_to_bucket = function() {
+      return move_selected(available, bucket());
+    };
+    move_to_available = function() {
+      return move_selected(bucket(), available);
+    };
+    $("input[name='move_right']").click(move_to_bucket);
+    $("input[name='move_left']").click(move_to_available);
     return $("#id_save").click(function() {
       var value;
       if (available && $(available).children().length > 0) {

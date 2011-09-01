@@ -31,25 +31,29 @@ $(document).ready () ->
     bucket = () ->
         $("select[name^='shell_"+ selected() + "']")
 
-    move_selected = (from, to, post) ->
-        () ->
-            children = $(from).children(":selected")
-            $(to).append children
-            post()
+    changed = () ->
+        id = selected()
+        values = $("input[name='shell_values_"+id+"']")
 
-    changed = (select) ->
-        () ->
-            id = selected()
-            values = $("input[name='shell_values_"+id+"']")
+        toValue = (i, child) -> $(child).val()
+        compressed = $(bucket()).children().map toValue
 
-            toValue = (i, child) -> $(child).val()
-            compressed = $(select).children().map toValue
+        values.val $(compressed).toArray().join ","
 
-            values.val $(compressed).toArray().join ","
+    move_selected = (from, to) ->
+        children = $(from).children(":selected")
+        $(to).append children
+        changed()
 
-    $("input[name='move_right']").click move_selected available, bucket(), changed(bucket())
+    move_to_bucket = () ->
+        move_selected available, bucket()
 
-    $("input[name='move_left']").click move_selected bucket(), available, changed(bucket())
+    move_to_available = () ->
+        move_selected bucket(), available
+
+    $("input[name='move_right']").click move_to_bucket
+
+    $("input[name='move_left']").click move_to_available
 
     $("#id_save").click () ->
         if available and $(available).children().length > 0
