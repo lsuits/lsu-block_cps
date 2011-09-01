@@ -25,6 +25,8 @@ abstract class split_form extends moodleform {
     public static function next_from($next, $data, $courses) {
         $form = self::create($courses, $next, $data);
 
+        self::navs($form->state);
+
         $data->current = $form->state;
         $data->prev = $form->prev;
         $data->next = $form->next;
@@ -48,7 +50,12 @@ abstract class split_form extends moodleform {
         return new $class(null, $data);
     }
 
-    public function _s($key, $a = null) {
+    public static function navs($state) {
+        global $PAGE;
+        $PAGE->navbar->add(split_form::_s('split_'.$state));
+    }
+
+    public static function _s($key, $a = null) {
         return get_string($key, 'block_cps', $a);
     }
 

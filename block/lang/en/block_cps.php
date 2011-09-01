@@ -54,7 +54,13 @@ $string['material'] = 'Materials Course';
 $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splitting';
-$string['split_select'] = 'Select a course to split';
+
+$string['split_select'] = 'Select a course';
+$string['split_shells'] = 'Course Shells';
+$string['split_decide'] = 'Separate Sections';
+$string['split_confirm'] = 'Review';
+$string['split_update'] = 'Update';
+
 $string['split_how_many'] = 'How many separate course shells would you like to have created?';
 $string['next'] = 'Next';
 $string['back'] = 'Back';
