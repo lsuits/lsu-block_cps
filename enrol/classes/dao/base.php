@@ -68,6 +68,14 @@ abstract class cps_base {
         return $DB->count_records(self::call('tablename'), $params);
     }
 
+    public static function count_select($filters = array()) {
+        global $DB;
+
+        $where = is_array($filters) ? implode(' AND ', $filters) : $filters;
+
+        return $DB->count_records_select(self::call('tablename'), $where);
+    }
+
     public static function update(array $fields, array $params = array()) {
         global $DB;
 
