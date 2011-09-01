@@ -59,10 +59,19 @@ $string['split_how_many'] = 'How many separate course shells would you like to h
 $string['next'] = 'Next';
 $string['back'] = 'Back';
 
+$string['split_processed'] = 'Split Courses Processed';
+$string['split_thank_you'] = 'Your split selections have been processed. Conintue
+to head back to the split home screen.';
+
 $string['chosen'] = 'Please review your selections.';
 $string['available_sections'] = 'Your Sections:';
 $string['move_left'] = '<';
 $string['move_right'] = '>';
+$string['split_option_taken'] = 'Split option taken';
+$string['split_updating'] = 'Updating your split selections';
+$string['split_undo'] = 'Undo these courses?';
+$string['split_reshell'] = 'Reassign the number of shells?';
+$string['split_rearrange'] = 'Rearrange sections?';
 
 $string['customize_name'] = 'Customize name';
 
