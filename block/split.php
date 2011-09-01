@@ -52,20 +52,20 @@ $form = split_form::create($valid_courses);
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
 } else if ($data = $form->get_data()) {
+
     if (isset($data->back)) {
-        $data->next = $data->prev;
+        $form->next = $data->prev;
 
-        $form = split_form::next_from($data, $valid_courses);
-    } else {
+    } else if ($form->next == split_form::FINISHED) {
+        $form = new split_form_finish();
 
-        switch ($data->current) {
-            case split_form::UPDATE:
-            case split_form::DECIDE:
-            default:
-                $form = split_form::next_from($data, $valid_courses);
-        }
+        $form->process($data, $valid_courses);
 
+        $form->display();
+        die();
     }
+
+    $form = split_form::next_from($form->next, $data, $valid_courses);
 }
 
 echo $OUTPUT->header();
