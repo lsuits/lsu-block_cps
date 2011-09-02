@@ -87,6 +87,7 @@ $string['split_shortname'] = '{year} {name} {department} {course_number}
 
 $string['crosslist'] = 'Cross-listing';
 $string['crosslist_shortname'] = '{year} {name} {shell_name} for {fullname}';
+$string['crosslist_select'] = 'Select Courses to be Cross-listed';
 
 $string['team_request'] = 'Team Teach Requests';
 $string['team_request_shortname'] = '{year} {name} {shell_name} for {fullnames}';
