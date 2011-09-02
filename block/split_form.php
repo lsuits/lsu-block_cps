@@ -1,88 +1,15 @@
 <?php
 
-require_once $CFG->libdir . '/formslib.php';
+require_once $CFG->dirroot . '/blocks/cps/formslib.php';
 
-abstract class split_form extends moodleform {
-    var $state;
-    var $next;
-    var $prev;
-
-    const SELECT = 'select';
-    const SHELLS = 'shells';
-    const DECIDE = 'decide';
-    const CONFIRM = 'confirm';
-    const FINISHED = 'finish';
-    const UPDATE = 'update';
-
-    public static function current() {
-        return optional_param('current', self::SELECT, PARAM_ALPHA);
-    }
-
-    public static function next() {
-        return optional_param('next', self::SELECT, PARAM_ALPHA);
-    }
+abstract class split_form extends cps_form {
 
     public static function next_from($next, $data, $courses) {
-        $form = self::create($courses, $next, $data);
-
-        self::navs($form->state);
-
-        $data->current = $form->state;
-        $data->prev = $form->prev;
-        $data->next = $form->next;
-
-        $form->set_data($data);
-
-        return $form;
+        return parent::next_from('split', $next, $data, $courses);
     }
 
     public static function create($courses, $state = null, $extra= null) {
-        $state = $state ? $state : self::current();
-
-        $class = 'split_form_' . $state;
-
-        $data = $class::build($courses);
-
-        if ($extra) {
-            $data += get_object_vars($extra);
-        }
-
-        return new $class(null, $data);
-    }
-
-    public static function navs($state) {
-        global $PAGE;
-        $PAGE->navbar->add(split_form::_s('split_'.$state));
-    }
-
-    public static function _s($key, $a = null) {
-        return get_string($key, 'block_cps', $a);
-    }
-
-    protected function generate_states(&$m) {
-        $m->addElement('hidden', 'current', $this->state);
-
-        if (!empty($this->next)) {
-            $m->addElement('hidden', 'next', $this->next);
-        }
-
-        if (!empty($this->prev)) {
-            $m->addElement('hidden', 'prev', $this->prev);
-        }
-    }
-
-    protected function generate_buttons(&$m) {
-        $buttons = array();
-
-        if (!empty($this->prev)) {
-            $buttons[] = $m->createElement('submit', 'back', $this->_s('back'));
-        }
-
-        $buttons[] = $m->createElement('cancel');
-
-        $buttons[] = $m->createElement('submit', 'save', $this->_s('next'));
-
-        return $buttons;
+        return parent::create('split', $courses, $state, $extra);
     }
 
     protected function format_course($semester, $course) {
@@ -105,7 +32,7 @@ abstract class split_form extends moodleform {
 }
 
 class split_form_select extends split_form {
-    var $state = self::SELECT;
+    var $current = self::SELECT;
     var $next = self::SHELLS;
 
     public static function build($courses) {
@@ -136,12 +63,7 @@ class split_form_select extends split_form {
 
         $m->addRule('selected', $this->_s('err_select_one'), 'required', null, 'client');
 
-        $this->generate_states($m);
-
-        $buttons = $this->generate_buttons($m);
-
-        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
-        $m->closeHeaderBefore('buttons');
+        $this->generate_states_and_buttons();
     }
 
     function validation($data) {
@@ -173,7 +95,7 @@ class split_form_select extends split_form {
 }
 
 class split_form_shells extends split_form {
-    var $state = self::SHELLS;
+    var $current = self::SHELLS;
     var $next = self::DECIDE;
     var $prev = self::SELECT;
 
@@ -201,12 +123,7 @@ class split_form_shells extends split_form {
 
         $m->addElement('hidden', 'selected', '');
 
-        $this->generate_states($m);
-
-        $buttons = $this->generate_buttons($m);
-
-        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
-        $m->closeHeaderBefore('buttons');
+        $this->generate_states_and_buttons();
     }
 
     function validation($data) {
@@ -223,7 +140,7 @@ class split_form_shells extends split_form {
 }
 
 class split_form_update extends split_form {
-    var $state = self::UPDATE;
+    var $current = self::UPDATE;
     var $next = self::DECIDE;
     var $prev = self::SELECT;
 
@@ -294,11 +211,7 @@ class split_form_update extends split_form {
 
         $m->addElement('hidden', 'selected', '');
 
-        $this->generate_states($m);
-
-        $buttons = $this->generate_buttons($m);
-
-        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
+        $this->generate_states_and_buttons();
     }
 
     function validation($data) {
@@ -311,7 +224,7 @@ class split_form_update extends split_form {
 }
 
 class split_form_decide extends split_form {
-    var $state = self::DECIDE;
+    var $current = self::DECIDE;
     var $next = self::CONFIRM;
     var $prev = self::SHELLS;
 
@@ -433,17 +346,12 @@ class split_form_decide extends split_form {
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'selected', '');
 
-        $this->generate_states($m);
-
-        $buttons = $this->generate_buttons($m);
-
-        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
-        $m->closeHeaderBefore('buttons');
+        $this->generate_states_and_buttons();
     }
 }
 
 class split_form_confirm extends split_form {
-    var $state = self::CONFIRM;
+    var $current = self::CONFIRM;
     var $next = self::FINISHED;
     var $prev = self::DECIDE;
 
@@ -501,11 +409,7 @@ class split_form_confirm extends split_form {
         $m->addElement('hidden', 'shells', $this->_customdata['shells']);
         $m->addElement('hidden', 'selected', '');
 
-        $this->generate_states($m);
-
-        $buttons = $this->generate_buttons($m);
-        $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
-        $m->closeHeaderBefore('buttons');
+        $this->generate_states_and_buttons();
     }
 
     function validation($data) {
@@ -523,7 +427,7 @@ class split_form_confirm extends split_form {
     }
 }
 
-class split_form_finish {
+class split_form_finish implements finalized_form {
 
     function process($data, $valid_courses) {
         $course = $valid_courses[$data->selected];
