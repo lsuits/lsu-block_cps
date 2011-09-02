@@ -34,6 +34,10 @@ $string['err_select'] = 'The selected course does not exist.';
 $string['err_split_number'] = 'The selected course does not have two sections.';
 $string['err_select_one'] = 'You must select a course to continue.';
 
+$string['err_same_semester'] = 'You must select courses in the same semester. 
+You first selected {$a->year} {$a->name}';
+$string['err_not_enough'] = 'You must select at least two courses.';
+
 // Setting names
 $string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
@@ -87,7 +91,10 @@ $string['split_shortname'] = '{year} {name} {department} {course_number}
 
 $string['crosslist'] = 'Cross-listing';
 $string['crosslist_shortname'] = '{year} {name} {shell_name} for {fullname}';
+$string['crosslist_you_have'] = 'You have selected to cross-list';
+
 $string['crosslist_select'] = 'Select Courses to be Cross-listed';
+$string['crosslist_shells'] = 'Course Shells';
 
 $string['team_request'] = 'Team Teach Requests';
 $string['team_request_shortname'] = '{year} {name} {shell_name} for {fullnames}';

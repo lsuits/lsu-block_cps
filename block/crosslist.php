@@ -44,10 +44,30 @@ $PAGE->requires->js('/lib/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/split.js');
 */
 
+$form = crosslist_form::create($courses);
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/my'));
+
+} else if ($data = $form->get_data()) {
+
+    if (isset($data->back)) {
+        $form->next = $form->prev;
+
+    } else if ($form->next == crosslist_form::FINISHED) {
+        $form = new crosslist_form_finish();
+
+        $form->preocess($data, $courses);
+
+        $form->display();
+        die();
+    }
+
+    $form = crosslist_form::next_from($form->next, $data, $courses);
+}
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
-
-$form = new crosslist_form_select(null, array('courses' => $courses));
 
 $form->display();
 
