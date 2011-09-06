@@ -95,6 +95,7 @@ $string['crosslist_you_have'] = 'You have selected to cross-list';
 
 $string['crosslist_select'] = 'Select Courses to be Cross-listed';
 $string['crosslist_shells'] = 'Course Shells';
+$string['crosslist_decide'] = 'Separate Sections';
 
 $string['team_request'] = 'Team Teach Requests';
 $string['team_request_shortname'] = '{year} {name} {shell_name} for {fullnames}';
