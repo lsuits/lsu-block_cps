@@ -38,11 +38,9 @@ $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/split.php');
 $PAGE->set_pagetype('cps-crosslist');
 
-/*
- * I know this page will need jquery
 $PAGE->requires->js('/lib/jquery.js');
-$PAGE->requires->js('/blocks/cps/js/split.js');
-*/
+$PAGE->requires->js('/blocks/cps/js/selection.js');
+$PAGE->requires->js('/blocks/cps/js/crosslist.js');
 
 $form = crosslist_form::create($courses);
 
