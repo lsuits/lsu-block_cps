@@ -131,7 +131,7 @@ class cps_split extends cps_preferences {
 }
 
 class cps_crosslist extends cps_preferences {
-    public static function in_courses($courses) {
+    public static function in_courses(array $courses) {
         global $USER;
 
         // Flatten sections
@@ -149,6 +149,22 @@ class cps_crosslist extends cps_preferences {
         $crosslists = self::get_select($crosslist_params);
 
         return $crosslists;
+    }
+
+    public static function exists($course) {
+        $courses = is_array($course) ? $course : array($course);
+
+        return self::in_courses($courses) ? true : false;
+    }
+
+    public static function groups($crosslists) {
+        if (empty($crosslists)) {
+            return 0;
+        }
+
+        return array_reduce($crosslists, function ($in, $crosslist) {
+            return $crosslist->groupingid > $in ? $crosslist->groupingid : $in;
+        });
     }
 }
 
