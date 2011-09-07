@@ -280,6 +280,26 @@ class crosslist_form_decide extends crosslist_form {
 
         $this->generate_states_and_buttons();
     }
+
+    function validation($data) {
+
+        $shells = range(1, $data['shells']);
+
+        $reduce_values = function ($in, $number) use ($data) {
+            $values = explode(',', $data['shell_values_'.$number]);
+
+            return $in and !empty($values) and count($values) >= 2;
+        };
+
+        $is_valid = array_reduce($shells, $reduce_values, true);
+
+        $errors = array();
+        if (!$is_valid) {
+            $errors['shifters'] = self::_s('err_one_shell');
+        }
+
+        return $errors;
+    }
 }
 
 class crosslist_form_confirm extends crosslist_form {
@@ -361,5 +381,71 @@ class crosslist_form_confirm extends crosslist_form {
         }
 
         $this->generate_states_and_buttons();
+    }
+}
+
+class crosslist_form_finish implements finalized_form {
+    function process($data, $courses) {
+        $extra = crosslist_form_shells::build($courses);
+
+        $current_crosslists = cps_crosslist::in_courses($extra['selected_courses']);
+
+        $this->save_or_update($data, $current_crosslists);
+    }
+
+    function undo($crosslists) {
+        foreach ($crosslists as $crosslist) {
+            $crosslist->delete($crosslist->id);
+        }
+    }
+
+    function save_or_update($data, $current_crosslists) {
+        global $USER;
+
+        foreach (range(1, $data->shells) as $grouping) {
+            $shell_name = $data->{'shell_name_'.$grouping.'_hidden'};
+
+            $shell_values = $data->{'shell_values_'.$grouping};
+
+            foreach (explode(',', $shell_values) as $sectionid) {
+                $params = array(
+                    'userid' => $USER->id,
+                    'sectionid' => $sectionid
+                );
+
+                if (!$crosslist = cps_crosslist::get($params)) {
+                    $crosslist = new cps_crosslist();
+                    $crosslist->fill_params($params);
+                }
+
+                $crosslist->groupingid = $grouping;
+                $crosslist->shell_name = $shell_name;
+                $crosslist->save();
+
+                unset ($current_crosslists[$crosslist->id]);
+            }
+        }
+
+        $this->undo($current_crosslists);
+    }
+
+    function display() {
+        global $OUTPUT;
+
+        $_s = cps::gen_str('block_cps');
+
+        $heading = $_s('crosslist_processed');
+
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading($heading);
+
+        echo $OUTPUT->box_start();
+
+        echo $OUTPUT->notification($_s('crosslist_thank_you'), 'notifysuccess');
+        echo $OUTPUT->continue_button(new moodle_url('/blocks/cps/crosslist.php'));
+
+        echo $OUTPUT->box_end();
+
+        echo $OUTPUT->footer();
     }
 }
