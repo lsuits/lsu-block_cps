@@ -42,7 +42,7 @@ class split_form_select extends split_form {
     function definition() {
         $m =& $this->_form;
 
-        $m->addElement('header', 'select', $this->_s('split_select'));
+        $m->addElement('header', 'select', self::_s('split_select'));
 
         $semesters = cps_semester::get_all();
 
@@ -55,13 +55,13 @@ class split_form_select extends split_form {
             $display = ' ' . $this->format_course($semester, $course);
 
             if (cps_split::exists($course)) {
-                $display .= ' (' . $this->_s('split_option_taken') . ')';
+                $display .= ' (' . self::_s('split_option_taken') . ')';
             }
 
             $m->addElement('radio', 'selected', '', $display, $course->id);
         }
 
-        $m->addRule('selected', $this->_s('err_select_one'), 'required', null, 'client');
+        $m->addRule('selected', self::_s('err_select_one'), 'required', null, 'client');
 
         $this->generate_states_and_buttons();
     }
@@ -71,7 +71,7 @@ class split_form_select extends split_form {
 
         $errors = array();
         if (empty($courses[$data['selected']])) {
-            $errors['selected'] = $this->_s('err_select');
+            $errors['selected'] = self::_s('err_select');
         }
 
         $course = $courses[$data['selected']];
@@ -79,7 +79,7 @@ class split_form_select extends split_form {
         $section_count = count($course->sections);
 
         if ($section_count < 2) {
-            $errors['selected'] = $this->_s('err_split_number');
+            $errors['selected'] = self::_s('err_split_number');
         }
 
         if ($section_count == 2) {
@@ -119,7 +119,7 @@ class split_form_shells extends split_form {
         $seqed = range(1, count($course->sections) - 1);
         $options = array_combine($seqed, $seqed);
 
-        $m->addElement('select', 'shells', $this->_s('split_how_many') ,$options);
+        $m->addElement('select', 'shells', self::_s('split_how_many') ,$options);
 
         $m->addElement('hidden', 'selected', '');
 
@@ -139,14 +139,10 @@ class split_form_shells extends split_form {
     }
 }
 
-class split_form_update extends split_form {
+class split_form_update extends split_form implements updating_form {
     var $current = self::UPDATE;
     var $next = self::DECIDE;
     var $prev = self::SELECT;
-
-    const UNDO = 0;
-    const RESHELL = 1;
-    const REARRANGE = 2;
 
     public static function build($courses) {
         return split_form_shells::build($courses);
@@ -167,7 +163,7 @@ class split_form_update extends split_form {
 
         $m->addElement('hidden', 'shells', $shells);
 
-        $m->addElement('header', 'selected_course', $this->_s('split_updating'));
+        $m->addElement('header', 'selected_course', self::_s('split_updating'));
 
         $html = '<div class="previous_splits">
             <ul>';
@@ -193,19 +189,19 @@ class split_form_update extends split_form {
 
         $m->addElement('html', $html);
 
-        $m->addElement('radio', 'split_option', '', $this->_s('split_undo'), self::UNDO);
+        $m->addElement('radio', 'split_option', '', self::_s('split_undo'), self::UNDO);
 
         if (!empty($sections)) {
             $orphaned = range(2, count($sections) + $shells);
             $options = array_combine($orphaned, $orphaned);
 
-            $m->addElement('radio', 'split_option', '', $this->_s('split_reshell'), self::RESHELL);
-            $m->addElement('select', 'reshelled', $this->_s('split_how_many'), $options);
+            $m->addElement('radio', 'split_option', '', self::_s('split_reshell'), self::RESHELL);
+            $m->addElement('select', 'reshelled', self::_s('split_how_many'), $options);
 
             $m->disabledIf('reshelled', 'split_option', 'neq', self::RESHELL);
         }
 
-        $m->addElement('radio', 'split_option', '', $this->_s('split_rearrange'), self::REARRANGE);
+        $m->addElement('radio', 'split_option', '', self::_s('split_rearrange'), self::REARRANGE);
 
         $m->setDefault('split_option', self::REARRANGE);
 
@@ -292,7 +288,7 @@ class split_form_decide extends split_form {
                 '', $shell_name_params);
             $shell_name->setValue($shell_name_value);
 
-            $link = html_writer::link('shell_'.$groupingid, $this->_s('customize_name'));
+            $link = html_writer::link('shell_'.$groupingid, self::_s('customize_name'));
 
             $radio_params = array('id' => 'selected_shell_'.$groupingid);
             $radio =& $m->createElement('radio', 'selected_shell', '', '', $groupingid, $radio_params);
@@ -309,7 +305,7 @@ class split_form_decide extends split_form {
         }
 
         $previous_label =& $m->createElement('static', 'available_sections',
-            '', $this->_s('available_sections'));
+            '', self::_s('available_sections'));
 
         $previous =& $m->createElement('select', 'before', '', $before);
         $previous->setMultiple(true);
@@ -323,8 +319,8 @@ class split_form_decide extends split_form {
             </div>
         ');
 
-        $move_left =& $m->createElement('button', 'move_left', $this->_s('move_left'));
-        $move_right =& $m->createElement('button', 'move_right', $this->_s('move_right'));
+        $move_left =& $m->createElement('button', 'move_left', self::_s('move_left'));
+        $move_right =& $m->createElement('button', 'move_right', self::_s('move_right'));
 
         $button_html =& $m->createElement('html', '
             <div class="split_movers">
@@ -384,7 +380,7 @@ class split_form_confirm extends split_form {
 
         $m->addElement('header', 'selected_course', $display);
 
-        $m->addElement('static', 'chosen', $this->_s('chosen'), '');
+        $m->addElement('static', 'chosen', self::_s('chosen'), '');
 
         foreach (range(1, $this->_customdata['shells']) as $number) {
             $namekey = 'shell_name_' . $number . '_hidden';

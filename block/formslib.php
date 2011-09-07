@@ -17,6 +17,12 @@ interface finalized_form {
     function display();
 }
 
+interface updating_form {
+    const UNDO = 0;
+    const RESHELL = 1;
+    const REARRANGE = 2;
+}
+
 abstract class cps_form extends moodleform implements generic_states {
     var $current;
     var $next;
