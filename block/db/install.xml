@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/rss_client/db" VERSION="20110824" COMMENT="XMLDB file for the CPS setting block."
+<XMLDB PATH="blocks/rss_client/db" VERSION="20110907" COMMENT="XMLDB file for the CPS setting block."
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -89,9 +89,9 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="sectionid"/>
-        <FIELD NAME="sectionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="sectionid" NEXT="shell_name"/>
-        <FIELD NAME="shell_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="idnumber"/>
+        <FIELD NAME="sectionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="userid" NEXT="groupingid"/>
+        <FIELD NAME="groupingid" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="sectionid" NEXT="shell_name"/>
+        <FIELD NAME="shell_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="groupingid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
