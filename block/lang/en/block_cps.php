@@ -95,10 +95,17 @@ $string['crosslist'] = 'Cross-listing';
 $string['crosslist_shortname'] = '{year} {name} {shell_name} for {fullname}';
 $string['crosslist_you_have'] = 'You have selected to cross-list';
 
+$string['crosslist_option_taken'] = 'Cross-list option taken';
+$string['crosslist_no_option'] = '(No option taken)';
+
+$string['crosslist_updating'] = 'Updating your cross-list selections';
+$string['crosslisted'] = 'is cross-listed into <strong>{$a->shell_name}</strong>';
+
 $string['crosslist_select'] = 'Select Courses to be Cross-listed';
 $string['crosslist_shells'] = 'Course Shells';
 $string['crosslist_decide'] = 'Separate Sections';
 $string['crosslist_confirm'] = 'Review';
+$string['crosslist_update'] = 'Update';
 
 $string['crosslist_processed'] = 'Cross-list Courses Processed';
 

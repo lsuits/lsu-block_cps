@@ -44,6 +44,10 @@ class crosslist_form_select extends crosslist_form {
 
             $display = "$semester->year $semester->name $course->department $course->cou_number";
 
+            if (cps_crosslist::exists($course)) {
+                $display .= ' (' . self::_s('crosslist_option_taken') . ')';
+            }
+
             $m->addElement('checkbox', 'selected_' . $course->id, '', $display);
         }
 
@@ -64,15 +68,18 @@ class crosslist_form_select extends crosslist_form {
         // Must select from same semester
         $selected = 0;
         $selected_semester = null;
+        $updating = false;
         foreach ($data as $key => $value) {
             $is_a_match = preg_match('/^selected_(\d+)/', $key, $matches);
 
             if ($is_a_match) {
                 $selected ++;
 
-                $courseid = $matches[1];
+                $course = $courses[$matches[1]];
 
-                $current_semester = reset($courses[$courseid]->sections)->semesterid;
+                $updating = cps_crosslist::exists($course);
+
+                $current_semester = reset($course->sections)->semesterid;
 
                 if (empty($selected_semester)) {
                     $selected_semester = $current_semester;
@@ -88,7 +95,110 @@ class crosslist_form_select extends crosslist_form {
             $errors['selected_label'] = self::_s('err_not_enough');
         }
 
+        if (empty($errors) and $updating) {
+            $this->next = self::UPDATE;
+        }
+
         return $errors;
+    }
+}
+
+class crosslist_form_update extends crosslist_form implements updating_form {
+    var $current = self::UPDATE;
+    var $next = self::DECIDE;
+    var $prev = self::SELECT;
+
+    public static function build($courses) {
+        return crosslist_form_shells::build($courses);
+    }
+
+    public function definition() {
+        $m =& $this->_form;
+
+        $courses = $this->_customdata['selected_courses'];
+
+        $semester = $this->_customdata['semester'];
+
+        $current_crosslists = cps_crosslist::in_courses($courses);
+
+        $shells = cps_crosslist::groups($current_crosslists);
+
+        $cr_lookup = array();
+        foreach ($current_crosslists as $crosslist) {
+            $cr_lookup[$crosslist->sectionid] = $crosslist->id;
+        }
+
+        $grouping_lookup = array();
+
+        $m->addElement('header', 'selected_courses', self::_s('crosslist_updating'));
+
+        $orphaned_sections = 0;
+        foreach ($courses as $key => $course) {
+
+            $display = "$semester->year $semester->name $course->department $course->cou_number";
+
+            $m->addElement('static', 'course_'.$course->id, $display, '');
+
+            $html = '<ul>';
+            foreach ($course->sections as $section) {
+                $html .= '<li> Section ' . $section->sec_number . ' ';
+
+                if (isset($cr_lookup[$section->id])) {
+                    $crosslist = $current_crosslists[$cr_lookup[$section->id]];
+
+                    $grouping_lookup[$crosslist->groupingid][$crosslist->shell_name][] = $section->id;
+
+                    $html .= self::_s('crosslisted', $crosslist);
+                } else {
+                    $orphaned_sections ++;
+                    $html .= self::_s('crosslist_no_option');
+                }
+
+                $html .= '</li>';
+            }
+            $html .= '</ul>';
+
+            $m->addElement('static', 'sections_'.$course->id, '', $html);
+
+            $m->addElement('hidden', $key, 1);
+        }
+
+        foreach ($grouping_lookup as $number => $info) {
+            foreach ($info as $name => $secs) {
+                $m->addElement('hidden', 'shell_name_'.$number.'_hidden', $name);
+                $m->addElement('hidden', 'shell_values_'.$number, implode(',', $secs));
+            }
+        }
+
+        $m->addElement('radio', 'crosslist_option', '', self::_s('split_undo'), self::UNDO);
+
+        $orphaned = floor($orphaned_sections / 2) + $shells;
+
+        if ($orphaned > $shells) {
+            $orphaned_range = range(1, $orphaned);
+            $options = array_combine($orphaned_range, $orphaned_range);
+
+            $m->addElement('radio', 'crosslist_option', '', self::_s('split_reshell'), self::RESHELL);
+            $m->addElement('select', 'reshelled', self::_s('split_how_many'), $options);
+
+            $m->disabledIf('reshelled', 'crosslist_option', 'neq', self::RESHELL);
+        }
+
+        $m->addElement('radio', 'crosslist_option', '', self::_s('split_rearrange'), self::REARRANGE);
+
+        $m->setDefault('crosslist_option', self::REARRANGE);
+
+        $m->addElement('hidden', 'shells', $shells);
+
+        $this->generate_states_and_buttons();
+    }
+
+    function validation($data) {
+        $option = $data['crosslist_option'];
+
+        $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
+
+        return true;
     }
 }
 
@@ -168,6 +278,8 @@ class crosslist_form_decide extends crosslist_form {
         $m =& $this->_form;
 
         $courses = $this->_customdata['selected_courses'];
+
+        $this->prev = cps_crosslist::exists($courses) ? self::UPDATE : $this->prev;
 
         $semester = $this->_customdata['semester'];
 
@@ -390,7 +502,11 @@ class crosslist_form_finish implements finalized_form {
 
         $current_crosslists = cps_crosslist::in_courses($extra['selected_courses']);
 
-        $this->save_or_update($data, $current_crosslists);
+        if (isset($data->crosslist_option) and $data->crosslist_option == crosslist_form_update::UNDO) {
+            $this->undo($current_crosslists);
+        } else {
+            $this->save_or_update($data, $current_crosslists);
+        }
     }
 
     function undo($crosslists) {
