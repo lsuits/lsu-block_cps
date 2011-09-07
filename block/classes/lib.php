@@ -131,6 +131,25 @@ class cps_split extends cps_preferences {
 }
 
 class cps_crosslist extends cps_preferences {
+    public static function in_courses($courses) {
+        global $USER;
+
+        // Flatten sections
+        $course_to_sectionids = function ($course) {
+            return implode(',', array_keys($course->sections));
+        };
+
+        $sectionids = implode(',', array_map($course_to_sectionids, $courses));
+
+        $crosslist_params = array(
+            'userid = ' . $USER->id,
+            'sectionid IN (' . $sectionids . ')'
+        );
+
+        $crosslists = self::get_select($crosslist_params);
+
+        return $crosslists;
+    }
 }
 
 class cps_team_request extends cps_preferences {

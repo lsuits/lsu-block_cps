@@ -55,7 +55,7 @@ if ($form->is_cancelled()) {
     } else if ($form->next == crosslist_form::FINISHED) {
         $form = new crosslist_form_finish();
 
-        $form->preocess($data, $courses);
+        $form->process($data, $courses);
 
         $form->display();
         die();
