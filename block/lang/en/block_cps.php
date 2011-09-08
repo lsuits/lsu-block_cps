@@ -17,6 +17,9 @@ $string['nonprimary'] = 'Allow Non-Primaries';
 $string['nonprimary_desc'] = 'If checked, then Non-Primaries will be able to
 configure the CPS settings.';
 
+$string['department'] = 'Department';
+$string['cou_number'] = 'Course Number';
+
 // Error Strings
 $string['not_enabled'] = 'CPS Setting <strong>{$a}</strong> is not enabled.';
 $string['not_teacher'] = 'You are not enrolled or set to be enrolled in any course.
@@ -39,6 +42,15 @@ $string['err_same_semester'] = 'You must select courses in the same semester.
 You first selected {$a->year} {$a->name}';
 $string['err_not_enough'] = 'You must select at least two courses.';
 $string['err_one_shell'] = 'Each shell must have two sections.';
+
+$string['err_team_query'] = 'Please provide both fields.';
+$string['err_team_query_course'] = 'Course does not exists:
+{$a->department} {$a->cou_number}';
+
+$string['err_team_query_sections'] = '{$a->year} {$a->name} {$a->department}
+{$a->cou_number} does not have sections';
+
+$string['err_select_teacher'] = 'You must select at least one Instructor';
 
 // Setting names
 $string['default_settings'] = 'Default Settings';
@@ -113,4 +125,13 @@ $string['crosslist_thank_you'] = 'Your cross-list courses have been processed. C
 to head back to the cross-list home screen.';
 
 $string['team_request'] = 'Team Teach Requests';
+
+$string['team_query_for'] = 'Query a course: {$a->year} {$a->name}';
+
+$string['team_teachers'] = 'Select one or more Instructors';
+
+$string['team_request_select'] = 'Select a Course';
+$string['team_request_query'] = 'Query a Course';
+$string['team_request_request'] = 'Select Instructor';
+
 $string['team_request_shortname'] = '{year} {name} {shell_name} for {fullnames}';
