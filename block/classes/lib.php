@@ -169,6 +169,29 @@ class cps_crosslist extends cps_preferences {
 }
 
 class cps_team_request extends cps_preferences {
+    public static function delete($id) {
+        $params = array('id' => $id);
+
+        return self::delete_all_internal($params, function($table) use ($params) {
+            $old = self::get($params);
+
+            $child_params = array('requestid' => $old->id);
+
+            cps_team_section::delete_all($child_params);
+        });
+    }
+
+    public static function delete_all(array $params) {
+        return self::delete_all_internal($params, function ($t) use ($params) {
+            $old = self::get_all($params);
+
+            foreach ($old as $request) {
+                $child_params = array('requestid' => $request->id);
+
+                cps_team_section::delete_all($child_params);
+            }
+        });
+    }
 }
 
 class cps_team_section extends cps_preferences {
