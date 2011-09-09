@@ -130,8 +130,22 @@ $string['team_query_for'] = 'Query a course: {$a->year} {$a->name}';
 
 $string['team_teachers'] = 'Select one or more Instructors';
 
+$string['review_selection'] = 'Please reivew your selections';
+
+$string['team_note'] = '<strong>Note</strong>';
+$string['team_going_email'] = 'The instructors you have selected will receive
+an email from you, inviting them to team teach. You can revoke team teach
+privileges at any time.';
+
 $string['team_request_select'] = 'Select a Course';
 $string['team_request_query'] = 'Query a Course';
 $string['team_request_request'] = 'Select Instructor';
+$string['team_request_review'] = 'Review Requests';
+$string['team_request_finish'] = 'Request Sent';
+
+$string['team_request_thank_you'] = 'The Team Teach requests have been processed
+and sent. Continue to head back to the team teach home.';
+
+$string['team_with'] = 'to be team taught with...';
 
 $string['team_request_shortname'] = '{year} {name} {shell_name} for {fullnames}';
