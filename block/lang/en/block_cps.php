@@ -137,7 +137,10 @@ $string['team_going_email'] = 'The instructors you have selected will receive
 an email from you, inviting them to team teach. You can revoke team teach
 privileges at any time.';
 
+$string['team_how_many'] = 'How many courses will you combine?';
+
 $string['team_request_select'] = 'Select a Course';
+$string['team_request_shells'] = 'Course Requests';
 $string['team_request_query'] = 'Query a Course';
 $string['team_request_request'] = 'Select Instructor';
 $string['team_request_review'] = 'Review Requests';
