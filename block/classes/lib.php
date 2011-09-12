@@ -169,6 +169,33 @@ class cps_crosslist extends cps_preferences {
 }
 
 class cps_team_request extends cps_preferences {
+
+    public static function in_course($course) {
+        global $USER;
+
+        // TODO: make sure to concat courses they participate in
+        $params = array(
+            'userid' => $USER->id,
+            'courseid' => $course->id
+        );
+
+        $requests = cps_team_request::get_all($params);
+
+        return $requests;
+    }
+
+    public static function exists($course) {
+        return self::in_course($course) ? true : false;
+    }
+
+    public static function groups($teamteaches) {
+        return array_reduce($teamteaches, function ($in, $request) {
+            $grouping = $request->request_groupingid;
+
+            return $grouping > $in ? $grouping : $in;
+        });
+    }
+
     public static function delete($id) {
         $params = array('id' => $id);
 

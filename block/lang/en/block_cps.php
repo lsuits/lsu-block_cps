@@ -139,12 +139,26 @@ privileges at any time.';
 
 $string['team_how_many'] = 'How many courses will you combine?';
 
+$string['team_request_option'] = 'Team Teach option taken';
+
 $string['team_request_select'] = 'Select a Course';
 $string['team_request_shells'] = 'Course Requests';
 $string['team_request_query'] = 'Query a Course';
 $string['team_request_request'] = 'Select Instructor';
 $string['team_request_review'] = 'Review Requests';
 $string['team_request_finish'] = 'Request Sent';
+$string['team_request_update'] = 'Updating';
+
+// Team teach update strings
+$string['team_following'] = 'The current requests';
+$string['team_approved'] = 'Approved';
+$string['team_not_approved'] = 'Not Approved';
+$string['team_current'] = 'Manage invites to current courses';
+$string['team_add_course'] = 'Make additional requests';
+$string['team_manage_requests'] = 'Manage Requests';
+$string['team_manage_sections'] = 'Manage Sections';
+
+$string['team_reshell'] = 'How many courses to add?';
 
 $string['team_request_thank_you'] = 'The Team Teach requests have been processed
 and sent. Continue to head back to the team teach home.';

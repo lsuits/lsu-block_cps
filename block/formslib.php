@@ -41,11 +41,12 @@ abstract class cps_form extends moodleform implements generic_states {
 
         self::navs($prefix, $form->current);
 
-        $data->current = $form->current;
-        $data->prev = $form->prev;
-        $data->next = $form->next;
+        $directions = new stdClass;
+        $directions->current = $form->current;
+        $directions->prev = $form->prev;
+        $directions->next = $form->next;
 
-        $form->set_data($data);
+        $form->set_data($directions);
 
         return $form;
     }
@@ -61,7 +62,10 @@ abstract class cps_form extends moodleform implements generic_states {
             $data += get_object_vars($extra);
         }
 
-        return new $class(null, $data);
+        $form = new $class(null, $data);
+        $form->set_data($data);
+
+        return $form;
     }
 
     public static function navs($prefix, $state) {
