@@ -116,39 +116,40 @@ class team_request_form_update extends team_request_form {
         $selected_users = array();
         $queries = array();
 
+        $grouping_map = array();
+        $groupingid = 0;
         foreach ($team_teaches as $request) {
 
-            if ($request->requested_course == $course->id) {
-                $other_params = array('id' => $request->courseid);
-                $other_course = cps_course::get($other_params);
-            } else {
+            if ($request->is_owner()) {
                 $is_master = true;
-                $other_params = array('id' => $request->requested_course);
-                $other_course = cps_course::get($other_params);
 
-                $user = cps_user::get(array('id' => $request->requested));
+                $user = $request->other_user();
 
-                $queries[$request->request_groupingid] = array(
+                $other_course = $request->other_course();
+
+                if (!isset($grouping_map[$other_course->id])) {
+                    $groupingid ++;
+                    $grouping_map[$other_course->id] = $groupingid;
+                }
+
+                $queries[$groupingid] = array(
                     'department' => $other_course->department,
                     'cou_number' => $other_course->cou_number
                 );
 
-                $selected_users[$request->request_groupingid][] = $user->id;
+                $selected_users[$groupingid][] = $user->id;
             }
 
-            if ($request->approval_flag) {
+            if ($request->approved()) {
                 $any_approved = true;
                 $append = self::_s('team_approved');
             } else {
                 $append = self::_s('team_not_approved');
             }
 
-            $app_user = empty($user) ? '' : fullname($user);
+            $label = $request->label() . ' - ' . $append;
 
-            $label = $to_display($other_course) . ' with '. $app_user .
-                ' - ' . $append;
-
-            $m->addElement('static', 'selected_'.$other_params['id'], '', $label);
+            $m->addElement('static', 'selected_'.$request->id, '', $label);
         }
 
         $m->addElement('static', 'breather', '', '');
@@ -161,8 +162,7 @@ class team_request_form_update extends team_request_form {
         $m->addElement('radio', 'update_option', '',
             self::_s('team_add_course'), self::ADD_COURSE);
 
-        $shells = cps_team_request::groups($team_teaches);
-        $shells_range = range(1, 10 - $shells);
+        $shells_range = range(1, 10 - $groupingid);
 
         $options = array_combine($shells_range, $shells_range);
 
@@ -183,7 +183,9 @@ class team_request_form_update extends team_request_form {
         $m->setDefault('update_option', self::MANAGE_REQUESTS);
 
         $m->addElement('hidden', 'selected', '');
-        $m->addElement('hidden', 'shells', $shells);
+        $m->addElement('hidden', 'shells', $groupingid);
+
+        $m->addElement('hidden', 'semesterid', $semester->id);
 
         foreach ($queries as $number => $query) {
             $users = implode(',', $selected_users[$number]);
@@ -214,6 +216,169 @@ class team_request_form_update extends team_request_form {
         }
 
         return true;
+    }
+}
+
+class team_request_form_manage extends team_request_form {
+    var $current = self::MANAGE;
+    var $prev = self::UPDATE;
+    var $next = self::CONFIRM;
+
+    const NOTHING = 0;
+    const APPROVE = 1;
+    const REVOKE = 2;
+
+    public static function build($courses) {
+        return team_request_form_shells::build($courses);
+    }
+
+    function definition() {
+        $m =& $this->_form;
+
+        $course = $this->_customdata['selected_course'];
+
+        $semester = $this->_customdata['semester'];
+
+        $to_display = function ($course) use ($semester) {
+            return "$semester->year $semester->name $course->department $course->cou_number";
+        };
+
+        $to_bold = function ($text) { return "<strong>$text</strong>"; };
+
+        $filler = function ($how_much) {
+            $spaces = range(1, $how_much);
+
+            return implode('', array_map(function ($sp) {
+                return '&nbsp;';
+            }, $spaces));
+        };
+
+        $m->addElement('header', 'selected_course', $to_display($course));
+
+        $m->addElement('static', 'action_labels', '',
+            $to_bold(self::_s('team_actions')). $filler(50) .
+            $to_bold(self::_s('team_requested_courses')));
+
+        $team_teaches = cps_team_request::in_course($course);
+
+        foreach ($team_teaches as $request) {
+            // The master of this request
+            $master = $request->is_owner();
+
+            $approval = $request->approved() ?
+                self::_s('team_approved') :
+                self::_s('team_not_approved');
+
+            $label = $request->label(). ' - <strong>' . $approval . '</strong>';
+
+            $options = array (
+                $m->createELement('radio', 'approval_'.$request->id, '',
+                    self::_s('team_do_nothing'), self::NOTHING)
+            );
+
+            if (!$master and !$request->approved()) {
+                $options[] =
+                    $m->createELement('radio', 'approval_'.$request->id, '',
+                        self::_s('team_approve'), self::APPROVE);
+            }
+
+            if ($master) {
+                $verbiage = self::_s('team_revoke');
+            } else if ($request->approved()) {
+                $verbiage = self::_s('team_cancel');
+            } else {
+                $verbiage = self::_s('team_deny');
+            }
+
+            $options[] =
+                $m->createELement('radio', 'approval_'.$request->id, '',
+                    $verbiage, self::REVOKE);
+
+            $options[] =
+                $m->createElement('static', 'request'.$request->id, '', $label);
+
+            $m->addGroup($options, 'options_'.$request->id, '&nbsp;',
+                $filler(3), true);
+        }
+
+        $m->addElement('hidden', 'selected', '');
+        $m->addElement('hidden', 'semesterid', $semester->id);
+
+        $m->addElement('hidden', 'update_option', '');
+
+        $this->generate_states_and_buttons();
+    }
+}
+
+class team_request_form_confirm extends team_request_form {
+    var $current = self::CONFIRM;
+    var $next = self::FINISHED;
+    var $prev = self::MANAGE;
+
+    public static function build($courses) {
+        return team_request_form_shells::build($courses);
+    }
+
+    function definition() {
+        $m =& $this->_form;
+
+        $course = $this->_customdata['selected_course'];
+
+        $semester = $this->_customdata['semester'];
+
+        $to_display = function ($course) use ($semester) {
+            return "$semester->year $semester->name $course->department $course->cou_number";
+        };
+
+        $team_teaches = cps_team_request::in_course($course);
+
+        $m->addElement('header', 'selected_course', $to_display($course));
+
+        $approved = array();
+        $denied = array();
+
+        foreach ($team_teaches as $id => $request) {
+
+            $m->addElement('hidden', 'options_'.$id.'[approval_'.$id.']', '');;
+
+            if (!isset($this->_customdata['options_'.$id])) {
+                continue;
+            }
+
+            $action = $this->_customdata['options_' . $id]['approval_'.$id];
+
+            switch ($action) {
+                case team_request_form_manage::APPROVE:
+                    $approved[] = $request;
+                    break;
+                case team_request_form_manage::REVOKE:
+                    $denied[] = $request;
+                case team_request_form_manage::NOTHING:
+                    continue;
+            }
+        }
+
+        if ($approved) {
+            $m->addElement('static', 'approved', self::_s('team_to_approve'), '');
+
+            foreach ($approved as $request) {
+                $m->addElement('static', 'approve_'.$request->id, '', $request->label());
+            }
+        }
+
+        if ($denied) {
+            $m->addElement('static', 'not_approved', self::_s('team_to_revoke'), '');
+
+            foreach ($denied as $request) {
+                $m->addElement('static', 'deny_'.$request->id, '', $request->label());
+            }
+        }
+
+        $m->addElement('hidden', 'selected', '');
+        $m->addElement('hidden', 'update_option', '');
+        $m->addElement('hidden', 'semesterid', $semester->id);
+
+        $this->generate_states_and_buttons();
     }
 }
 
@@ -249,6 +414,8 @@ class team_request_form_shells extends team_request_form {
         $m->addElement('select', 'shells', self::_s('team_how_many'), $options);
 
         $m->addElement('hidden', 'selected', '');
+        $m->addElement('hidden', 'semesterid', $sem->id);
+
 
         $this->generate_states_and_buttons();
     }
@@ -271,6 +438,7 @@ class team_request_form_query extends team_request_form {
 
         $extra = array(
             'shells' => $to_add ? $shells + $reshell: $shells,
+            'reshell' => $reshell
         );
 
         return $extra + team_request_form_shells::build($courses);
@@ -334,6 +502,8 @@ class team_request_form_query extends team_request_form {
         $m->addElement('hidden', 'shells', '');
 
         $m->addElement('hidden', 'reshell', 0);
+        $m->addElement('hidden', 'semesterid', $semester->id);
+
 
         $this->generate_states_and_buttons();
     }
@@ -502,6 +672,8 @@ class team_request_form_request extends team_request_form {
         $m->addElement('hidden', 'selected', '');
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'reshell', 0);
+        $m->addElement('hidden', 'semesterid', $semester->id);
+
 
         $this->generate_states_and_buttons();
     }
@@ -544,9 +716,9 @@ class team_request_form_review extends team_request_form {
             $users = optional_param($key, null, PARAM_INT);
             $userids = optional_param($key . '_str', null, PARAM_TEXT);
 
-            $userid = ($users) ? $users : explode(',', $userids);
+            $userid = ($users) ? implode(',', $users) : $userids;
 
-            $users_data['users' . $number] = $userid;
+            $users_data[$key . '_str'] = $userid;
         }
 
         return $users_data + $data;
@@ -578,7 +750,7 @@ class team_request_form_review extends team_request_form {
                 continue;
             }
 
-            $userids = implode(',', $this->_customdata['users'.$number]);
+            $userids = $this->_customdata['selected_users'.$number.'_str'];
 
             $users = cps_user::get_select('id IN ('. $userids .')');
 
@@ -603,14 +775,48 @@ class team_request_form_review extends team_request_form {
             $m->addElement('hidden', 'update_option', $update_option);
         }
 
+        $m->addElement('hidden', 'semesterid', $semester->id);
+
         $this->generate_states_and_buttons();
     }
 }
 
 class team_request_form_finish implements finalized_form {
     function process($data, $courses) {
-        // TODO: retrieval
-        $this->save_or_update($data, array());
+
+        $course = $courses[$data->selected];
+
+        $teamteaches = cps_team_request::in_course($course);
+
+        $exists = !empty($data->update_option);
+
+        if ($exists and $data->update_option == team_request_form_update::MANAGE_REQUESTS) {
+            $this->handle_approvals($data, $teamteaches);
+        } else {
+            $this->save_or_update($data, $teamteaches);
+        }
+    }
+
+    function handle_approvals($data, $teamteaches) {
+        $to_undo = array();
+
+        foreach ($teamteaches as $id => $teamteach) {
+            $action = $data->{'options_'.$id}['approval_'.$id];
+
+            switch ($action) {
+                case team_request_form_manage::APPROVE:
+                    // TODO: notify master
+                    $teamteach->approval_flag = 1;
+                    $teamteach->save();
+                    break;
+                case team_request_form_manage::REVOKE:
+                    // TODO: send formal letter
+                    $to_undo[] = $teamteach;
+                    break;
+            }
+        }
+
+        $this->undo($to_undo);
     }
 
     function undo($teamteaches) {
@@ -631,9 +837,9 @@ class team_request_form_finish implements finalized_form {
                 $params = array (
                     'userid' => $USER->id,
                     'courseid' => $data->selected,
+                    'semesterid' => $data->semesterid,
                     'requested_course' => $requested->id,
-                    'requested' => $userid,
-                    'request_groupingid' => $number
+                    'requested' => $userid
                 );
 
                 if (!$request = cps_team_request::get($params)) {

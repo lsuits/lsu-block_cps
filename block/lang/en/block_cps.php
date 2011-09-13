@@ -148,6 +148,9 @@ $string['team_request_request'] = 'Select Instructor';
 $string['team_request_review'] = 'Review Requests';
 $string['team_request_finish'] = 'Request Sent';
 $string['team_request_update'] = 'Updating';
+$string['team_request_confirm'] = 'Confirm Actions';
+
+$string['team_request_manage'] = 'Manage Requests';
 
 // Team teach update strings
 $string['team_following'] = 'The current requests';
@@ -157,6 +160,17 @@ $string['team_current'] = 'Manage invites to current courses';
 $string['team_add_course'] = 'Make additional requests';
 $string['team_manage_requests'] = 'Manage Requests';
 $string['team_manage_sections'] = 'Manage Sections';
+
+$string['team_to_approve'] = 'Requests to Approve';
+$string['team_to_revoke'] = 'Requests to Cancel';
+
+$string['team_revoke'] = 'Revoke';
+$string['team_approve'] = 'Approve';
+$string['team_do_nothing'] = 'Do Nothing';
+$string['team_deny'] = 'Deny';
+$string['team_cancel'] = 'Cancel';
+$string['team_actions'] = 'Actions';
+$string['team_requested_courses'] = 'Requested Courses';
 
 $string['team_reshell'] = 'How many courses to add?';
 
