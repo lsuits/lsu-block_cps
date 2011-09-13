@@ -170,6 +170,13 @@ class cps_crosslist extends cps_preferences {
 
 class cps_team_request extends cps_preferences {
 
+    var $semester;
+
+    var $owner;
+    var $course;
+    var $other_user;
+    var $other_course;
+
     public static function in_course($course) {
         global $USER;
 
@@ -181,7 +188,14 @@ class cps_team_request extends cps_preferences {
 
         $requests = cps_team_request::get_all($params);
 
-        return $requests;
+        $params = array(
+            'requested' => $USER->id,
+            'requested_course' => $course->id
+        );
+
+        $participants = cps_team_request::get_all($params);
+
+        return $requests + $participants;
     }
 
     public static function exists($course) {
@@ -189,18 +203,23 @@ class cps_team_request extends cps_preferences {
     }
 
     public static function groups($teamteaches) {
-        return array_reduce($teamteaches, function ($in, $request) {
-            $grouping = $request->request_groupingid;
+        if (empty($teamteaches)) {
+            return 0;
+        }
 
-            return $grouping > $in ? $grouping : $in;
-        });
+        $courseids = array();
+        foreach ($teamteaches as $teamteach) {
+            $courseids[] = $teamteach->requested_course;
+        }
+
+        return count(array_unique($courseids));
     }
 
     public static function delete($id) {
         $params = array('id' => $id);
 
         return self::delete_all_internal($params, function($table) use ($params) {
-            $old = self::get($params);
+            $old = cps_team_request::get($params);
 
             $child_params = array('requestid' => $old->id);
 
@@ -210,7 +229,7 @@ class cps_team_request extends cps_preferences {
 
     public static function delete_all(array $params) {
         return self::delete_all_internal($params, function ($t) use ($params) {
-            $old = self::get_all($params);
+            $old = cps_team_request::get_all($params);
 
             foreach ($old as $request) {
                 $child_params = array('requestid' => $request->id);
@@ -218,6 +237,79 @@ class cps_team_request extends cps_preferences {
                 cps_team_section::delete_all($child_params);
             }
         });
+    }
+
+    public function is_owner($from_user = null) {
+        global $USER;
+
+        if (!$from_user) {
+            $from_user = $USER;
+        }
+
+        return $from_user->id == $this->userid;
+    }
+
+    public function approved() {
+        return $this->approval_flag == 1;
+    }
+
+    public function other_course() {
+        if (empty($this->other_course)) {
+            $course = cps_course::get(array('id' => $this->requested_course));
+
+            $this->other_course = $course;
+        }
+
+        return $this->other_course;
+    }
+
+    public function other_user() {
+        if (empty($this->other_user)) {
+            $this->other_user = cps_user::get(array('id' => $this->requested));
+        }
+
+        return $this->other_user;
+    }
+
+    public function course() {
+        if (empty($this->course)) {
+            $this->course = cps_course::get(array('id' => $this->courseid));
+        }
+
+        return $this->course;
+    }
+
+    public function owner() {
+        if (empty($this->owner)) {
+            $this->owner = cps_user::get(array('id' => $this->userid));
+        }
+
+        return $this->owner;
+    }
+
+    public function semester() {
+        if (empty($this->semester)) {
+            $this->semester = cps_semester::get(array('id' => $this->semesterid));
+        }
+
+        return $this->semester;
+    }
+
+    public function label($from_user = null) {
+
+        if ($this->is_owner($from_user)) {
+            $course = $this->other_course();
+            $user = $this->other_user();
+        } else {
+            $course = $this->course();
+            $user = $this->owner();
+        }
+
+        $sem = $this->semester();
+
+        $label = "$sem->year $sem->name $course->department $course->cou_number";
+
+        return $label . ' with ' . fullname($user);
     }
 }
 
