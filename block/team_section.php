@@ -2,7 +2,7 @@
 
 require_once '../../config.php';
 require_once 'classes/lib.php';
-require_once 'team_request_form.php';
+require_once 'team_section_form.php';
 
 require_login();
 
@@ -24,6 +24,32 @@ if (empty($sections)) {
 
 $courses = cps_course::merge_sections($sections);
 
+$courseid = required_param('id', PARAM_INT);
+
+if (!isset($courses[$courseid])) {
+    print_error('not_course', 'block_cps');
+}
+
+$course = $courses[$courseid];
+
+$semester = reset($course->sections)->semester();
+
+$current_requests = cps_team_request::in_course($course, $semester);
+
+$approved = array_filter($current_requests, function ($request) {
+    return $request->approved();
+});
+
+if (empty($current_requests) or empty($approved)) {
+    print_error('not_approved', 'block_cps');
+}
+
+$initial_data = array(
+    'course' => $course,
+    'semester' => $semester,
+    'requests' => $current_requests
+);
+
 $_s = cps::gen_str('block_cps');
 
 $blockname = $_s('pluginname');
@@ -35,33 +61,29 @@ $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
-$PAGE->set_url('/blocks/cps/team_request.php');
+$PAGE->set_url('/blocks/cps/team_section.php', array('id' => $courseid));
 $PAGE->set_pagetype('cps-teamteach');
 
-$form = team_request_form::create($courses);
+$form = team_section_form::create($initial_data);
 
 if ($form->is_cancelled()) {
-    redirect(new moodle_url('/my'));
+    redirect(new moodle_url('/blocks/cps/team_request.php'));
 
 } else if ($data = $form->get_data()) {
 
     if (isset($data->back)) {
         $form->next = $form->prev;
 
-    } else if ($form->next == team_request_form::FINISHED) {
-        $form = new team_request_form_finish();
+    } else if ($form->next == team_section_form::FINISHED) {
+        $form = new team_section_form_finish();
 
-        $form->process($data, $courses);
+        $form->process($data, $initial_data);
 
         $form->display();
         die();
-    } else if ($form->next == team_request_form::SECTIONS) {
-        redirect(new moodle_url('/blocks/cps/team_section.php', array(
-            'id' => $data->selected
-        )));
     }
 
-    $form = team_request_form::next_from($form->next, $data, $courses);
+    $form = team_section_form::next_from($form->next, $data, $initial_data);
 }
 
 echo $OUTPUT->header();

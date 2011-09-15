@@ -57,10 +57,20 @@ interface immediate_application {
 
 // Begin Concrete classes
 class cps_unwant extends cps_preferences {
-    public function active_sections_for($teacher, $is_primary = true) {
+    public static function active_sections_for($teacher, $is_primary = true) {
         $sections = $teacher->sections($is_primary);
 
-        $unwants = cps_unwant::get_all(array('userid' => $teacher->userid));
+        return self::active_sections($sections, $teacher->userid);
+    }
+
+    public static function active_sections(array $sections, $userid = null) {
+        global $USER;
+
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+
+        $unwants = cps_unwant::get_all(array('userid' => $userid));
 
         foreach ($unwants as $unwant) {
             if (isset($sections[$unwant->sectionid])) {
@@ -177,20 +187,21 @@ class cps_team_request extends cps_preferences {
     var $other_user;
     var $other_course;
 
-    public static function in_course($course) {
+    public static function in_course($course, $semester) {
         global $USER;
 
-        // TODO: make sure to concat courses they participate in
         $params = array(
             'userid' => $USER->id,
-            'courseid' => $course->id
+            'courseid' => $course->id,
+            'semesterid' => $semester->id
         );
 
         $requests = cps_team_request::get_all($params);
 
         $params = array(
             'requested' => $USER->id,
-            'requested_course' => $course->id
+            'requested_course' => $course->id,
+            'semesterid' => $semester->id
         );
 
         $participants = cps_team_request::get_all($params);
@@ -198,8 +209,8 @@ class cps_team_request extends cps_preferences {
         return $requests + $participants;
     }
 
-    public static function exists($course) {
-        return self::in_course($course) ? true : false;
+    public static function exists($course, $semester) {
+        return self::in_course($course, $semester) ? true : false;
     }
 
     public static function groups($teamteaches) {

@@ -7,6 +7,7 @@ interface team_states {
     const REQUEST = 'request';
     const REVIEW = 'review';
     const MANAGE = 'manage';
+    const SECTIONS = 'sections';
 }
 
 abstract class team_request_form extends cps_form implements team_states {
@@ -50,7 +51,7 @@ class team_request_form_select extends team_request_form {
 
             $display = "$semester->year $semester->name $course->department $course->cou_number";
 
-            if (cps_team_request::exists($course)) {
+            if (cps_team_request::exists($course, $semester)) {
                 $display .= ' (' . self::_s('team_request_option') . ')';
             }
 
@@ -63,9 +64,11 @@ class team_request_form_select extends team_request_form {
     }
 
     function validation($data) {
-        $course = cps_course::get(array('id' => $data['selected']));
+        $course = $this->_customdata['courses'][$data['selected']];
 
-        if (cps_team_request::exists($course)) {
+        $semester = reset($course->sections)->semester();
+
+        if (cps_team_request::exists($course, $semester)) {
             $this->next = self::UPDATE;
         }
 
@@ -108,7 +111,7 @@ class team_request_form_update extends team_request_form {
 
         $m->addElement('static', 'all_requests', self::_s('team_following'), '');
 
-        $team_teaches = cps_team_request::in_course($course);
+        $team_teaches = cps_team_request::in_course($course, $semester);
 
         $is_master = false;
         $any_approved = false;
@@ -212,7 +215,9 @@ class team_request_form_update extends team_request_form {
             case self::ADD_COURSE:
                 $this->next = self::QUERY;
                 break;
-            // TODO: handle section forms
+            case self::MANAGE_SECTIONS:
+                $this->next = self::SECTIONS;
+                break;
         }
 
         return true;
@@ -255,11 +260,13 @@ class team_request_form_manage extends team_request_form {
 
         $m->addElement('header', 'selected_course', $to_display($course));
 
+        $m->addElement('static', 'team_error', '', '');
+
         $m->addElement('static', 'action_labels', '',
             $to_bold(self::_s('team_actions')). $filler(50) .
             $to_bold(self::_s('team_requested_courses')));
 
-        $team_teaches = cps_team_request::in_course($course);
+        $team_teaches = cps_team_request::in_course($course, $semester);
 
         foreach ($team_teaches as $request) {
             // The master of this request
@@ -308,6 +315,35 @@ class team_request_form_manage extends team_request_form {
 
         $this->generate_states_and_buttons();
     }
+
+    function validation($data) {
+
+        if (isset($data['back'])) {
+            return true;
+        }
+
+        $selected = 0;
+
+        $course = $this->_customdata['selected_course'];
+
+        $semester = $this->_customdata['semester'];
+
+        $teams = cps_team_request::in_course($course, $semester);
+
+        foreach ($teams as $id =>$team) {
+            $approval = $data['options_'.$id]['approval_'.$id];
+
+            if ($approval != self::NOTHING) {
+                $selected ++;
+            }
+        }
+
+        if (empty($selected)) {
+            return array('team_error' => self::_s('err_manage_one'));
+        }
+
+        return true;
+    }
 }
 
 class team_request_form_confirm extends team_request_form {
@@ -330,7 +366,7 @@ class team_request_form_confirm extends team_request_form {
             return "$semester->year $semester->name $course->department $course->cou_number";
         };
 
-        $team_teaches = cps_team_request::in_course($course);
+        $team_teaches = cps_team_request::in_course($course, $semester);
 
         $m->addElement('header', 'selected_course', $to_display($course));
 
@@ -786,7 +822,9 @@ class team_request_form_finish implements finalized_form {
 
         $course = $courses[$data->selected];
 
-        $teamteaches = cps_team_request::in_course($course);
+        $semester = cps_semester::get(array('id' => $data->semesterid));
+
+        $teamteaches = cps_team_request::in_course($course, $semester);
 
         $exists = !empty($data->update_option);
 

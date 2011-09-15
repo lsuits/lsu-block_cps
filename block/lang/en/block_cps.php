@@ -34,6 +34,8 @@ sections.';
 $string['err_enrol_days'] = 'Enrollments days cannot be >= Create Days.';
 $string['err_number'] = 'Days entered must be greater than 0.';
 
+$string['err_manage_one'] = 'You must select at least one request.';
+
 $string['err_select'] = 'The selected course does not exist.';
 $string['err_split_number'] = 'The selected course does not have two sections.';
 $string['err_select_one'] = 'You must select a course to continue.';

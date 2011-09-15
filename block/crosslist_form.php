@@ -395,6 +395,10 @@ class crosslist_form_decide extends crosslist_form {
 
     function validation($data) {
 
+        if (isset($data['back'])) {
+            return true;
+        }
+
         $shells = range(1, $data['shells']);
 
         $reduce_values = function ($in, $number) use ($data) {
