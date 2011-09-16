@@ -44,7 +44,11 @@ class fake_courses implements course_processor {
         $courses = array();
 
         foreach ($course_range as $i) {
-            $letter = strtoupper($alpha[$i]);
+            if (!isset($alpha[$i])) {
+                $letter = strtoupper($alpha[$i % 26]);
+            } else {
+                $letter = strtoupper($alpha[$i]);
+            }
 
             $course = new stdClass;
 
