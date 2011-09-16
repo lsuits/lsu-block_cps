@@ -187,7 +187,7 @@ class cps_team_request extends cps_preferences {
     var $other_user;
     var $other_course;
 
-    public static function in_course($course, $semester) {
+    public static function in_course($course, $semester, $approved = false) {
         global $USER;
 
         $params = array(
@@ -206,7 +206,17 @@ class cps_team_request extends cps_preferences {
 
         $participants = cps_team_request::get_all($params);
 
-        return $requests + $participants;
+        $all_together = $requests + $participants;
+
+        if ($approved) {
+            $rtn = array_filter($all_together, function ($req) {
+                return $req->approved();
+            });
+
+            return $rtn;
+        } else {
+            return $all_together;
+        }
     }
 
     public static function exists($course, $semester) {
@@ -280,6 +290,20 @@ class cps_team_request extends cps_preferences {
         }
 
         return $this->other_user;
+    }
+
+    public function other_teacher() {
+        $course = $this->other_course();
+
+        $teachers = $course->teachers($this->semester());
+
+        foreach ($teachers as $teacher) {
+            if ($teacher->userid == $this->requested) {
+                return $teacher;
+            }
+        }
+
+        return false;
     }
 
     public function course() {
