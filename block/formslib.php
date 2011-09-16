@@ -73,6 +73,16 @@ abstract class cps_form extends moodleform implements generic_states {
         $PAGE->navbar->add(self::_s($prefix . '_' . $state));
     }
 
+    public function to_display($sem) {
+        return function ($course) use ($sem) {
+            return "$sem->year $sem->name $course->department $course->cou_number";
+        };
+    }
+
+    public function display_course($course, $sem) {
+        return "$sem->year $sem->name $course->department $course->cou_number";
+    }
+
     protected function generate_states() {
         $m =& $this->_form;
 
