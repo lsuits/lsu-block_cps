@@ -126,6 +126,7 @@ $string['crosslist_processed'] = 'Cross-list Courses Processed';
 $string['crosslist_thank_you'] = 'Your cross-list courses have been processed. Continue
 to head back to the cross-list home screen.';
 
+// Team Requests
 $string['team_request'] = 'Team Teach Requests';
 
 $string['team_query_for'] = 'Query a course: {$a->year} {$a->name}';
@@ -143,6 +144,16 @@ $string['team_how_many'] = 'How many courses will you combine?';
 
 $string['team_request_option'] = 'Team Teach option taken';
 
+$string['team_section'] = 'Course Sections';
+
+$string['team_continue_build'] = 'Continue to configure sections.';
+
+$string['team_section_select'] = 'Sections';
+$string['team_section_shells'] = 'Course Shells';
+$string['team_section_decide'] = 'Separate Sections';
+$string['team_section_confirm'] = 'Review';
+$string['team_section_update'] = 'Update';
+
 $string['team_request_select'] = 'Select a Course';
 $string['team_request_shells'] = 'Course Requests';
 $string['team_request_query'] = 'Query a Course';
@@ -154,7 +165,6 @@ $string['team_request_confirm'] = 'Confirm Actions';
 
 $string['team_request_manage'] = 'Manage Requests';
 
-// Team teach update strings
 $string['team_following'] = 'The current requests';
 $string['team_approved'] = 'Approved';
 $string['team_not_approved'] = 'Not Approved';

@@ -34,13 +34,9 @@ $course = $courses[$courseid];
 
 $semester = reset($course->sections)->semester();
 
-$current_requests = cps_team_request::in_course($course, $semester);
+$current_requests = cps_team_request::in_course($course, $semester, true);
 
-$approved = array_filter($current_requests, function ($request) {
-    return $request->approved();
-});
-
-if (empty($current_requests) or empty($approved)) {
+if (empty($current_requests)) {
     print_error('not_approved', 'block_cps');
 }
 

@@ -677,13 +677,7 @@ class team_request_form_request extends team_request_form {
 
             $other_sections = $other_course->sections($semester);
 
-            $teacher_filters = array(
-                'sectionid IN (' . implode(',', array_keys($other_sections)) .')',
-                "(status = '" . cps::PROCESSED ."' OR status = '". cps::ENROLLED. "')",
-                'primary_flag = 1'
-            );
-
-            $other_teachers = cps_teacher::get_select($teacher_filters);
+            $other_teachers = $other_course->teachers($semester);
 
             foreach ($other_teachers as $teacher) {
                 $user = $teacher->user();
