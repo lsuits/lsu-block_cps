@@ -34,6 +34,8 @@ class cps_semester extends cps_dao {
 
 class cps_course extends cps_dao {
     var $sections;
+    var $teachers;
+    var $student;
 
     public static function by_department($dept) {
         return cps_course::get_all(array('department' => $dept), true);
@@ -57,6 +59,28 @@ class cps_course extends cps_dao {
         return $courses;
     }
 
+    public function teachers($semester = null) {
+        if (empty($this->teachers)) {
+            $filters = $this->section_filters($semester);
+
+            $filters[] = 'primary_flag = 1';
+
+            $this->teachers = cps_teacher::get_select($filters);
+        }
+
+        return $this->teachers;
+    }
+
+    public function students($semester = null) {
+        if (empty($this->students)) {
+            $filters = $this->section_filters($semester);
+
+            $this->students = cps_student::get_select($filters);
+        }
+
+        return $this->students;
+    }
+
     public function sections($semester = null) {
         if (empty($this->sections)) {
             $by_params = array('courseid' => $this->id);
@@ -73,6 +97,17 @@ class cps_course extends cps_dao {
 
     public function __toString() {
         return sprintf('%s %s', $this->department, $this->cou_number);
+    }
+
+    private function section_filters($semester = null) {
+        $sectionids = implode(',', array_keys($this->sections($semester)));
+
+        $filters = array (
+            'sectionid IN (' . $sectionids . ')',
+            "(status = '".cps::PROCESSED."' OR status ='".cps::ENROLLED."')"
+        );
+
+        return $filters;
     }
 }
 
@@ -251,9 +286,12 @@ class cps_user extends cps_dao {
             $userid = $USER->id;
         }
 
-        $count = cps_teacher::count(array(
-            'userid' => $userid, 'status' => 'enrolled'
-        ));
+        $filters = array (
+            'userid = ' . $userid,
+            '(status = "'.cps::PROCESSED.'" OR status = "'.cps::ENROLLED.'")'
+        );
+
+        $count = cps_teacher::count_select($filters);
 
         return !empty($count);
     }
