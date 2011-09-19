@@ -156,7 +156,119 @@ class team_section_form_decide extends team_section_form {
 
         list($course, $semester, $requests) = $this->extract_data();
 
-        $m->addElement('header', 'selected_course', '');
+        $display = "$semester->year $semester->name";
+
+        $all_courses = array($course->id => $course);
+
+        foreach ($requests as $request) {
+            $other_course = $request->is_owner() ?
+                $request->other_course() : $request->course();
+
+            if (isset($all_courses[$other_course->id])) {
+                continue;
+            }
+
+            $all_courses[$other_course->id] = $other_course;
+        }
+
+        $to_coursename = function ($course) {
+            return "$course->department $course->cou_number";
+        };
+
+        $all_names = implode(' / ', array_map($to_coursename, $all_courses));
+
+        $m->addElement('header', 'selected_course', "$display $all_names");
+
+        // Instructor can only deal with sections they own
+        $before = array();
+
+        foreach ($course->sections as $section) {
+            $before[$section->id] = "$course->department $course->cou_number $section->sec_number";
+        }
+
+        $shells = array();
+
+        foreach (range(1, $this->_customdata['shells']) as $groupingid) {
+            $updating = !empty($this->_customdata['shell_values_'.$groupingid]);
+
+            if ($updating) {
+                $shell_name_value = $this->_customdata['shell_name_'.$groupingid.'_hidden'];
+                $shell_values = $this->_customdata['shell_values_'.$groupingid];
+
+                $shell_ids = explode(',', $shell_values);
+                $shell_sections = array_map(function($sec) use ( &$before) {
+                    $section = $before[$sec];
+                    unset($before[$sec]);
+                    return $section;
+                }, $shell_ids);
+
+                $shell_options = array_combine($shell_ids, $shell_sections);
+            } else {
+                $shell_name_value = 'Team ' . $groupingid . ' ' . $all_names;
+                $shell_values = '';
+
+                $shell_options = array();
+            }
+
+            $shell_label =& $m->createElement('static', 'shell_' . $groupingid .
+                '_label', '', $display . ' <span id="shell_name_'.$groupingid.'">'
+                . $shell_name_value . '</span>');
+            $shell =& $m->createElement('select', 'shell_'.$groupingid, '', $shell_options);
+            $shell->setMultiple(true);
+
+            $shell_name_params = array('style' => 'display: none;');
+            $shell_name =& $m->createElement('text', 'shell_name_' . $groupingid,
+                '', $shell_name_params);
+            $shell_name->setValue($shell_name_value);
+
+            $link = html_writer::link('shell_'.$groupingid, self::_s('customize_name'));
+
+            $radio_params = array('id' => 'selected_shell_'.$groupingid);
+            $radio =& $m->createElement('radio', 'selected_shell', '', '', $groupingid, $radio_params);
+
+            $radio->setChecked($groupingid == 1);
+
+            $shells[] = $shell_label->toHtml() . ' (' . $link . ')<br/>' .
+                $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
+
+            $m->addElement('hidden', 'shell_values_'.$groupingid, $shell_values);
+            $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
+        }
+
+        $previous_label =& $m->createElement('static', 'available_sections',
+            '', self::_s('available_sections'));
+
+        $previous =& $m->createElement('select', 'before', '', $before);
+        $previous->setMultiple(true);
+
+        $m->addElement('html', '<div id="split_error"></div>');
+
+        $previous_html =& $m->createElement('html', '
+            <div class="split_available_sections">
+                '.$previous_label->toHtml().'<br/>
+                '.$previous->toHtml().'
+            </div>
+        ');
+
+        $move_left =& $m->createElement('button', 'move_left', self::_s('move_left'));
+        $move_right =& $m->createElement('button', 'move_right', self::_s('move_right'));
+
+        $button_html =& $m->createElement('html', '
+            <div class="split_movers">
+                '.$move_left->toHtml().'<br/>
+                '.$move_right->toHtml().'
+            </div>
+        ');
+
+        $shell_html =& $m->createElement('html', '
+            <div class="split_bucket_sections">
+                '. implode('<br/>', $shells) . '
+            </div>
+        ');
+
+        $shifters = array($previous_html, $button_html, $shell_html);
+
+        $m->addGroup($shifters, 'shifters', '', array(' '), true);
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'id', '');

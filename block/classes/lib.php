@@ -260,14 +260,26 @@ class cps_team_request extends cps_preferences {
         });
     }
 
-    public function is_owner($from_user = null) {
-        global $USER;
+    public static function filtered_master($requests, $userid = null) {
+        if (empty($userid)) {
+            global $USER;
 
-        if (!$from_user) {
-            $from_user = $USER;
+            $userid = $USER->id;
         }
 
-        return $from_user->id == $this->userid;
+        return array_filter($requests, function ($req) use ($userid) {
+            return $req->is_owner($userid);
+        });
+    }
+
+    public function is_owner($from_userid = null) {
+        if (!$from_userid) {
+            global $USER;
+
+            $from_userid = $USER->id;
+        }
+
+        return $from_userid == $this->userid;
     }
 
     public function approved() {
@@ -330,9 +342,9 @@ class cps_team_request extends cps_preferences {
         return $this->semester;
     }
 
-    public function label($from_user = null) {
+    public function label($from_userid = null) {
 
-        if ($this->is_owner($from_user)) {
+        if ($this->is_owner($from_userid)) {
             $course = $this->other_course();
             $user = $this->other_user();
         } else {

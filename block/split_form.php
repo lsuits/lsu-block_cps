@@ -12,12 +12,6 @@ abstract class split_form extends cps_form {
         return parent::create('split', $courses, $state, $extra);
     }
 
-    protected function format_course($semester, $course) {
-        $n = "$semester->year $semester->name $course->department $course->cou_number";
-
-        return $n;
-    }
-
     protected function forge_split_all($course) {
 
         $grouping = 1;
@@ -52,7 +46,7 @@ class split_form_select extends split_form {
 
             $semester = $semesters[reset($course->sections)->semesterid];
 
-            $display = ' ' . $this->format_course($semester, $course);
+            $display = ' ' . $this->display_course($semester, $course);
 
             if (cps_split::exists($course)) {
                 $display .= ' (' . self::_s('split_option_taken') . ')';
@@ -112,7 +106,7 @@ class split_form_shells extends split_form {
 
         $semester = reset($course->sections)->semester();
 
-        $display = $this->format_course($semester, $course);
+        $display = $this->display_course($semester, $course);
 
         $m->addElement('header', 'selected_header', $display);
 
@@ -243,7 +237,7 @@ class split_form_decide extends split_form {
 
         $semester = current($course->sections)->semester();
 
-        $display = $this->format_course($semester, $course);
+        $display = $this->display_course($semester, $course);
 
         $m->addElement('header', 'selected_course', $display);
 
@@ -376,7 +370,7 @@ class split_form_confirm extends split_form {
 
         $semester = reset($sections)->semester();
 
-        $display = $this->format_course($semester, $course);
+        $display = $this->display_course($semester, $course);
 
         $m->addElement('header', 'selected_course', $display);
 
