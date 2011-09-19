@@ -181,6 +181,7 @@ class cps_crosslist extends cps_preferences {
 class cps_team_request extends cps_preferences {
 
     var $semester;
+    var $sections;
 
     var $owner;
     var $course;
@@ -358,7 +359,71 @@ class cps_team_request extends cps_preferences {
 
         return $label . ' with ' . fullname($user);
     }
+
+    public function sections() {
+        if (empty($this->sections)) {
+            $params = array('requestid' => $this->id);
+
+            $this->sections = cps_team_section::get_all($params);
+        }
+
+        return $this->sections;
+    }
 }
 
 class cps_team_section extends cps_preferences {
+    var $section;
+
+    public static function in_requests(array $requests) {
+        $sections = array();
+
+        foreach ($requests as $request) {
+            $params = array('requestid' => $request->id);
+            $internal = cps_team_section::get_all($params);
+
+            $sections += $internal;
+        }
+
+        return $sections;
+    }
+
+    public static function exists($section) {
+        return cps_team_section::get(array('sectionid' => $section->id));
+    }
+
+    public static function groups($sections) {
+        if (empty($sections)) {
+            return 0;
+        }
+
+        return array_reduce($sections, function ($in, $sec) {
+            return $sec->groupingid > $in ? $sec->groupingid : $in;
+        });
+    }
+
+    public static function merge_groups($sections) {
+        $merged = array();
+
+        foreach (range(1, self::groups($sections)) as $number) {
+            $by_number = function ($section) use ($number) {
+                return $section->groupingid == $number;
+            };
+
+            $merged[$number] = array_filter($sections, $by_number);
+        }
+
+        return $merged;
+    }
+
+    public static function merge_groups_in_requests($requests) {
+        return self::merge_groups(self::in_requests($requests));
+    }
+
+    public function section() {
+        if (empty($this->section)) {
+            $this->section = cps_section::get(array('id' => $this->sectionid));
+        }
+
+        return $this->section;
+    }
 }

@@ -154,9 +154,17 @@ $string['team_section_decide'] = 'Separate Sections';
 $string['team_section_confirm'] = 'Review';
 $string['team_section_update'] = 'Update';
 
+$string['team_section_note'] = 'You must wait until the owner of this request
+has created shells to work in.';
+
+$string['team_section_no_permission'] = 'You do not have permission to change
+this section. You can only move the sections you own.';
+
 $string['team_section_finished'] = 'Team Sections Processed';
 $string['team_section_processed'] = 'The Team Teach Sections have been processed.
 Continue to head back to the Team Section home.';
+
+$string['team_section_option'] = '(Team Section option taken)';
 
 $string['team_request_select'] = 'Select a Course';
 $string['team_request_shells'] = 'Course Requests';

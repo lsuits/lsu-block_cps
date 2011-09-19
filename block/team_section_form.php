@@ -55,15 +55,28 @@ class team_section_form_select extends team_section_form {
 
             if ($course->id == $courseid) {
                 foreach ($course->sections as $section) {
-                    // TODO: check for section that are selected
                     $label = 'Section ' . $section->sec_number;
-                    $m->addElement('static', 'section_'.$section->courseid, '', $label);
+
+                    if (cps_team_section::exists($section)) {
+                        $label .= ' ' . self::_s('team_section_option');
+                    }
+
+                    $m->addElement('static', 'section_'.$section->courseid, '',
+                        $label);
                 }
 
                 $m->addElement('static', 'other_course_'.$other_course->id,
                     $this->display_course($other_course, $semester), '');
 
-                // TODO display the sections they've selected
+
+                foreach ($request->sections() as $t_sec) {
+                    $section = $t_sec->section();
+
+                    if ($section->courseid != $courseid) {
+                        $m->addElement('static', 'other_selected_'.$section->id,
+                            '', 'Section ' . $section->sec_number);
+                    }
+                }
             }
         }
 
@@ -76,6 +89,34 @@ class team_section_form_select extends team_section_form {
         $this->is_a_master = $is_a_master;
         $this->not_a_master = $not_a_master;
 
+        if ($not_a_master and !$is_a_master) {
+            $all_sections = cps_team_section::in_requests($requests);
+
+            $merged = cps_team_section::merge_groups($all_sections);
+
+            if (empty($merged)) {
+                $m->addElement('static', 'team_note', '',
+                    self::_s('team_section_note'));
+
+                $this->next = null;
+            } else {
+                $m->addElement('hidden', 'shells', count($merged));
+
+                foreach ($merged as $number => $sections) {
+                    $name_key = 'shell_name_'.$number.'_hidden';
+                    $value_key = 'shell_values_'.$number;
+
+                    $m->addElement('hidden', $name_key,
+                        current($sections)->shell_name);
+
+                    $to_sectionids = function ($sec) { return $sec->sectionid; };
+
+                    $m->addElement('hidden', $value_key,
+                        implode(',', array_map($to_sectionids, $sections)));
+                }
+            }
+        }
+
         $this->generate_states_and_buttons();
     }
 
@@ -83,7 +124,7 @@ class team_section_form_select extends team_section_form {
         // Teacher can potentially be both...
         // But if the Teacher is NOT a master, then we can skip the shells
         if ($this->not_a_master and !$this->is_a_master) {
-            // TODO: or update
+            // Make sure the master has created shells
             $this->next = self::DECIDE;
         }
 
@@ -160,30 +201,41 @@ class team_section_form_decide extends team_section_form {
 
         $all_courses = array($course->id => $course);
 
-        foreach ($requests as $request) {
-            $other_course = $request->is_owner() ?
-                $request->other_course() : $request->course();
-
-            if (isset($all_courses[$other_course->id])) {
-                continue;
-            }
-
-            $all_courses[$other_course->id] = $other_course;
-        }
+        $all_sections = $course->sections;
 
         $to_coursename = function ($course) {
             return "$course->department $course->cou_number";
         };
 
+        $before = array();
+
+        foreach ($requests as $request) {
+            $other_course = $request->is_owner() ?
+                $request->other_course() : $request->course();
+
+            if (!isset($all_courses[$other_course->id])) {
+                $all_courses[$other_course->id] = $other_course;
+            }
+
+            foreach ($request->sections() as $req_sec) {
+                if (isset($all_sections[$req_sec->sectionid])) {
+                    continue;
+                }
+
+                $section = $req_sec->section();
+
+                $all_sections[$section->id] = $section;
+            }
+        }
+
         $all_names = implode(' / ', array_map($to_coursename, $all_courses));
 
         $m->addElement('header', 'selected_course', "$display $all_names");
 
-        // Instructor can only deal with sections they own
-        $before = array();
-
-        foreach ($course->sections as $section) {
-            $before[$section->id] = "$course->department $course->cou_number $section->sec_number";
+        foreach ($all_sections as $section) {
+            $before[$section->id] =
+                $to_coursename($all_courses[$section->courseid]) . ' ' .
+                $section->sec_number;
         }
 
         $shells = array();
@@ -275,6 +327,35 @@ class team_section_form_decide extends team_section_form {
 
         $this->generate_states_and_buttons();
     }
+
+    function validation($data) {
+        $requests = $this->_customdata['requests'];
+
+        $mastered = cps_team_request::filtered_master($requests);
+
+        if (isset($data['back'])) {
+            $this->prev = empty($mastered) ? self::SELECT : $this->prev;
+            return true;
+        }
+        // Did they try to move a section they didn't own?
+        // TODO: this is awful... I'd like a better solution
+        if (empty($mastered)) {
+            $sections = cps_team_section::merge_groups_in_requests($requests);
+
+            foreach (range(1, $data['shells']) as $number) {
+                $sectionids = explode(',', $data['shell_values_'.$number]);
+
+                if (isset($sections[$number])) {
+                    foreach ($sections[$number] as $sec) {
+                        if (!in_array($sec->sectionid, $sectionids)) {
+                            return array('shifters' =>
+                                self::_s('team_section_no_permission'));
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 class team_section_form_confirm extends team_section_form {
@@ -345,14 +426,14 @@ class team_section_form_confirm extends team_section_form {
                 $teacher = $section->primary();
 
                 if (!isset($all_users[$teacher->userid])) {
-                    $all_user[$teacher->userid] = $teacher->user();
+                    $all_users[$teacher->userid] = $teacher->user();
                 }
 
                 $parts = array(
                     $courses[$section->courseid],
                     $section->sec_number,
                     'for',
-                    fullname($all_user[$teacher->userid])
+                    fullname($all_users[$teacher->userid])
                 );
 
                 $label = implode(' ', $parts);
@@ -402,7 +483,7 @@ class team_section_form_finish implements finalized_form {
                 $associates = function ($req) use ($requested, $section) {
                     $comp = array(0 => $req->semesterid);
 
-                    if ($req->is_owner()) {
+                    if ($req->is_owner($requested->userid)) {
                         $comp += array(1 => $req->userid, 2 => $req->courseid);
                     } else {
                         $comp += array(1 => $req->requested,
