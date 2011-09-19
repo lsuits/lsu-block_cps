@@ -340,6 +340,8 @@ class team_section_form_decide extends team_section_form {
         // Did they try to move a section they didn't own?
         // TODO: this is awful... I'd like a better solution
         if (empty($mastered)) {
+            $course = $this->_customdata['course'];
+
             $sections = cps_team_section::merge_groups_in_requests($requests);
 
             foreach (range(1, $data['shells']) as $number) {
@@ -347,7 +349,11 @@ class team_section_form_decide extends team_section_form {
 
                 if (isset($sections[$number])) {
                     foreach ($sections[$number] as $sec) {
-                        if (!in_array($sec->sectionid, $sectionids)) {
+                        if (isset($course->sections[$sec->sectionid])) {
+                            continue;
+                        }
+
+                        if (!in_array($sec->sectionid, $sectionids) ) {
                             return array('shifters' =>
                                 self::_s('team_section_no_permission'));
                         }
@@ -458,9 +464,17 @@ class team_section_form_finish implements finalized_form {
     function process($data, $initial_data) {
         $this->id = $data->id;
 
-        // TODO: get old team taught sections
+        $requests = $initial_data['requests'];
+        $course = $initial_data['course'];
 
-        $this->save_or_update($data, $initial_data['requests'], array());
+        $mastered = cps_team_request::filtered_master($requests);
+        if (empty($mastered)) {
+            $sections = cps_team_section::in_sections($requests, $course->sections);
+        } else {
+            $sections = cps_team_section::in_requests($requests);
+        }
+
+        $this->save_or_update($data, $requests, $sections);
     }
 
     function undo($current_sections) {

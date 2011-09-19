@@ -387,6 +387,19 @@ class cps_team_section extends cps_preferences {
         return $sections;
     }
 
+    public static function in_sections($requests, $sections) {
+        $all_sections = self::in_requests($requests);
+
+        $correct = array();
+
+        foreach ($all_sections as $id => $sec) {
+            if (isset($sections[$sec->sectionid])) {
+                $correct[$id] = $sec;
+            }
+        }
+        return $correct;
+    }
+
     public static function exists($section) {
         return cps_team_section::get(array('sectionid' => $section->id));
     }
