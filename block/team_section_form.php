@@ -276,3 +276,188 @@ class team_section_form_decide extends team_section_form {
         $this->generate_states_and_buttons();
     }
 }
+
+class team_section_form_confirm extends team_section_form {
+    var $current = self::CONFIRM;
+    var $prev = self::DECIDE;
+    var $next = self::FINISHED;
+
+    public static function build($courses) {
+        $data = team_section_form_decide::build($courses);
+
+        $extra = array();
+
+        foreach (range(1, $data['shells']) as $number) {
+            $value_key = 'shell_values_'.$number;
+            $name_key = 'shell_name_'.$number.'_hidden';
+
+            $extra += array(
+                $name_key => required_param($name_key, PARAM_TEXT),
+                $value_key => required_param($value_key, PARAM_RAW)
+            );
+        }
+
+        return $extra + $data;
+    }
+
+    function definition() {
+        $m =& $this->_form;
+
+        list($course, $semester, $requests) = $this->extract_data();
+
+        $display = "$semester->year $semester->name";
+
+        $to_coursename = function ($course) {
+            return "$course->department $course->cou_number";
+        };
+
+        $courses = array($course->id => $to_coursename($course));
+
+        foreach ($requests as $request) {
+            $other_course = $request->is_owner() ?
+                $request->other_course() : $request->course();
+
+            if (isset($courses[$other_course->id])) {
+                continue;
+            }
+
+            $courses[$other_course->id] = $to_coursename($other_course);
+        }
+
+        $all_courses = implode(' / ', $courses);
+
+        $all_users = array();
+
+        $m->addElement('header', 'selected_course', "$display $all_courses");
+
+        foreach (range(1, $this->_customdata['shells']) as $number) {
+            $value_key = 'shell_values_'.$number;
+            $name_key = 'shell_name_'.$number.'_hidden';
+
+            $sectionids = $this->_customdata[$value_key];
+            $shell_name = $this->_customdata[$name_key];
+
+            $sections = cps_section::get_select('id IN ('.$sectionids.')');
+
+            $m->addElement('static', 'shell_'.$number, $shell_name, '');
+
+            foreach ($sections as $section) {
+                $teacher = $section->primary();
+
+                if (!isset($all_users[$teacher->userid])) {
+                    $all_user[$teacher->userid] = $teacher->user();
+                }
+
+                $parts = array(
+                    $courses[$section->courseid],
+                    $section->sec_number,
+                    'for',
+                    fullname($all_user[$teacher->userid])
+                );
+
+                $label = implode(' ', $parts);
+
+                $m->addElement('static', 'section_'.$section->id, '', $label);
+            }
+
+            $m->addElement('hidden', $value_key, '');
+            $m->addElement('hidden', $name_key, '');
+        }
+
+        $m->addElement('hidden', 'id', '');
+        $m->addElement('hidden', 'shells', '');
+
+        $this->generate_states_and_buttons();
+    }
+}
+
+class team_section_form_finish implements finalized_form {
+    var $id;
+
+    function process($data, $initial_data) {
+        $this->id = $data->id;
+
+        // TODO: get old team taught sections
+
+        $this->save_or_update($data, $initial_data['requests'], array());
+    }
+
+    function undo($current_sections) {
+        foreach ($current_sections as $section) {
+            $section->delete($section->id);
+        }
+    }
+
+    function save_or_update($data, $current_requests, $current_sections) {
+
+        foreach (range(1, $data->shells) as $number) {
+            $sectionids = $data->{'shell_values_'.$number};
+            $shell_name = $data->{'shell_name_'.$number.'_hidden'};
+
+            foreach (explode(',', $sectionids) as $sectionid) {
+                $section = cps_section::get(array('id' => $sectionid));
+
+                $requested = $section->primary();
+
+                $associates = function ($req) use ($requested, $section) {
+                    $comp = array(0 => $req->semesterid);
+
+                    if ($req->is_owner()) {
+                        $comp += array(1 => $req->userid, 2 => $req->courseid);
+                    } else {
+                        $comp += array(1 => $req->requested,
+                            2 => $req->requested_course);
+                    }
+
+                    list($semid, $userid, $courseid) = $comp;
+
+                    return $requested->userid == $userid and
+                        $section->semesterid == $semid and
+                        $section->courseid == $courseid;
+                };
+
+                $associate = current(array_filter($current_requests, $associates));
+
+                $params = array(
+                    'sectionid' => $sectionid,
+                    'shell_name' => $shell_name,
+                    'groupingid' => $number,
+                    'requestid' => $associate->id
+                );
+
+                if (!$req_sec = cps_team_section::get($params)) {
+                    $req_sec = new cps_team_section();
+                    $req_sec->fill_params($params);
+                }
+
+                $req_sec->save();
+
+                unset($current_sections[$req_sec->id]);
+            }
+        }
+
+        $this->undo($current_sections);
+    }
+
+    function display() {
+        global $OUTPUT;
+
+        $_s = cps::gen_str('block_cps');
+
+        $heading = $_s('team_section_finished');
+
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading($heading);
+
+        echo $OUTPUT->box_start();
+        echo $OUTPUT->notification($_s('team_section_processed'), 'notifysuccess');
+
+        $params = array('id' => $this->id);
+        $url = new moodle_url('/blocks/cps/team_section.php', $params);
+
+        echo $OUTPUT->continue_button($url);
+        echo $OUTPUT->box_end();
+
+        echo $OUTPUT->footer();
+    }
+}

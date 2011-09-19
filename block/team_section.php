@@ -60,6 +60,10 @@ $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/team_section.php', array('id' => $courseid));
 $PAGE->set_pagetype('cps-teamteach');
 
+$PAGE->requires->js('/lib/jquery.js');
+$PAGE->requires->js('/blocks/cps/js/selection.js');
+$PAGE->requires->js('/blocks/cps/js/crosslist.js');
+
 $form = team_section_form::create($initial_data);
 
 if ($form->is_cancelled()) {
