@@ -116,6 +116,33 @@ class cps_section extends cps_dao {
     var $course;
     var $moodle;
 
+    var $primary;
+    var $teachers;
+
+    public function primary() {
+        if (empty($this->primary)) {
+            $teachers = $this->teachers();
+
+            $primaries = function ($t) { return $t->primary_flag; };
+
+            $this->primary = current(array_filter($teachers, $primaries));
+        }
+
+        return $this->primary;
+    }
+
+    public function teachers() {
+        if (empty($this->teachers)) {
+            $params = array(
+                'sectionid = '.$this->id,
+                '(status = "'.cps::ENROLLED.'" OR status = "'.cps::PROCESSED.'")'
+            );
+            $this->teachers = cps_teacher::get_select($params);
+        }
+
+        return $this->teachers;
+    }
+
     public function semester() {
         if (empty($this->semester)) {
             $semester = cps_semester::get(array('id' => $this->semesterid));
