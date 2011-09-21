@@ -77,7 +77,7 @@ class crosslist_form_select extends crosslist_form {
 
                 $course = $courses[$matches[1]];
 
-                $updating = cps_crosslist::exists($course);
+                $updating = ($updating or cps_crosslist::exists($course));
 
                 $current_semester = reset($course->sections)->semesterid;
 
@@ -109,7 +109,13 @@ class crosslist_form_update extends crosslist_form implements updating_form {
     var $prev = self::SELECT;
 
     public static function build($courses) {
-        return crosslist_form_shells::build($courses);
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        $shells = optional_param('shells', null, PARAM_INT);
+
+        $extra = $shells ? array('shells' => $shells) : array();
+
+        return $extra + crosslist_form_shells::build($courses);
     }
 
     public function definition() {
@@ -135,7 +141,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
         $orphaned_sections = 0;
         foreach ($courses as $key => $course) {
 
-            $display = "$semester->year $semester->name $course->department $course->cou_number";
+            $display = $this->display_course($course, $semester);
 
             $m->addElement('static', 'course_'.$course->id, $display, '');
 
@@ -174,7 +180,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
 
         $orphaned = floor($orphaned_sections / 2) + $shells;
 
-        if ($orphaned > $shells) {
+        if ($orphaned > 1) {
             $orphaned_range = range(1, $orphaned);
             $options = array_combine($orphaned_range, $orphaned_range);
 
@@ -251,7 +257,7 @@ class crosslist_form_shells extends crosslist_form {
         }
 
 
-        $number = min(floor($total / count($courses)), $total - $last);
+        $number = min(floor($total / 2), $total - $last);
 
         $range = range(1, $number);
         $options = array_combine($range, $range);
@@ -270,7 +276,19 @@ class crosslist_form_decide extends crosslist_form {
     public static function build($courses) {
         $shells = required_param('shells', PARAM_INT);
 
-        return array('shells' => $shells) + crosslist_form_shells::build($courses);
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        // Don't need to dup this add
+        $current = required_param('current', PARAM_TEXT);
+
+        $to_add = ($reshell and $current == self::UPDATE);
+
+        $extra = array(
+            'shells' => $to_add ? $reshell: $shells,
+            'reshelled' => $reshell
+        );
+
+        return $extra + crosslist_form_shells::build($courses);
     }
 
     function definition() {
@@ -390,6 +408,7 @@ class crosslist_form_decide extends crosslist_form {
         $m->addGroup($shifters, 'shifters', '', array(' '), true);
 
         $m->addElement('hidden', 'shells', '');
+        $m->addElement('hidden', 'reshelled', '');
 
         $this->generate_states_and_buttons();
     }

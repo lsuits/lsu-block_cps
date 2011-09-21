@@ -139,7 +139,13 @@ class split_form_update extends split_form implements updating_form {
     var $prev = self::SELECT;
 
     public static function build($courses) {
-        return split_form_shells::build($courses);
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        $shells = optional_param('shells', null, PARAM_INT);
+
+        $extra = $shells ? array('shells' => $shells) : array();
+
+        return $extra + split_form_shells::build($courses);
     }
 
     function definition() {
@@ -185,7 +191,7 @@ class split_form_update extends split_form implements updating_form {
 
         $m->addElement('radio', 'split_option', '', self::_s('split_undo'), self::UNDO);
 
-        if (!empty($sections)) {
+        if (!empty($sections) or count($course->sections) > 2) {
             $orphaned = range(2, count($sections) + $shells);
             $options = array_combine($orphaned, $orphaned);
 
@@ -207,7 +213,17 @@ class split_form_update extends split_form implements updating_form {
     function validation($data) {
         $option = $data['split_option'];
 
+        $course = $this->_customdata['course'];
+
         $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
+
+        if ($option == self::UNDO) {
+            $this->next = self::FINISHED;
+        } else if ($option == self::REARRANGE and count($course->sections == 2)) {
+            $this->next = self::CONFIRM;
+        } else {
+            $this->next;
+        }
 
         return true;
     }
@@ -221,7 +237,19 @@ class split_form_decide extends split_form {
     public static function build($courses) {
         $shells = required_param('shells', PARAM_INT);
 
-        return array('shells' => $shells) + split_form_shells::build($courses);
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        // Don't need to dup this add
+        $current = required_param('current', PARAM_TEXT);
+
+        $to_add = ($reshell and $current == self::UPDATE);
+
+        $extra = array(
+            'shells' => $to_add ? $reshell : $shells,
+            'reshelled' => $reshell
+        );
+
+        return $extra + split_form_shells::build($courses);
     }
 
     function definition() {
