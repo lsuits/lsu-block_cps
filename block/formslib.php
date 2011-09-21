@@ -68,6 +68,34 @@ abstract class cps_form extends moodleform implements generic_states {
         return $form;
     }
 
+    public static function prep_reshell() {
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        $shells = optional_param('shells', null, PARAM_INT);
+
+        $extra = $shells ? array('shells' => $shells) : array();
+
+        return $extra;
+    }
+
+    public static function conform_reshell() {
+        $shells = required_param('shells', PARAM_INT);
+
+        $reshell = optional_param('reshelled', 0, PARAM_INT);
+
+        // Don't need to dup this add
+        $current = required_param('current', PARAM_TEXT);
+
+        $to_add = ($reshell and $current == self::UPDATE);
+
+        $extra = array(
+            'shells' => $to_add ? $reshell : $shells,
+            'reshelled' => $reshell
+        );
+
+        return $extra;
+    }
+
     public static function navs($prefix, $state) {
         global $PAGE;
         $PAGE->navbar->add(self::_s($prefix . '_' . $state));

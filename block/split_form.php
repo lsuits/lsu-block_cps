@@ -139,13 +139,7 @@ class split_form_update extends split_form implements updating_form {
     var $prev = self::SELECT;
 
     public static function build($courses) {
-        $reshell = optional_param('reshelled', 0, PARAM_INT);
-
-        $shells = optional_param('shells', null, PARAM_INT);
-
-        $extra = $shells ? array('shells' => $shells) : array();
-
-        return $extra + split_form_shells::build($courses);
+        return self::prep_reshell() + split_form_shells::build($courses);
     }
 
     function definition() {
@@ -235,21 +229,7 @@ class split_form_decide extends split_form {
     var $prev = self::SHELLS;
 
     public static function build($courses) {
-        $shells = required_param('shells', PARAM_INT);
-
-        $reshell = optional_param('reshelled', 0, PARAM_INT);
-
-        // Don't need to dup this add
-        $current = required_param('current', PARAM_TEXT);
-
-        $to_add = ($reshell and $current == self::UPDATE);
-
-        $extra = array(
-            'shells' => $to_add ? $reshell : $shells,
-            'reshelled' => $reshell
-        );
-
-        return $extra + split_form_shells::build($courses);
+        return self::conform_reshell() + split_form_shells::build($courses);
     }
 
     function definition() {
