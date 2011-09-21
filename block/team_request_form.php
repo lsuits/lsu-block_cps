@@ -165,6 +165,7 @@ class team_request_form_update extends team_request_form {
         $m->addElement('radio', 'update_option', '',
             self::_s('team_add_course'), self::ADD_COURSE);
 
+        // TODO: incorporate admin setting
         $shells_range = range(1, 10 - $groupingid);
 
         $options = array_combine($shells_range, $shells_range);

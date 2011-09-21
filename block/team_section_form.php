@@ -128,6 +128,123 @@ class team_section_form_select extends team_section_form {
             $this->next = self::DECIDE;
         }
 
+        $requests = $this->_customdata['requests'];
+        $course = $this->_customdata['course'];
+
+        $updating = cps_team_section::in_sections($requests, $course->sections);
+
+        if ($this->is_a_master and $updating) {
+            $this->next = self::UPDATE;
+        }
+
+        return true;
+    }
+}
+
+class team_section_form_update extends team_section_form implements updating_form {
+    var $current = self::UPDATE;
+    var $next = self::DECIDE;
+    var $prev = self::SELECT;
+
+    public static function build($courses) {
+        return team_section_form_select::build($courses);
+    }
+
+    function definition() {
+        $m =& $this->_form;
+
+        list($course, $semester, $requests) = $this->extract_data();
+
+        $to_display = $this->to_display($semester);
+
+        $merged_sections = cps_team_section::merge_groups_in_requests($requests);
+
+        $shells = count($merged_sections);
+
+        $section_count = 0;
+        $courses = array();
+        $users = array();
+
+        $m->addElement('header', 'selected_course', $to_display($course));
+
+        foreach ($merged_sections as $number => $req_secs) {
+            $shell_name = current($req_secs)->shell_name;
+            $shell_values = array();
+
+            $m->addElement('static', 'shell_'.$number, $shell_name, '');
+            foreach ($req_secs as $req_sec) {
+                $section = $req_sec->section();
+
+                $primary = $section->primary();
+
+                if (!isset($courses[$section->courseid])) {
+                    $courses[$section->courseid] = $section->course();
+                }
+
+                if (!isset($users[$primary->userid])) {
+                    $users[$primary->userid] = $primary->user();
+
+                    $sections = $primary->sections(true);
+
+                    $taught = cps_course::merge_sections($sections);
+                    $section_count += count($taught[$section->courseid]->sections);
+                }
+
+                $c = $courses[$section->courseid];
+                $user = $users[$primary->userid];
+
+                $label = array(
+                    "$c->department $c->cou_number",
+                    'Section',
+                    $section->sec_number,
+                    'for',
+                    fullname($user)
+                );
+
+                $m->addElement('static', 'section_'.$section->id, '',
+                    implode(' ', $label));
+
+                $shell_values[] = $section->id;
+            }
+
+            $m->addElement('hidden', 'shell_name_'.$number.'_hidden', $shell_name);
+            $m->addElement('hidden', 'shell_values_'.$number, implode(',', $shell_values));
+        }
+
+        $m->addElement('static', 'breather', '', '');
+
+        $reshell_max = floor($section_count / count($courses));
+
+        $m->addElement('radio', 'team_section_option', '', self::_s('split_undo'), self::UNDO);
+
+        if ($reshell_max > 1) {
+            $reshell_range = range(1, $reshell_max);
+            $options = array_combine($reshell_range, $reshell_range);
+
+            $m->addElement('radio', 'team_section_option', '', self::_s('split_reshell'), self::RESHELL);
+            $m->addElement('select', 'reshelled', self::_s('split_how_many'), $options);
+
+            $m->disabledIf('reshelled', 'team_section_option', 'neq', self::RESHELL);
+        }
+
+        $m->addElement('radio', 'team_section_option', '', self::_s('split_rearrange'), self::REARRANGE);
+
+        $m->setDefault('team_section_option', self::REARRANGE);
+
+        $m->addElement('hidden', 'shells', $shells);
+        $m->addElement('hidden', 'id', '');
+        $this->generate_states_and_buttons();
+    }
+
+    function validation($data) {
+        if (isset($data['back'])) {
+            return true;
+        }
+
+        $option = $data['team_section_option'];
+
+        $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
+
         return true;
     }
 }
@@ -165,7 +282,7 @@ class team_section_form_shells extends team_section_form {
 
             $teacher = $request->other_teacher();
 
-            $taught_courses = cps_course::merge_sections($teacher->sections());
+            $taught_courses = cps_course::merge_sections($teacher->sections(true));
 
             $section_count += count($taught_courses[$id]->sections);
         }
@@ -189,7 +306,10 @@ class team_section_form_decide extends team_section_form {
     public static function build($courses) {
         $shells = required_param('shells', PARAM_INT);
 
-        return array('shells' => $shells) + team_section_form_shells::build($courses);
+        $reshelled = optional_param('reshelled', 0, PARAM_INT);
+
+        return array('shells' => $shells, 'reshelled' => $reshelled) +
+            team_section_form_shells::build($courses);
     }
 
     function definition() {
@@ -240,7 +360,9 @@ class team_section_form_decide extends team_section_form {
 
         $shells = array();
 
-        foreach (range(1, $this->_customdata['shells']) as $groupingid) {
+        $number = $this->_customdata['shells'] + $this->_customdata['reshelled'];
+
+        foreach (range(1, $number) as $groupingid) {
             $updating = !empty($this->_customdata['shell_values_'.$groupingid]);
 
             if ($updating) {
@@ -324,6 +446,8 @@ class team_section_form_decide extends team_section_form {
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'id', '');
+        $m->addElement('hidden', 'team_section_option', '');
+        $m->addElement('hidden', 'reshelled', '');
 
         $this->generate_states_and_buttons();
     }
@@ -333,8 +457,17 @@ class team_section_form_decide extends team_section_form {
 
         $mastered = cps_team_request::filtered_master($requests);
 
+        $option = $data['team_section_option'];
+
         if (isset($data['back'])) {
-            $this->prev = empty($mastered) ? self::SELECT : $this->prev;
+            if ($option == team_section_form_update::RESHELL or
+                $option == team_section_form_update::REARRANGE) {
+                $this->prev = self::UPDATE;
+
+            } else {
+
+                $this->prev = empty($mastered) ? self::SELECT : $this->prev;
+            }
             return true;
         }
         // Did they try to move a section they didn't own?
@@ -458,7 +591,7 @@ class team_section_form_confirm extends team_section_form {
     }
 }
 
-class team_section_form_finish implements finalized_form {
+class team_section_form_finish implements finalized_form, updating_form {
     var $id;
 
     function process($data, $initial_data) {
@@ -474,7 +607,13 @@ class team_section_form_finish implements finalized_form {
             $sections = cps_team_section::in_requests($requests);
         }
 
-        $this->save_or_update($data, $requests, $sections);
+        $updating = isset($data->team_section_option);
+
+        if ($updating and $data->team_section_option == self::UNDO) {
+            $this->undo($sections);
+        } else {
+            $this->save_or_update($data, $requests, $sections);
+        }
     }
 
     function undo($current_sections) {
