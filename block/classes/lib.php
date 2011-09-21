@@ -51,6 +51,10 @@ abstract class cps_preferences extends cps_base {
 
 }
 
+interface verifiable {
+    function is_valid($sections);
+}
+
 interface immediate_application {
     function apply();
 }
@@ -416,6 +420,10 @@ class cps_team_section extends cps_preferences {
 
     public static function merge_groups($sections) {
         $merged = array();
+
+        if (empty($sections)) {
+            return $merged;
+        }
 
         foreach (range(1, self::groups($sections)) as $number) {
             $by_number = function ($section) use ($number) {
