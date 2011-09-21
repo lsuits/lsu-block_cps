@@ -157,6 +157,14 @@ abstract class cps {
         return get_string($key, 'enrol_cps', $a);
     }
 
+    public static function format_string($pattern, $obj) {
+        foreach (get_object_vars($obj) as $key => $value) {
+            $pattern = preg_replace('/\{' . $key . '\}/', $value, $pattern);
+        }
+
+        return $pattern;
+    }
+
     public static function plugin_base() {
         return self::base('plugins');
     }

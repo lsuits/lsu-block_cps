@@ -377,6 +377,29 @@ class enrol_cps_plugin extends enrol_plugin {
         }
     }
 
+    public function get_instance($courseid) {
+        global $DB;
+
+        $instances = enrol_get_instances($courseid, true);
+
+        $attempt = array_filter($instances, function($in) {
+            return $in->enrol == 'cps';
+        });
+
+        // Cannot enrol without an instance
+        if (empty($attempt)) {
+            $course_params = array('id' => $courseid);
+            $course = $DB->get_record('course', $course_params);
+
+            $id = $this->add_instance($course);
+
+            return $DB->get_record('enrol', array('id' => $id));
+        } else {
+            return current($attempt);
+        }
+
+    }
+
     private function manifestation($semester, $course, $section) {
         // Check for instructor changes
         $teacher_params = array(
@@ -576,11 +599,9 @@ class enrol_cps_plugin extends enrol_plugin {
             $a->course_number = $course->cou_number;
             $a->fullname = fullname($user);
 
-            $shortname = $this->setting('course_shortname');
+            $pattern = $this->setting('course_shortname');
 
-            foreach (get_object_vars($a) as $key => $value) {
-                $shortname = preg_replace('/\{' . $key . '\}/', $value, $shortname);
-            }
+            $shortname = cps::format_string($pattern, $a);
 
             $moodle_course->idnumber = $idnumber;
             $moodle_course->shortname = $shortname;
@@ -698,29 +719,6 @@ class enrol_cps_plugin extends enrol_plugin {
             $cps_type->save();
 
             events_trigger($class . '_process', $cps_type);
-        }
-
-    }
-
-    private function get_instance($courseid) {
-        global $DB;
-
-        $instances = enrol_get_instances($courseid, true);
-
-        $attempt = array_filter($instances, function($in) {
-            return $in->enrol == 'cps';
-        });
-
-        // Cannot enrol without an instance
-        if (empty($attempt)) {
-            $course_params = array('id' => $courseid);
-            $course = $DB->get_record('course', $course_params, MUST_EXIST);
-
-            $id = $this->add_instance($course);
-
-            return $DB->get_record('enrol', array('id' => $id));
-        } else {
-            return current($attempt);
         }
 
     }
