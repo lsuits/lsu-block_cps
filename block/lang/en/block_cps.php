@@ -20,6 +20,8 @@ configure the CPS settings.';
 $string['department'] = 'Department';
 $string['cou_number'] = 'Course Number';
 
+$string['material_shortname'] = 'Master Course {department} {course_number} for {fullname}';
+
 // Error Strings
 $string['not_enabled'] = 'CPS Setting <strong>{$a}</strong> is not enabled.';
 $string['not_teacher'] = 'You are not enrolled or set to be enrolled in any course.

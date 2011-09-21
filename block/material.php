@@ -58,6 +58,8 @@ if ($form->is_cancelled()) {
         }
 
         $material->save();
+
+        $material->apply();
     }
 
     $success = true;

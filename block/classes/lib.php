@@ -86,7 +86,54 @@ class cps_unwant extends cps_preferences {
     }
 }
 
-class cps_material extends cps_preferences {
+class cps_material extends cps_preferences implements immediate_application {
+    function apply() {
+        global $DB, $CFG;
+
+        require_once $CFG->dirroot . '/course/lib.php';
+
+        $cps_course = cps_course::get(array('id' => $this->courseid));
+        $user = cps_user::get(array('id' => $this->userid));
+
+        $pattern = get_string('material_shortname', 'block_cps');
+
+        $a = new stdClass;
+        $a->department = $cps_course->department;
+        $a->course_number = $cps_course->cou_number;
+        $a->fullname = fullname($user);
+
+        $shortname = cps::format_string($pattern, $a);
+
+        $mcourse = $DB->get_record('course', array('shortname' => $shortname));
+
+        $enrol = enrol_get_plugin('cps');
+
+        if (!$mcourse) {
+            $cat_params = array('name' => $cps_course->department);
+            $cat = $DB->get_field('course_categories', 'id', $cat_params);
+
+            $course = new stdClass;
+            $course->visible = 0;
+            $course->numsections = $enrol->setting('course_numsections');
+            $course->format = $enrol->setting('course_format');
+
+            $course->fullname = $shortname;
+            $course->shortname = $shortname;
+            $course->summary = $shortname;
+            $course->category = $cat;
+
+            $mcourse= create_course($course);
+        }
+
+        $instance = $enrol->get_instance($mcourse->id);
+
+        $primary = $enrol->setting('editingteacher_role');
+        $enrol->enrol_user($instance, $user->id, $primary);
+
+        $this->moodleid = $mcourse->id;
+
+        return true;
+    }
 }
 
 class cps_creation extends cps_preferences {
