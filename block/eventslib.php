@@ -27,7 +27,7 @@ abstract class cps_event_handler {
         // Creation and Enrollment interjection
         $primary = cps_teacher::get(array(
             'sectionid' => $section->id,
-            'primary_flag' => 1
+            'primary_flag' => 1,
             'status' => cps::PROCESSED
         ));
 
@@ -45,7 +45,7 @@ abstract class cps_event_handler {
         }
 
         $classes_start = $section->semester->classes_start;
-        $diff = $classes_start - $now;
+        $diff = $classes_start - time();
 
         $diff_days = ($diff / 60 / 60 / 24);
 
