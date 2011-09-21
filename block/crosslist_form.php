@@ -241,7 +241,8 @@ class crosslist_form_shells extends crosslist_form {
         foreach ($courses as $selected => $course) {
             $display = "$semester->year $semester->name $course->department $course->cou_number";
 
-            $m->addElement('static', 'course_' . $course->id, $display);
+            $m->addElement('static', 'course_' . $course->id,
+                $this->display_course($course, $semester));
 
             $m->addElement('hidden', $selected, 1);
 
