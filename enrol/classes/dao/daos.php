@@ -220,8 +220,8 @@ abstract class user_handler extends cps_dao {
 
     protected function qualified() {
         return array(
-            'userid' => $this->userid,
-            'status' => 'enrolled'
+            'userid = ' . $this->userid,
+            '(status = "'.cps::ENROLLED.'" OR status = "'.cps::PROCESSED.'")'
         );
     }
 
@@ -264,10 +264,10 @@ class cps_teacher extends user_handler {
             $qualified = $this->qualified();
 
             if ($is_primary) {
-                $qualified['primary_flag'] = 1;
+                $qualified[] = 'primary_flag = 1';
             }
 
-            $all_teaching = cps_teacher::get_all($qualified);
+            $all_teaching = cps_teacher::get_select($qualified);
             $sections = array();
             foreach ($all_teaching as $teacher) {
                 $section = $teacher->section();
@@ -286,7 +286,7 @@ class cps_student extends user_handler {
 
     public function sections() {
         if (empty($this->sections)) {
-            $all_students = cps_student::get_all($this->qualified());
+            $all_students = cps_student::get_select($this->qualified());
 
             $sections = array();
             foreach ($all_students as $student) {
