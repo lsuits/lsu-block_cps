@@ -236,7 +236,9 @@ class cps_split extends cps_preferences implements application, undoable {
     }
 }
 
-class cps_crosslist extends cps_preferences {
+class cps_crosslist extends cps_preferences implements undoable {
+    var $section;
+
     public static function in_courses(array $courses) {
         global $USER;
 
@@ -272,9 +274,77 @@ class cps_crosslist extends cps_preferences {
             return $crosslist->groupingid > $in ? $crosslist->groupingid : $in;
         });
     }
+
+    function section() {
+        if (empty($this->section)) {
+            $this->section = cps_section::get(array('id' => $this->sectionid));
+        }
+
+        return $this->section;
+    }
+
+    function user() {
+        if (empty($this->user)) {
+            $this->user = cps_user::get(array('id' => $this->userid));
+        }
+
+        return $this->user;
+    }
+
+    public static function apply($crosslists) {
+
+        $sections = array();
+        $courses = array();
+        $groupingidnums = array();
+
+        $semester = null;
+        $user = null;
+
+        foreach ($crosslists as $crosslist) {
+            $section = $crosslist->section();
+
+            if (!isset($courses[$section->courseid])) {
+                $courses[$section->courseid] = $section->course();
+            }
+
+            if (empty($semester)) {
+                $semester = $section->semester();
+            }
+
+            if (empty($user)) {
+                $user = $crosslist->user();
+            }
+
+            $sections[$crosslist->groupingid][$section->id] = $section;
+
+            if (!isset($groupingidnums[$crosslist->groupingid])) {
+                $groupingidnums[$crosslist->groupingid] =
+                    $course_name($courses[$section->courseid]);
+            }
+        }
+
+        foreach ($sections as $grouping => $secs) {
+            $suffix = sprintf('%s%s%s%scl%s', $semester->year, $semester->name,
+                $groupingidnums[$grouping], $user->id, $grouping);
+
+            cps::inject_manifest($secs, function ($sec) use ($suffix) {
+                $sec->idnumber = $suffix;
+            });
+        }
+    }
+
+    function unapply() {
+        $sections = cps_section::get_all(array('id' => $this->sectionid));
+
+        cps::inject_manifest($sections, function ($section) {
+            // Eliminate all risks of idnumber pollution
+            $section->idnumber = null;
+        });
+    }
 }
 
-class cps_team_request extends cps_preferences {
+// Request application involves emails
+class cps_team_request extends cps_preferences implements application, undoable {
 
     var $semester;
     var $sections;
@@ -465,9 +535,80 @@ class cps_team_request extends cps_preferences {
 
         return $this->sections;
     }
+
+    private function build_email_obj() {
+        $requester = $this->owner();
+        $requestee = $this->other_user();
+
+        $course_name = function($course) {
+            return "$course->department $course->cou_number";
+        };
+
+        $a = new stdClass;
+        $a->requestee = fullname($requestee);
+        $a->requester = fullname($requester);
+        $a->other_course = $course_name($this->other_course());
+        $a->course = $course_name($this->course());
+
+        return $a;
+    }
+
+    function apply() {
+        $_s = cps::gen_str('block_cps');
+
+        $a = $this->build_email_obj();
+
+        if ($this->approved()) {
+            $subject_key = 'team_request_approved_subject';
+            $body_key = 'team_request_approved_body';
+
+            $to = $this->owner();
+            $from = $this->other_user();
+        } else {
+            $subject_key = 'team_request_invite_subject';
+            $body_key = 'team_request_invite_body';
+
+            $a->link = new moodle_url('/blocks/cps/team_request.php');
+
+            $to = $this->other_user();
+            $from = $this->owner();
+        }
+
+        email_to_user($to, $from, $_s($subject_key), $_s($body_key, $a));
+    }
+
+    function unapply() {
+        global $USER;
+
+        $requester = $this->owner();
+        $requestee = $this->other_user();
+
+        $_s = cps::gen_str('block_cps');
+
+        $a = $this->build_email_obj();
+
+        if ($requester->id == $USER->id) {
+            $to = $requestee;
+            $from = $requester;
+        } else {
+            $subject_key = 'team_request_reject_subject';
+            $body_key = 'team_request_reject_body';
+
+            $to = $requester;
+            $from = $requestee;
+        }
+
+        // Cascading undo
+        $children = $this->sections();
+        foreach ($children as $child) {
+            $child->unapply();
+        }
+
+        email_to_user($to, $from, $_s($subject_key), $_s($body_key, $a));
+    }
 }
 
-class cps_team_section extends cps_preferences {
+class cps_team_section extends cps_preferences implements undoable {
     var $section;
 
     public static function in_requests(array $requests) {
@@ -538,5 +679,49 @@ class cps_team_section extends cps_preferences {
         }
 
         return $this->section;
+    }
+
+    public function request() {
+        if (empty($this->request)) {
+            $this->request = cps_team_request::get(array('id' => $this->requestid));
+        }
+
+        return $this->request;
+    }
+
+    public static function apply($tsections) {
+        $sections = array();
+
+        $semester = null;
+        $master_request = null;
+
+        foreach ($tsections as $tsec) {
+            $section = $tsec->section();
+
+            if (empty($master_request)) {
+                $master_request = $tsec->request();
+            }
+
+            if (empty($semester)) {
+                $semester = $section->semester();
+            }
+
+            $sections[$tsec->groupingid][$section->id] = $section;
+        }
+
+        foreach ($sections as $grouping => $secs) {
+            $suffix = sprintf('%s%s%stt%s', $semester->year, $semester->name,
+                $master_request->id, $grouping);
+
+            cps::inject_manifest($secs, function ($sec) use ($suffix) {
+                $sec->idnumber = $suffix;
+            });
+        }
+    }
+
+    function unapply() {
+        cps::inject_manifest(array($this->section()), function($sec) {
+            $sec->idnumber = null;
+        });
     }
 }
