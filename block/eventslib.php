@@ -44,7 +44,7 @@ abstract class cps_event_handler {
             $creation->enroll_days = get_config('block_cps', 'enroll_days');
         }
 
-        $classes_start = $section->semester->classes_start;
+        $classes_start = $section->semester()->classes_start;
         $diff = $classes_start - time();
 
         $diff_days = ($diff / 60 / 60 / 24);
@@ -61,7 +61,80 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_course_create($params) {
+    public static function cps_course_create($course) {
+        // Split, Crosslist, and Team teach manipulate the shortname
+        // and fullname of a created course
+        // We must consider these.
+
+        $sections = cps_section::from_course($course);
+
+        if (empty($sections)) {
+            return true;
+        }
+
+        $section = reset($sections);
+
+        $primary = $section->primary();
+
+        if (empty($primary)) {
+            return true;
+        }
+
+        $semester = $section->semester();
+        $cps_course = $section->course();
+
+        $owner_params = array(
+            'userid' => $primary->userid,
+            'sectionid' => $section->id
+        );
+
+        // Properly fold
+        $fullname = $course->fullname;
+        $shortname = $course->shortname;
+
+        $a = new stdClass;
+
+        $split = cps_split::get($owner_params);
+        if ($split) {
+            $a->year = $semester->year;
+            $a->name = $semester->name;
+            $a->department = $cps_course->department;
+            $a->course_number = $cps_course->cou_number;
+            $a->shell_name = $split->shell_name;
+            $a->fullname = fullname($primary->user());
+
+            $string_key = 'split_shortname';
+        }
+
+        $crosslist = cps_crosslist::get($owner_params);
+        if ($crosslist) {
+            $a->year = $semester->year;
+            $a->name = $semester->name;
+            $a->shell_name = $crosslist->shell_name;
+            $a->fullname = fullname($primary->user());
+
+            $string_key = 'crosslist_shortname';
+        }
+
+        $team_teach = cps_team_section::get(array('sectionid' => $section->id));
+        if ($team_teach) {
+            $a->year = $semester->year;
+            $a->name = $semester->name;
+            $a->shell_name = $team_teach->shell_name;
+
+            $string_key = 'team_request_shortname';
+        }
+
+        if (isset($string_key)) {
+            $pattern = get_config('block_cps', $string_key);
+
+            $fullname = cps::format_string($pattern, $a);
+            $shortname = cps::format_string($pattern, $a);
+        }
+
+        $course->fullname = $fullname;
+        $course->shortname = $shortname;
+
         return true;
     }
 

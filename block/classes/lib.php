@@ -114,7 +114,7 @@ class cps_material extends cps_preferences implements application {
         $cps_course = cps_course::get(array('id' => $this->courseid));
         $user = cps_user::get(array('id' => $this->userid));
 
-        $pattern = get_string('material_shortname', 'block_cps');
+        $pattern = get_config('block_cps', 'material_shortname');
 
         $a = new stdClass;
         $a->department = $cps_course->department;
@@ -141,7 +141,7 @@ class cps_material extends cps_preferences implements application {
             $course->summary = $shortname;
             $course->category = $cat;
 
-            $mcourse= create_course($course);
+            $mcourse = create_course($course);
         }
 
         $instance = $enrol->get_instance($mcourse->id);
@@ -155,13 +155,16 @@ class cps_material extends cps_preferences implements application {
     }
 }
 
-class cps_creation extends cps_preferences {
+class cps_creation extends cps_preferences implements application {
+    function apply() {
+        // TODO: Should we run a reprocess on a creation / enroll day change?
+    }
 }
 
 class cps_setting extends cps_preferences {
 }
 
-class cps_split extends cps_preferences {
+class cps_split extends cps_preferences implements application, undoable {
     public static function filter_valid($courses) {
         return array_filter($courses, function ($course) {
             return count($course->sections) > 1;
@@ -207,6 +210,29 @@ class cps_split extends cps_preferences {
         return array_reduce($splits, function ($in, $split) {
             return $split->groupingid > $in ? $split->groupingid : $in;
         });
+    }
+
+    function apply() {
+        $sections = cps_section::get_all(array('id' => $this->sectionid));
+        $user = cps_user::get(array('id' => $this->userid));
+
+        $grouping = $this->groupingid;
+
+        cps::inject_manifest($sections, function ($section) use ($user, $grouping) {
+            $semester = $section->semester();
+            $course = $section->course();
+
+            $idnumber = sprintf('%s%s%s%s%ssplit%s', $semester->year, $semester->name,
+                $course->department, $course->cou_number, $user->id, $grouping);
+
+            $section->idnumber = $idnumber;
+        });
+    }
+
+    function unapply() {
+        $sections = cps_section::get_all(array('id' => $this->sectionid));
+
+        cps::inject_manifest($sections);
     }
 }
 
