@@ -515,6 +515,7 @@ class crosslist_form_finish implements finalized_form {
 
     function undo($crosslists) {
         foreach ($crosslists as $crosslist) {
+            $crosslist->unapply();
             $crosslist->delete($crosslist->id);
         }
     }
@@ -522,6 +523,7 @@ class crosslist_form_finish implements finalized_form {
     function save_or_update($data, $current_crosslists) {
         global $USER;
 
+        $to_apply = array();
         foreach (range(1, $data->shells) as $grouping) {
             $shell_name = $data->{'shell_name_'.$grouping.'_hidden'};
 
@@ -542,9 +544,12 @@ class crosslist_form_finish implements finalized_form {
                 $crosslist->shell_name = $shell_name;
                 $crosslist->save();
 
+                $to_apply[] = $crosslist;
                 unset ($current_crosslists[$crosslist->id]);
             }
         }
+
+        cps_crosslist::apply($to_apply);
 
         $this->undo($current_crosslists);
     }
