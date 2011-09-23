@@ -60,6 +60,7 @@ if ($form->is_cancelled()) {
             }
 
             $unwant->save();
+            $unwant->apply();
 
             unset($unwants[$unwant->id]);
         }
@@ -67,6 +68,7 @@ if ($form->is_cancelled()) {
 
     // Erase deselected
     foreach ($unwants as $unwant) {
+        $unwant->unapply();
         cps_unwant::delete($unwant->id);
     }
 

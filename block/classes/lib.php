@@ -55,12 +55,16 @@ interface verifiable {
     function is_valid($sections);
 }
 
-interface immediate_application {
+interface application {
     function apply();
 }
 
+interface undoable {
+    function unapply();
+}
+
 // Begin Concrete classes
-class cps_unwant extends cps_preferences {
+class cps_unwant extends cps_preferences implements application, undoable {
     public static function active_sections_for($teacher, $is_primary = true) {
         $sections = $teacher->sections($is_primary);
 
@@ -84,9 +88,24 @@ class cps_unwant extends cps_preferences {
 
         return $sections;
     }
+
+    function apply() {
+        $section = cps_section::get(array('id' => $this->sectionid));
+        $user = cps_user::get(array('id' => $this->userid));
+
+        // Severage is happening in eventslib.php
+        cps::unenroll_users(array($section));
+    }
+
+    function unapply() {
+        $section = cps_section::get(array('id' => $this->sectionid));
+        $user = cps_user::get(array('id' => $this->userid));
+
+        cps::enroll_users(array($section));
+    }
 }
 
-class cps_material extends cps_preferences implements immediate_application {
+class cps_material extends cps_preferences implements application {
     function apply() {
         global $DB, $CFG;
 
