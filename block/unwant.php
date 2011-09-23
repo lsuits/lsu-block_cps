@@ -38,7 +38,6 @@ $PAGE->set_url('/blocks/cps/unwant.php');
 
 $form = new unwant_form(null, array('sections' => $sections));
 
-// TODO: do the apply and unapply
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
 } else if ($data = $form->get_data()) {
@@ -68,8 +67,8 @@ if ($form->is_cancelled()) {
 
     // Erase deselected
     foreach ($unwants as $unwant) {
-        $unwant->unapply();
         cps_unwant::delete($unwant->id);
+        $unwant->unapply();
     }
 
     $success = true;
