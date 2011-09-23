@@ -838,12 +838,11 @@ class team_request_form_finish implements finalized_form {
 
             switch ($action) {
                 case team_request_form_manage::APPROVE:
-                    // TODO: notify master
                     $teamteach->approval_flag = 1;
                     $teamteach->save();
+                    $teamteach->apply();
                     break;
                 case team_request_form_manage::REVOKE:
-                    // TODO: send formal letter
                     $to_undo[] = $teamteach;
                     break;
             }
@@ -854,6 +853,7 @@ class team_request_form_finish implements finalized_form {
 
     function undo($teamteaches) {
         foreach ($teamteaches as $teamteach) {
+            $teamteach->unapply();
             cps_team_request::delete($teamteach->id);
         }
     }
@@ -881,6 +881,7 @@ class team_request_form_finish implements finalized_form {
                 }
 
                 $request->save();
+                $request->apply();
 
                 unset ($current_teamteaches[$request->id]);
             }

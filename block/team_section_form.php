@@ -614,12 +614,14 @@ class team_section_form_finish implements finalized_form, updating_form {
 
     function undo($current_sections) {
         foreach ($current_sections as $section) {
+            $section->unapply();
             $section->delete($section->id);
         }
     }
 
     function save_or_update($data, $current_requests, $current_sections) {
 
+        $to_apply = array();
         foreach (range(1, $data->shells) as $number) {
             $sectionids = $data->{'shell_values_'.$number};
             $shell_name = $data->{'shell_name_'.$number.'_hidden'};
@@ -661,10 +663,13 @@ class team_section_form_finish implements finalized_form, updating_form {
                 }
 
                 $req_sec->save();
+                $to_apply[] = $req_sec;
 
                 unset($current_sections[$req_sec->id]);
             }
         }
+
+        cps_team_section::apply($to_apply);
 
         $this->undo($current_sections);
     }
