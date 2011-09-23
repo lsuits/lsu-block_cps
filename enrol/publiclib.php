@@ -64,6 +64,9 @@ abstract class cps {
 
     // Note: this will cause manifestation (course creation if need be)
     public static function enroll_users(array $sections, $silent = true) {
+        global $CFG;
+        require_once $CFG->dirroot . '/course/lib.php';
+
         $enrol = enrol_get_plugin('cps');
 
         $enrol->is_silent = $silent;
@@ -76,6 +79,10 @@ abstract class cps {
             }
 
             $section->status = self::PROCESSED;
+
+            // Appropriate events needs to be adhered to
+            events_trigger('cps_section_process', $section);
+
             $section->save();
         }
 
