@@ -362,6 +362,10 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         foreach ($sections as $section) {
+            if ($section->status == cps::PENDING) {
+                continue;
+            }
+
             $semester = $section->semester();
 
             $course = $section->course();
