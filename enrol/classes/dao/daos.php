@@ -119,6 +119,15 @@ class cps_section extends cps_dao {
     var $primary;
     var $teachers;
 
+    var $students;
+
+    protected function qualified() {
+        return array(
+            'sectionid = '.$this->id,
+            '(status = "'.cps::ENROLLED.'" OR status = "'.cps::PROCESSED.'")'
+        );
+    }
+
     public function primary() {
         if (empty($this->primary)) {
             $teachers = $this->teachers();
@@ -133,14 +142,18 @@ class cps_section extends cps_dao {
 
     public function teachers() {
         if (empty($this->teachers)) {
-            $params = array(
-                'sectionid = '.$this->id,
-                '(status = "'.cps::ENROLLED.'" OR status = "'.cps::PROCESSED.'")'
-            );
-            $this->teachers = cps_teacher::get_select($params);
+            $this->teachers = cps_teacher::get_select($this->qualified());
         }
 
         return $this->teachers;
+    }
+
+    public function students() {
+        if (empty($this->students)) {
+            $this->students = cps_student::get_select($this->qualified());
+        }
+
+        return $this->students;
     }
 
     public function semester() {
@@ -218,11 +231,29 @@ abstract class user_handler extends cps_dao {
     var $section;
     var $user;
 
-    protected function qualified() {
-        return array(
-            'userid = ' . $this->userid,
-            '(status = "'.cps::ENROLLED.'" OR status = "'.cps::PROCESSED.'")'
-        );
+    protected function qualified($by_status = null) {
+        if (empty($by_status)) {
+            $status = '(status = "'.cps::ENROLLED.'" OR status = "'.
+                cps::PROCESSED.'")';
+        } else {
+            $status = 'status = "'.$by_status.'"';
+        }
+
+        return array('userid = ' . $this->userid, $status);
+    }
+
+    public function sections_by_status($status) {
+        $params = $this->qualified($status);
+
+        $by_status = self::call('get_select', $params);
+
+        $sections = array();
+        foreach ($by_status as $state) {
+            $section = $state->section();
+            $sections[$section->id] = $section;
+        }
+
+        return $sections;
     }
 
     public function section() {

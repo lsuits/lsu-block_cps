@@ -506,7 +506,10 @@ class enrol_cps_plugin extends enrol_plugin {
                 cps::UNENROLLED :
                 cps::PROCESSED;
 
-            $sections = $user->sections();
+            $user->status = $to_status;
+            $user->save();
+
+            $sections = $user->sections_by_status(cps::ENROLLED);
 
             $enrolled_sections = array_filter($sections, function($section) use ($course) {
                 return $section->idnumber == $course->idnumber;
@@ -515,9 +518,6 @@ class enrol_cps_plugin extends enrol_plugin {
             if (!count($enrolled_sections)) {
                 $this->unenrol_user($instance, $user->userid, $roleid);
             }
-
-            $user->status = $to_status;
-            $user->save();
 
             if ($to_status == cps::UNENROLLED) {
                 $event_params = array(
