@@ -205,3 +205,38 @@ and sent. Continue to head back to the team teach home.';
 $string['team_with'] = 'to be team taught with...';
 
 $string['team_request_shortname'] = '{year} {name} {shell_name}';
+
+$string['team_request_approved_subject'] = 'Moodle Team-Teaching Request Accepted';
+$string['team_request_approved_body'] = '
+{$a->requester},
+
+{$a->requestee} has accepted your invitation to team-teach your {$a->course}
+with his/her {$a->other_course} course.  All instructors and students of
+{$a->other_course} will be enrolled within your {$a->course} course.';
+
+$string['team_request_invite_subject'] = 'Moodle Team-Teaching Request';
+$string['team_request_invite_body'] = '
+{$a->requestee},
+
+{$a->requester} has invited you and your students from your {$a->other_course}
+course to participate in a team-taught course with his/her {$a->course}
+course. If you accept this invitation, you and your students will be added
+and you will be made a non-primary instructor.
+
+Please click the following link to accept or reject {$a->requester}\'s request:
+{$a->link}';
+
+$string['team_request_reject_subject'] = 'Moodle Team-Teaching Request Rejected';
+$string['team_request_reject_body'] = '
+{$a->requester},
+
+{$a->requestee} has rejected your invitation to team-teach your {$a->course}
+course with his/her {$a->other_course} course.';
+
+$string['team_request_revoke_subject'] = 'Moodle Team-Teaching Request Revoked';
+$string['team_request_revoke_body'] = '
+{$a->requestee},
+
+{$a->requester} has revoked the invitation to team-teach your {$a->other_course}
+course with his/her {$a->course} course. All instructors and students from
+your {$a->other_course} course will be unenrolled from {$a->course}.';
