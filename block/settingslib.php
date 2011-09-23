@@ -17,6 +17,7 @@ class setting_processor {
 
     public static function material($settings, $_s) {
         self::nonprimary('material', $settings, $_s, 1);
+        self::shortname('material', $settings, $_s);
     }
 
     public static function split($settings, $_s) {
