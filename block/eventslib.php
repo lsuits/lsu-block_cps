@@ -66,6 +66,30 @@ abstract class cps_event_handler {
     }
 
     public static function cps_course_severed($course) {
+        // This event only occurs when a Moodle course will no longer be
+        // supported. Good news is that the section that caused this
+        // severage will still be link to the idnumber until the end of the
+        // unenrollment process
+
+        $sections = cps_section::from_course($course);
+
+        if (empty($sections)) {
+            return true;
+        }
+
+        $section = reset($sections);
+
+        $primary = $section->primary();
+
+        $by_params = array (
+            'userid' => $primary->userid,
+            'sectionid' => $section->id
+        );
+
+        if (cps_unwant::get($by_params)) {
+            delete_course($course, false);
+        }
+
         return true;
     }
 
