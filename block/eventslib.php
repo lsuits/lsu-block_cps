@@ -58,6 +58,15 @@ abstract class cps_event_handler {
             cps_student::reset_status($section, cps::PENDING, cps::PROCESSED);
         }
 
+        foreach (array('split', 'crosslist', 'team_section') as $setting) {
+            $class = 'cps_'.$setting;
+            $applied = $class::get(array('sectionid' => $section->id));
+
+            if ($applied) {
+                $section->idnumber = $applied->new_idnumber();
+            }
+        }
+
         return true;
     }
 
@@ -143,6 +152,35 @@ abstract class cps_event_handler {
         // supported. Good news is that the section that caused this
         // severage will still be link to the idnumber until the end of the
         // unenrollment process
+
+        // Should there be no grades, no activities, and no resources
+        // we can safely assume that this course is no longer used
+        global $DB;
+
+        $res = $DB->get_records('resource', array('course' => $course->id));
+
+        $grade_items_params = array(
+            'courseid' => $course->id,
+            'itemtype' => 'course'
+        );
+
+        $ci = $DB->get_record('grade_items', $grade_items_params);
+
+        $grades = function($ci) use ($DB) {
+            if (empty($ci)) {
+                return false;
+            }
+
+            $count_params = array('itemid' => $ci->id);
+            $grades = $DB->count_records('grade_grades', $count_params);
+
+            return !empty($grades);
+        };
+
+        if (empty($res) and !$grades($ci)) {
+            delete_course($course, false);
+            return true;
+        }
 
         $sections = cps_section::from_course($course);
 
