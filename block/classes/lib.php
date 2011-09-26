@@ -63,6 +63,10 @@ interface undoable {
     function unapply();
 }
 
+interface unique extends application {
+    function new_idnumber();
+}
+
 // Begin Concrete classes
 class cps_unwant extends cps_preferences implements application, undoable {
     public static function active_sections_for($teacher, $is_primary = true) {
@@ -164,7 +168,10 @@ class cps_creation extends cps_preferences implements application {
 class cps_setting extends cps_preferences {
 }
 
-class cps_split extends cps_preferences implements application, undoable {
+class cps_split extends cps_preferences implements unique, undoable {
+    var $section;
+    var $user;
+
     public static function filter_valid($courses) {
         return array_filter($courses, function ($course) {
             return count($course->sections) > 1;
@@ -212,31 +219,55 @@ class cps_split extends cps_preferences implements application, undoable {
         });
     }
 
-    function apply() {
-        $sections = cps_section::get_all(array('id' => $this->sectionid));
-        $user = cps_user::get(array('id' => $this->userid));
+    public function section() {
+        if (empty($this->section)) {
+            $section = cps_section::get(array('id' => $this->sectionid));
 
-        $grouping = $this->groupingid;
+            $this->section = $section;
+        }
 
-        cps::inject_manifest($sections, function ($section) use ($user, $grouping) {
-            $semester = $section->semester();
-            $course = $section->course();
-
-            $idnumber = sprintf('%s%s%s%s%ssplit%s', $semester->year, $semester->name,
-                $course->department, $course->cou_number, $user->id, $grouping);
-
-            $section->idnumber = $idnumber;
-        });
+        return $this->section;
     }
 
-    function unapply() {
-        $sections = cps_section::get_all(array('id' => $this->sectionid));
+    public function user() {
+        if (empty($this->user)) {
+            $user = cps_user::get(array('id' => $this->userid));
+
+            $this->user = $user;
+        }
+
+        return $this->user;
+    }
+
+    function new_idnumber() {
+        $section = $this->section();
+        $semester = $section->semester();
+
+        $course = $section->course();
+
+        $idnumber = sprintf('%s%s%s%s%ssplit%s', $semester->year, $semester->name,
+            $course->department, $course->cou_number, $this->userid,
+            $this->groupingid);
+
+        return $idnumber;
+    }
+
+    function apply() {
+        $sections = array($this->section());
 
         cps::inject_manifest($sections);
     }
+
+    function unapply() {
+        $sections = array($this->section());
+
+        cps::inject_manifest($sections, function ($sec) {
+            $sec->idnumber = null;
+        });
+    }
 }
 
-class cps_crosslist extends cps_preferences implements undoable {
+class cps_crosslist extends cps_preferences implements unique, undoable {
     var $section;
 
     public static function in_courses(array $courses) {
@@ -291,53 +322,27 @@ class cps_crosslist extends cps_preferences implements undoable {
         return $this->user;
     }
 
-    public static function apply($crosslists) {
+    function new_idnumber() {
+        $section = $this->section();
+        $sem = $section->semester();
 
-        $sections = array();
-        $courses = array();
-        $groupingidnums = array();
+        $shell = str_replace(' ', '', trim($this->shell_name));
+        $userid = $this->userid;
 
-        $semester = null;
-        $user = null;
+        $idnumber = "$sem->year$sem->name{$shell}{$userid}cl{$this->groupingid}";
+        return $idnumber;
+    }
 
-        foreach ($crosslists as $crosslist) {
-            $section = $crosslist->section();
+    function apply() {
+        $section = $this->section();
 
-            if (!isset($courses[$section->courseid])) {
-                $courses[$section->courseid] = $section->course();
-            }
-
-            if (empty($semester)) {
-                $semester = $section->semester();
-            }
-
-            if (empty($user)) {
-                $user = $crosslist->user();
-            }
-
-            $sections[$crosslist->groupingid][$section->id] = $section;
-
-            if (!isset($groupingidnums[$crosslist->groupingid])) {
-                $groupingidnums[$crosslist->groupingid] =
-                    $course_name($courses[$section->courseid]);
-            }
-        }
-
-        foreach ($sections as $grouping => $secs) {
-            $suffix = sprintf('%s%s%s%scl%s', $semester->year, $semester->name,
-                $groupingidnums[$grouping], $user->id, $grouping);
-
-            cps::inject_manifest($secs, function ($sec) use ($suffix) {
-                $sec->idnumber = $suffix;
-            });
-        }
+        cps::inject_manifest(array($section));
     }
 
     function unapply() {
-        $sections = cps_section::get_all(array('id' => $this->sectionid));
+        $sections = array($this->section());
 
         cps::inject_manifest($sections, function ($section) {
-            // Eliminate all risks of idnumber pollution
             $section->idnumber = null;
         });
     }
@@ -588,6 +593,9 @@ class cps_team_request extends cps_preferences implements application, undoable 
         $a = $this->build_email_obj();
 
         if ($requester->id == $USER->id) {
+            $subject_key = 'team_request_revoke_subject';
+            $body_key = 'team_request_revoke_subject';
+
             $to = $requestee;
             $from = $requester;
         } else {
@@ -608,7 +616,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
     }
 }
 
-class cps_team_section extends cps_preferences implements undoable {
+class cps_team_section extends cps_preferences implements unique, undoable {
     var $section;
 
     public static function in_requests(array $requests) {
@@ -689,34 +697,23 @@ class cps_team_section extends cps_preferences implements undoable {
         return $this->request;
     }
 
-    public static function apply($tsections) {
-        $sections = array();
+    function new_idnumber() {
+        $section = $this->section();
+        $sem = $section->semester();
 
-        $semester = null;
-        $master_request = null;
+        $shell = str_replace(' ', '', trim($this->shell_name));
 
-        foreach ($tsections as $tsec) {
-            $section = $tsec->section();
+        $courseid = $this->request()->courseid;
 
-            if (empty($master_request)) {
-                $master_request = $tsec->request();
-            }
+        $idnumber = "$sem->year$sem->name{$shell}{$courseid}tt{$this->groupingid}";
 
-            if (empty($semester)) {
-                $semester = $section->semester();
-            }
+        return $idnumber;
+    }
 
-            $sections[$tsec->groupingid][$section->id] = $section;
-        }
+    function apply() {
+        $section = $this->section();
 
-        foreach ($sections as $grouping => $secs) {
-            $suffix = sprintf('%s%s%stt%s', $semester->year, $semester->name,
-                $master_request->id, $grouping);
-
-            cps::inject_manifest($secs, function ($sec) use ($suffix) {
-                $sec->idnumber = $suffix;
-            });
-        }
+        cps::inject_manifest(array($section));
     }
 
     function unapply() {
