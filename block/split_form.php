@@ -441,8 +441,8 @@ class split_form_finish implements finalized_form {
 
     function undo($splits) {
         foreach ($splits as $split) {
-            $split->unapply();
             $split->delete($split->id);
+            $split->unapply();
         }
     }
 

@@ -18,9 +18,9 @@ interface finalized_form {
 }
 
 interface updating_form {
-    const UNDO = 0;
-    const RESHELL = 1;
-    const REARRANGE = 2;
+    const UNDO = 1;
+    const RESHELL = 2;
+    const REARRANGE = 3;
 }
 
 abstract class cps_form extends moodleform implements generic_states {
