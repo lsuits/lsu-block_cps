@@ -845,6 +845,7 @@ class team_request_form_finish implements finalized_form {
                 case team_request_form_manage::REVOKE:
                     $to_undo[] = $teamteach;
                     break;
+                default: continue;
             }
         }
 
@@ -863,6 +864,9 @@ class team_request_form_finish implements finalized_form {
 
         foreach (range(1, $data->shells) as $number) {
             $requested = cps_course::get($data->{'query'.$number});
+            if (empty($requested)) {
+                continue;
+            }
 
             $selected = explode(',', $data->{'selected_users'.$number.'_str'});
 
