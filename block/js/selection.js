@@ -23,7 +23,7 @@
       return false;
     });
     selected = function() {
-      return $(":checked").attr("value");
+      return $("input[name='selected_shell']").attr("value");
     };
     available = $("select[name^='before']");
     bucket = function() {

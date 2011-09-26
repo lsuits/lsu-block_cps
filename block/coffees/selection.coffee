@@ -24,7 +24,7 @@ $(document).ready () ->
         false
 
     selected = () ->
-        $(":checked").attr "value"
+        $("input[name='selected_shell']").attr "value"
 
     available = $("select[name^='before']")
 
