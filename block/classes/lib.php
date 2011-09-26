@@ -67,8 +67,36 @@ interface unique extends application {
     function new_idnumber();
 }
 
+abstract class cps_section_accessor extends cps_preferences {
+    var $section;
+
+    public function section() {
+        if (empty($this->section)) {
+            $section = cps_section::get(array('id' => $this->sectionid));
+
+            $this->section = $section;
+        }
+
+        return $this->section;
+    }
+}
+
+abstract class cps_user_section_accessor extends cps_section_accessor {
+    var $user;
+
+    public function user() {
+        if (empty($this->user)) {
+            $user = cps_user::get(array('id' => $this->userid));
+
+            $this->user = $user;
+        }
+
+        return $this->user;
+    }
+}
+
 // Begin Concrete classes
-class cps_unwant extends cps_preferences implements application, undoable {
+class cps_unwant extends cps_user_section_accessor implements application, undoable {
     public static function active_sections_for($teacher, $is_primary = true) {
         $sections = $teacher->sections($is_primary);
 
@@ -94,16 +122,14 @@ class cps_unwant extends cps_preferences implements application, undoable {
     }
 
     function apply() {
-        $section = cps_section::get(array('id' => $this->sectionid));
-        $user = cps_user::get(array('id' => $this->userid));
+        $section = $this->section();
 
         // Severage is happening in eventslib.php
         cps::unenroll_users(array($section));
     }
 
     function unapply() {
-        $section = cps_section::get(array('id' => $this->sectionid));
-        $user = cps_user::get(array('id' => $this->userid));
+        $section = $this->section();
 
         cps::enroll_users(array($section));
     }
@@ -168,9 +194,7 @@ class cps_creation extends cps_preferences implements application {
 class cps_setting extends cps_preferences {
 }
 
-class cps_split extends cps_preferences implements unique, undoable {
-    var $section;
-    var $user;
+class cps_split extends cps_user_section_accessor implements unique, undoable {
 
     public static function filter_valid($courses) {
         return array_filter($courses, function ($course) {
@@ -219,26 +243,6 @@ class cps_split extends cps_preferences implements unique, undoable {
         });
     }
 
-    public function section() {
-        if (empty($this->section)) {
-            $section = cps_section::get(array('id' => $this->sectionid));
-
-            $this->section = $section;
-        }
-
-        return $this->section;
-    }
-
-    public function user() {
-        if (empty($this->user)) {
-            $user = cps_user::get(array('id' => $this->userid));
-
-            $this->user = $user;
-        }
-
-        return $this->user;
-    }
-
     function new_idnumber() {
         $section = $this->section();
         $semester = $section->semester();
@@ -267,8 +271,7 @@ class cps_split extends cps_preferences implements unique, undoable {
     }
 }
 
-class cps_crosslist extends cps_preferences implements unique, undoable {
-    var $section;
+class cps_crosslist extends cps_user_section_accessor implements unique, undoable {
 
     public static function in_courses(array $courses) {
         global $USER;
@@ -304,22 +307,6 @@ class cps_crosslist extends cps_preferences implements unique, undoable {
         return array_reduce($crosslists, function ($in, $crosslist) {
             return $crosslist->groupingid > $in ? $crosslist->groupingid : $in;
         });
-    }
-
-    function section() {
-        if (empty($this->section)) {
-            $this->section = cps_section::get(array('id' => $this->sectionid));
-        }
-
-        return $this->section;
-    }
-
-    function user() {
-        if (empty($this->user)) {
-            $this->user = cps_user::get(array('id' => $this->userid));
-        }
-
-        return $this->user;
     }
 
     function new_idnumber() {
@@ -616,8 +603,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
     }
 }
 
-class cps_team_section extends cps_preferences implements unique, undoable {
-    var $section;
+class cps_team_section extends cps_section_accessor implements unique, undoable {
 
     public static function in_requests(array $requests) {
         $sections = array();
@@ -679,14 +665,6 @@ class cps_team_section extends cps_preferences implements unique, undoable {
 
     public static function merge_groups_in_requests($requests) {
         return self::merge_groups(self::in_requests($requests));
-    }
-
-    public function section() {
-        if (empty($this->section)) {
-            $this->section = cps_section::get(array('id' => $this->sectionid));
-        }
-
-        return $this->section;
     }
 
     public function request() {
