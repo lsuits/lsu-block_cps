@@ -1,13 +1,29 @@
 <?php
 
-abstract class lsu_source {
+interface semester_codes {
     const FALL = '1S';
     const SPRING = '2S';
     const SUMMER = '3S';
     const WINTER_INT = '1T';
     const SPRING_INT = '2T';
     const SUMMER_INT = '3T';
+}
 
+interface institution_codes {
+    const LSU_SEM = 'CLSB';
+    const LAW_SEM = 'LAWB';
+
+    const LSU_FINAL = 'PSTGRD';
+    const LAW_FINAL = 'LFGDF';
+
+    const LSU_CAMPUS = '01';
+    const LAW_CAMPUS = '08';
+
+    const LSU_INST = '1590';
+    const LAW_INST = '1595';
+}
+
+abstract class lsu_source implements institution_codes, semester_codes {
     /**
      * An LSU source requires these
      */
@@ -15,6 +31,12 @@ abstract class lsu_source {
     var $username;
     var $password;
     var $wsdl;
+
+    function __construct($username, $password, $wsdl) {
+        $this->username = $username;
+        $this->password = $password;
+        $this->wsdl = $wsdl;
+    }
 
     private function build_parameters(array $params) {
         return array (
@@ -45,14 +67,6 @@ abstract class lsu_source {
 </rows>
 XML;
         return $contents;
-    }
-
-    public function set_params(array $params) {
-        foreach ($params as $key => $value) {
-            $this->$key = $value;
-        }
-
-        return $this;
     }
 
     public function invoke($params) {
@@ -94,5 +108,25 @@ XML;
             case 'SummerInt': return $partial($semester_year, self::SUMMER_INT);
             case 'SpringInt': return $partial($semester_year, self::SPRING_INT);
         }
+    }
+}
+
+abstract class lsu_user_source extends lsu_source {
+    var $info;
+
+    function __construct($username, $password, $wsdl) {
+        parent::__construct($username, $password, $wsdl);
+
+        $this->info = new lsu_profile_info($username, $password, $wsdl);
+    }
+
+    public function fill($user) {
+        $info = $this->info($user->idnumber);
+
+        foreach (get_object_vars($info) as $field => $value) {
+            $user->$field = $value;
+        }
+
+        return $user;
     }
 }
