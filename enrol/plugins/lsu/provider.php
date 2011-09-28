@@ -60,37 +60,28 @@ class lsu_enrollment_provider extends enrollment_provider {
         );
     }
 
-    function source_params() {
-        return array(
-            'username' => $this->username,
-            'password' => $this->password,
-            'wsdl' => $this->wsdl
-        );
-    }
-
     function semester_source() {
-        $source = new lsu_semesters();
-        return $source->set_params($this->source_params());
+        return new lsu_semesters($this->username, $this->password, $this->wsdl);
     }
 
     function course_source() {
-        $source = new lsu_courses();
-        return $source->set_params($this->source_params());
+        return new lsu_courses($this->username, $this->password, $this->wsdl);
     }
 
     function teacher_source() {
-        $source = new lsu_teachers();
-        return $source->set_params($this->source_params());
+        return new lsu_teachers($this->username, $this->password, $this->wsdl);
     }
 
     function student_source() {
-        $source = new lsu_students();
-        return $source->set_params($this->source_params());
+        return new lsu_students($this->username, $this->password, $this->wsdl);
     }
 
     function student_data_source() {
-        $source = new lsu_student_data();
-        return $source->set_params($this->source_params());
+        return new lsu_student_data($this->username, $this->password, $this->wsdl);
+    }
+
+    function anonymous_source() {
+        return new lsu_anonymous($this->username, $this->password, $this->wsdl);
     }
 
     function postprocess() {
