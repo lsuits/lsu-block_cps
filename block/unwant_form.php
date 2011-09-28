@@ -26,7 +26,9 @@ class unwant_form extends moodleform {
                     'what' => $courseid
                 ));
 
-                return html_writer::link($url, get_string($action));
+                $attrs = array('id' => $action . '_' . $courseid);
+
+                return html_writer::link($url, get_string($action), $attrs);
             };
 
             $clean_links = implode(' / ', array_map($map, $actions));

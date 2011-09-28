@@ -22,7 +22,9 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-// TODO: add jquery and appropriate script
+$PAGE->requires->js('/lib/jquery.js');
+$PAGE->requires->js('/blocks/cps/js/unwanted.js');
+
 $_s = cps::gen_str('block_cps');
 
 $blockname = $_s('pluginname');
