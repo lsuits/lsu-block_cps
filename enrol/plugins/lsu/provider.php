@@ -37,8 +37,8 @@ class lsu_enrollment_provider extends enrollment_provider {
             throw new Exception('bad_resp');
         }
 
-        $this->username = $username;
-        $this->password = $password;
+        $this->username = trim($username);
+        $this->password = trim($password);
     }
 
     function __construct($init_on_create = true) {
