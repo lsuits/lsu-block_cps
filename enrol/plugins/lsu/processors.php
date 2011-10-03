@@ -20,7 +20,16 @@ class lsu_semesters extends lsu_source implements semester_processor {
         }
     }
 
+    function format_time($time) {
+        return  strftime('%Y-%m-%d', time());
+    }
+
     function semesters($date_threshold) {
+
+        if (is_numeric($date_threshold)) {
+            $date_threshold = $this->format_time($date_threshold);
+        }
+
         $xml_semesters = $this->invoke(array($date_threshold));
 
         $lookup = array();
@@ -93,24 +102,29 @@ class lsu_courses extends lsu_source implements course_processor {
 
         $xml_courses = $this->invoke(array($campus, $semester_term, $semester->session_key));
 
+        // Caching strategy
+        $by_strategy = $this->course_strategy();
+
         foreach ($xml_courses->ROW as $xml_course) {
             $department = (string) $xml_course->DEPT_CODE;
             $course_number = (string) $xml_course->COURSE_NBR;
 
             $is_unique = function ($course) use ($department, $course_number) {
-                return ($course->department != $department and
+                return ($course->department != $department or
                     $course->cou_number != $course_number);
             };
 
-            if (!$course or !$is_unique($course)) {
+            if (empty($course) or $is_unique($course)) {
                 $course = new stdClass;
                 $course->department = $department;
                 $course->cou_number = $course_number;
-                $course->fullname = (string) $xml_course->COURSE_TITLE;
-
                 $course->course_type = (string) $xml_course->CLASS_TYPE;
-                $course->course_grade_type = (string) $xml_course->GRADE_SYSTEM_CODE;
                 $course->course_first_year = (int) $xml_course->COURSE_NBR < 5200 ? 1 : 0;
+
+                $info = lsu_cache::set_and_retrieve($course, $by_strategy);
+
+                $course->fullname = $info->fullname;
+                $course->course_grade_type = $info->course_grade_type;
 
                 $course->sections = array();
 
@@ -127,26 +141,7 @@ class lsu_courses extends lsu_source implements course_processor {
     }
 }
 
-
-class lsu_profile_info extends lsu_source {
-    var $serviceId = 'MOODLE_PROFILE_INFORMATION';
-
-    function info($lsu_id) {
-        $profile_info = $this->invoke(array($lsu_id));
-
-        list($first, $last) = $this->parse_name($profile_info->INDIV_NAME);
-
-        $info = new stdClass;
-        $info->username = (string) $profile_info->PRIMARY_ACCESS_ID;
-        $info->user_ferpa = (string) $profile_info->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
-        $info->firstname = $first;
-        $info->lastname = $last;
-
-        return $info;
-    }
-}
-
-class lsu_teachers extends lsu_user_source implements teacher_processor {
+class lsu_teachers extends lsu_source implements teacher_processor {
     var $serviceId = 'MOODLE_INSTRUCTORS';
 
     function teachers($semester, $course, $section) {
@@ -159,6 +154,8 @@ class lsu_teachers extends lsu_user_source implements teacher_processor {
 
         $xml_teachers = $this->invoke($params);
 
+        $by_strategy = $this->user_strategy();
+
         $teachers = array();
         foreach ($xml_teachers->ROW as $xml_teacher) {
 
@@ -169,7 +166,13 @@ class lsu_teachers extends lsu_user_source implements teacher_processor {
             $teacher->idnumber = (string) $xml_teacher->LSU_ID;
             $teacher->primary_flag = (string) $primary_flag == 'Y' ? 1 : 0;
 
-            $teachers[] = $this->fill($teacher);
+            $info = lsu_cache::set_and_retrieve($teacher, $by_strategy);
+
+            $teacher->firstname = $info->firstname;
+            $teacher->lastname = $info->lastname;
+            $teacher->username = $info->username;
+
+            $teachers[] = $teacher;
         }
 
         return $teachers;
@@ -177,7 +180,7 @@ class lsu_teachers extends lsu_user_source implements teacher_processor {
 }
 
 class lsu_students extends lsu_source implements student_processor {
-    var $serviceId = 'MOODLE_STUDENTS_1';
+    var $serviceId = 'MOODLE_STUDENTS';
 
     function students($semester, $course, $section) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
@@ -189,6 +192,8 @@ class lsu_students extends lsu_source implements student_processor {
 
         $xml_students = $this->invoke($params);
 
+        $by_strategy = $this->user_strategy();
+
         $students = array();
         foreach ($xml_students->ROW as $xml_student) {
 
@@ -197,7 +202,13 @@ class lsu_students extends lsu_source implements student_processor {
             $student->idnumber = (string) $xml_student->LSU_ID;
             $student->credit_hours = (string) $xml_student->CREDIT_HRS;
 
-            $students[] = $this->fill($student);
+            $info = lsu_cache::set_and_retrieve($student, $by_strategy);
+
+            $student->username = $info->username;
+            $student->firstname = $info->firstname;
+            $student->lastname = $info->lastname;
+
+            $students[] = $student;
         }
 
         return $students;
@@ -205,7 +216,7 @@ class lsu_students extends lsu_source implements student_processor {
 }
 
 class lsu_student_data extends lsu_source {
-    var $serviceId = 'MOODLE_STUDENTS_2';
+    var $serviceId = 'MOODLE_STUDENT_DATA';
 
     function student_data($semester) {
         $semester_term = $this->encode_semester($semester->year, $semester->name);
@@ -242,7 +253,7 @@ class lsu_student_data extends lsu_source {
 }
 
 class lsu_degree extends lsu_source {
-    var $serviceId = 'MOODLE_DEGREE_CANDIDACY';
+    var $serviceId = 'MOODLE_DEGREE_CANDIDATE';
 
     function graduates($semester) {
         $term = $this->encode_semester($semester->year, $semester->name);
@@ -272,7 +283,7 @@ class lsu_degree extends lsu_source {
 }
 
 class lsu_anonymous extends lsu_source {
-    var $serviceId = 'MOODLE_ANONYMOUS_NUMBERS';
+    var $serviceId = 'MOODLE_LAW_ANON_NBR';
 
     function anonymous_numbers($semester) {
         $term = $this->encode_semester($semester->year, $semester->name);
@@ -292,3 +303,54 @@ class lsu_anonymous extends lsu_source {
         return $numbers;
     }
 }
+
+final class lsu_course_cache_strategy extends lsu_source implements lsu_cache_strategy {
+    var $serviceId = 'MOODLE_COURSE_INFO';
+
+    public function id() {
+        return 'course_cache';
+    }
+
+    public function key($what) {
+        return "$what->department$what->cou_number$what->course_type";
+    }
+
+    public function pull($what) {
+        $course_info = $this->invoke(array(
+            $what->department, $what->cou_number, $what->course_type)
+        )->ROW;
+
+        $info = new stdClass;
+        $info->fullname = (string) $course_info->COURSE_TITLE;
+        $info->course_grade_type = (string) $course_info->GRADE_SYSTEM_CODE;
+
+        return $info;
+    }
+}
+
+final class lsu_user_cache_strategy extends lsu_source implements lsu_cache_strategy {
+    var $serviceId = 'MOODLE_PROFILE_INFO';
+
+    public function id() {
+        return 'user_cache';
+    }
+
+    public function key($what) {
+        return $what->idnumber;
+    }
+
+    public function pull($what) {
+        $profile_info = $this->invoke(array($what->idnumber))->ROW;
+
+        list($first, $last) = $this->parse_name($profile_info->INDIV_NAME);
+
+        $info = new stdClass;
+        $info->username = (string) $profile_info->PRIMARY_ACCESS_ID;
+        $info->user_ferpa = (string) $profile_info->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
+        $info->firstname = $first;
+        $info->lastname = $last;
+
+        return $info;
+    }
+}
+
