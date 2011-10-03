@@ -11,15 +11,19 @@ class enrol_cps_plugin extends enrol_plugin {
     /** Typical email log for cron runs */
     var $emaillog = array();
 
-    var $provider;
-
     var $is_silent = false;
 
-    function __construct() {
+    private $_provider;
+
+    private $_loaded = false;
+
+    function init() {
         global $CFG;
 
+        $this->_loaded = true;
+
         try {
-            $this->provider = cps::create_provider();
+            $this->_provider = cps::create_provider();
 
             $lib = cps::base('classes/dao');
 
@@ -31,6 +35,14 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $this->errors[] = cps::_s('provider_cron_problem', $a);
         }
+    }
+
+    function provider() {
+        if (empty($this->_provider) and !$this->_loaded) {
+            $this->init();
+        }
+
+        return $this->_provider;
     }
 
     public function is_cron_required() {
@@ -48,10 +60,9 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function cron() {
-
         $admins = get_admins();
 
-        if ($this->provider) {
+        if ($this->provider()) {
             $this->log("
      ________  ____  ____              ____               __
     / ___/ _ \/ __/ / __/__  _______  / / /_ _  ___ ___  / /_
@@ -98,9 +109,9 @@ class enrol_cps_plugin extends enrol_plugin {
 
     public function full_process() {
 
-        $this->provider->preprocess();
+        $this->provider()->preprocess();
 
-        $provider_name = $this->provider->get_name();
+        $provider_name = $this->provider()->get_name();
 
         $this->log('Pulling information from ' . cps::_s($provider_name . '_name'));
         $this->process_all();
@@ -109,7 +120,7 @@ class enrol_cps_plugin extends enrol_plugin {
         $this->log('Begin manifestation ...');
         $this->handle_enrollments();
 
-        $this->provider->postprocess();
+        $this->provider()->postprocess();
     }
 
     public function handle_enrollments() {
@@ -123,7 +134,7 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function process_all() {
-        $now = strftime('%Y-%m-%d', time());
+        $semester_source = $this->provider()->semester_source();
 
         // Only mark sections that *were* manifested to be pending
         // The provisioning process will mark those that were skipped to
@@ -133,8 +144,10 @@ class enrol_cps_plugin extends enrol_plugin {
             array('status' => cps::MANIFESTED)
         );
 
+        $now = $semester_source->format_time(time());
+
         $this->log('Pulling Semesters for ' . $now . '...');
-        $semesters = $this->provider->semester_source()->semesters($now);
+        $semesters = $semester_source->semesters($now);
 
         $this->log('Processing ' . count($semesters) . " Semesters...\n");
         $processed_semesters = $this->process_semesters($semesters);
@@ -144,7 +157,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $section_count = 0;
 
             $this->log('Pulling Courses / Sections for ' . $semester);
-            $courses = $this->provider->course_source()->courses($semester);
+            $courses = $this->provider()->course_source()->courses($semester);
 
             $this->log('Processing ' . count($courses) . " Courses...\n");
             $process_courses = $this->process_courses($semester, $courses);
@@ -245,9 +258,9 @@ class enrol_cps_plugin extends enrol_plugin {
      * Could be used to process a single course upon request
      */
     public function process_enrollment($semester, $course, $section) {
-        $teacher_source = $this->provider->teacher_source();
+        $teacher_source = $this->provider()->teacher_source();
 
-        $student_source = $this->provider->student_source();
+        $student_source = $this->provider()->student_source();
 
         $teachers = $teacher_source->teachers($semester, $course, $section);
 
