@@ -207,6 +207,7 @@ class lsu_students extends lsu_source implements student_processor {
             $student->username = $info->username;
             $student->firstname = $info->firstname;
             $student->lastname = $info->lastname;
+            $student->user_ferpa = $info->user_ferpa;
 
             $students[] = $student;
         }

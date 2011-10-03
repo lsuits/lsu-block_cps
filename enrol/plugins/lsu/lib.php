@@ -61,13 +61,13 @@ abstract class lsu_source implements institution_codes, semester_codes {
         $this->wsdl = $wsdl;
     }
 
-    protected function course_strategy() {
+    public function course_strategy() {
         return new lsu_course_cache_strategy(
             $this->username, $this->password, $this->wsdl
         );
     }
 
-    protected function user_strategy() {
+    public function user_strategy() {
         return new lsu_user_cache_strategy(
             $this->username, $this->password, $this->wsdl
         );
