@@ -23,6 +23,29 @@ interface institution_codes {
     const LAW_INST = '1595';
 }
 
+// Singleton caching object primarily used for object meta information
+// It's purpose is to cut down on SOAP requests by storing this information
+// locally in-memory
+abstract class lsu_cache {
+    private static $cache = array();
+
+    public static function set_and_retrieve($what, lsu_cache_strategy $by_strategy) {
+        $key = $by_strategy->key($what);
+
+        if (!isset(self::$cache[$key])) {
+            self::$cache[$key] = $by_strategy->pull($what);
+        }
+
+        return self::$cache[$key];
+    }
+}
+
+interface lsu_cache_strategy {
+    function key($what);
+
+    function pull($what);
+}
+
 abstract class lsu_source implements institution_codes, semester_codes {
     /**
      * An LSU source requires these
@@ -36,6 +59,18 @@ abstract class lsu_source implements institution_codes, semester_codes {
         $this->username = $username;
         $this->password = $password;
         $this->wsdl = $wsdl;
+    }
+
+    protected function course_strategy() {
+        return new lsu_course_cache_strategy(
+            $this->username, $this->password, $this->wsdl
+        );
+    }
+
+    protected function user_strategy() {
+        return new lsu_user_cache_strategy(
+            $this->username, $this->password, $this->wsdl
+        );
     }
 
     private function build_parameters(array $params) {
@@ -73,6 +108,7 @@ XML;
         $client = new SoapClient($this->wsdl);
 
         $invoke_params = $this->build_parameters($params);
+
         $response = $client->invoke($invoke_params)->invokeReturn;
 
         return new SimpleXmlElement($this->clean_response($response));
@@ -108,25 +144,5 @@ XML;
             case 'SummerInt': return $partial($semester_year, self::SUMMER_INT);
             case 'SpringInt': return $partial($semester_year, self::SPRING_INT);
         }
-    }
-}
-
-abstract class lsu_user_source extends lsu_source {
-    var $info;
-
-    function __construct($username, $password, $wsdl) {
-        parent::__construct($username, $password, $wsdl);
-
-        $this->info = new lsu_profile_info($username, $password, $wsdl);
-    }
-
-    public function fill($user) {
-        $info = $this->info($user->idnumber);
-
-        foreach (get_object_vars($info) as $field => $value) {
-            $user->$field = $value;
-        }
-
-        return $user;
     }
 }
