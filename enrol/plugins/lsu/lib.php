@@ -121,13 +121,15 @@ XML;
 
     public function parse_name($fullname) {
         list($lastname, $fm) = explode(',', $fullname);
-        list($first, $middle) = explode(' ', $fm);
+        $other = explode(' ', trim($fm));
+
+        $first = $other[0];
 
         if (strlen($first) == 1) {
-            $first = $first . ' ' . $middle;
+            $first = $first . ' ' . $other[1];
         }
 
-        return array($lastname, $first);
+        return array($first, $lastname);
     }
 
     public function encode_semester($semester_year, $semester_name) {

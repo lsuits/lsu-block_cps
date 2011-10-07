@@ -98,12 +98,11 @@ class lsu_courses extends lsu_source implements course_processor {
 
         $courses = array();
 
-        $campus = ($semester->campus == 'LSU') ? self::LSU_CAMPUS : self::LAW_CAMPUS;
+        if ($semester->campus == 'LAW') {
+            return $courses;
+        }
 
-        $xml_courses = $this->invoke(array($campus, $semester_term, $semester->session_key));
-
-        // Caching strategy
-        $by_strategy = $this->course_strategy();
+        $xml_courses = $this->invoke(array($semester_term, $semester->session_key));
 
         foreach ($xml_courses->ROW as $xml_course) {
             $department = (string) $xml_course->DEPT_CODE;
@@ -121,10 +120,8 @@ class lsu_courses extends lsu_source implements course_processor {
                 $course->course_type = (string) $xml_course->CLASS_TYPE;
                 $course->course_first_year = (int) $xml_course->COURSE_NBR < 5200 ? 1 : 0;
 
-                $info = lsu_cache::set_and_retrieve($course, $by_strategy);
-
-                $course->fullname = $info->fullname;
-                $course->course_grade_type = $info->course_grade_type;
+                $course->fullname = (string) $xml_course->COURSE_TITLE;
+                $course->course_grade_type = (string) $xml_course->GRADE_SYSTEM_CODE;
 
                 $course->sections = array();
 
@@ -149,8 +146,8 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 
         $campus = $semester->campus == 'LSU' ? self::LSU_CAMPUS : self::LAW_CAMPUS;
 
-        $params = array($course->cou_number, $section->sec_number,
-            $course->department, $campus, $semester_term, $semester->session_key);
+        $params = array($course->cou_number, $semester->session_key,
+            $section->sec_number, $course->department, $semester_term, $campus);
 
         $xml_teachers = $this->invoke($params);
 
@@ -161,16 +158,16 @@ class lsu_teachers extends lsu_source implements teacher_processor {
 
             $primary_flag = trim($xml_teacher->PRIMARY_INSTRUCTOR);
 
+            list($first, $last) = $this->parse_name($xml_teacher->INDIV_NAME);
+
             $teacher = new stdClass;
 
             $teacher->idnumber = (string) $xml_teacher->LSU_ID;
             $teacher->primary_flag = (string) $primary_flag == 'Y' ? 1 : 0;
 
-            $info = lsu_cache::set_and_retrieve($teacher, $by_strategy);
-
-            $teacher->firstname = $info->firstname;
-            $teacher->lastname = $info->lastname;
-            $teacher->username = $info->username;
+            $teacher->firstname = $first;
+            $teacher->lastname = $last;
+            $teacher->username = (string) $xml_teacher->PRIMARY_ACCESS_ID;
 
             $teachers[] = $teacher;
         }
@@ -202,12 +199,12 @@ class lsu_students extends lsu_source implements student_processor {
             $student->idnumber = (string) $xml_student->LSU_ID;
             $student->credit_hours = (string) $xml_student->CREDIT_HRS;
 
-            $info = lsu_cache::set_and_retrieve($student, $by_strategy);
+            list($first, $last) = $this->parse_name($xml_student->INDIV_NAME);
 
-            $student->username = $info->username;
-            $student->firstname = $info->firstname;
-            $student->lastname = $info->lastname;
-            $student->user_ferpa = $info->user_ferpa;
+            $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
+            $student->firstname = $first;
+            $student->lastname = $last;
+            $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
 
             $students[] = $student;
         }
@@ -225,9 +222,9 @@ class lsu_student_data extends lsu_source {
         $params = array($semester_term);
 
         if ($semester->campus == 'LSU') {
-            $params += array(self::LSU_INST);
+            $params += array(1 => self::LSU_INST, 2 => self::LSU_CAMPUS);
         } else {
-            $params += array(self::LAW_INST);
+            $params += array(1 => self::LAW_INST, 2 => self::LAW_CAMPU);
         }
 
         $xml_data = $this->invoke($params);
@@ -237,12 +234,12 @@ class lsu_student_data extends lsu_source {
         foreach ($xml_data->ROW as $xml_student_data) {
             $stud_data = new stdClass;
 
-            $reg = trim($xml_student_data->REGISTRATION_DATE);
+            $reg = trim((string) $xml_student_data->REGISTRATION_DATE);
 
             $stud_data->user_year = (string) $xml_student_data->YEAR_CLASS;
             $stud_data->user_college = (string) $xml_student_data->COLLEGE_CODE;
             $stud_data->user_major = (string) $xml_student_data->CURRIC_CODE;
-            $stud_data->user_reg_status = empty($reg) ? NULL : $this->parse_date($reg);
+            $stud_data->user_reg_status = $reg == 'null' ? NULL : $this->parse_date($reg);
             $stud_data->user_keypadid = (string) $xml_student_data->KEYPADID;
             $stud_data->idnumber = (string) $xml_student_data->LSU_ID;
 
@@ -343,7 +340,6 @@ final class lsu_user_cache_strategy extends lsu_source implements lsu_cache_stra
     public function pull($what) {
         $profile_info = $this->invoke(array($what->idnumber))->ROW;
 
-        list($first, $last) = $this->parse_name($profile_info->INDIV_NAME);
 
         $info = new stdClass;
         $info->username = (string) $profile_info->PRIMARY_ACCESS_ID;
