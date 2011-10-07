@@ -17,6 +17,23 @@ abstract class cps_event_handler {
     }
 
     public static function cps_section_process($section) {
+        // Semesters are different here on campus.
+        // Oddly enough, LAW courses and enrollments are tied to the
+        // LSU campus, which means that we have to separate the logic here
+        if ($section->course->department == 'LAW') {
+            $sem_params = array (
+                'name' => $section->semester->name,
+                'year' => $section->semester->year,
+                'session_key' => $section->semester->session_key,
+                'campus' => 'LAW'
+            );
+
+            $law_semester = cps_semester::get($sem_params);
+
+            $section->semester = $law_semester;
+            $section->semesterid = $law_semester->id;
+        }
+
         // Unwanted interjection
         $unwanted = cps_unwant::get(array('sectionid' => $section->id));
         if ($unwanted) {
