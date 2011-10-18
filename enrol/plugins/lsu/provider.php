@@ -94,7 +94,7 @@ class lsu_enrollment_provider extends enrollment_provider {
 
             foreach ($datas as $data) {
                 try {
-                    $params = array('idnumber' => $user->idnumber);
+                    $params = array('idnumber' => $data->idnumber);
 
                     $user = cps_user::upgrade_and_get($data, $params);
 

@@ -21,7 +21,7 @@ class lsu_semesters extends lsu_source implements semester_processor {
     }
 
     function format_time($time) {
-        return  strftime('%Y-%m-%d', time());
+        return strftime('%Y-%m-%d', $time);
     }
 
     function semesters($date_threshold) {
@@ -70,7 +70,7 @@ class lsu_semesters extends lsu_source implements semester_processor {
                 $semester->name = $name;
                 $semester->campus = $campus;
                 $semester->session_key = $session;
-                $semester->class_start = $date;
+                $semester->classes_start = $date;
 
                 $semesters[] = $semester;
             } else if (isset($lookup[$campus][$term]) and
@@ -224,7 +224,7 @@ class lsu_student_data extends lsu_source {
         if ($semester->campus == 'LSU') {
             $params += array(1 => self::LSU_INST, 2 => self::LSU_CAMPUS);
         } else {
-            $params += array(1 => self::LAW_INST, 2 => self::LAW_CAMPU);
+            $params += array(1 => self::LAW_INST, 2 => self::LAW_CAMPUS);
         }
 
         $xml_data = $this->invoke($params);
