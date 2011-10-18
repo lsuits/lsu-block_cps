@@ -41,12 +41,21 @@ abstract class cps_event_handler {
             return true;
         }
 
-        // Creation and Enrollment interjection
-        $primary = cps_teacher::get(array(
+        $teacher_params = array(
             'sectionid' => $section->id,
             'primary_flag' => 1,
             'status' => cps::PROCESSED
-        ));
+        );
+
+        // Creation and Enrollment interjection
+        $primary = cps_teacher::get($teacher_params);
+
+        // We know a teacher exists for this course, so we'll use a non-primary
+        if (!$primary) {
+            unset($teacher_params['primary_flag']);
+
+            $primary = cps_teacher::get($teacher_params);
+        }
 
         $creation_params = array(
             'userid' => $primary->userid,
