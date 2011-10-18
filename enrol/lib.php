@@ -93,6 +93,8 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         if (!empty($this->errors)) {
+            global $CFG;
+
             $error_text = implode("\n", $this->errors);
 
             foreach ($admins as $admin) {
@@ -144,13 +146,21 @@ class enrol_cps_plugin extends enrol_plugin {
             array('status' => cps::MANIFESTED)
         );
 
-        $now = $semester_source->format_time(time());
+        $time = time();
+        $ninety_days = 24 * 90 * 60 * 60;
+        $now = $semester_source->format_time($time - $ninety_days);
 
         $this->log('Pulling Semesters for ' . $now . '...');
         $semesters = $semester_source->semesters($now);
 
         $this->log('Processing ' . count($semesters) . " Semesters...\n");
-        $processed_semesters = $this->process_semesters($semesters);
+        $this->process_semesters($semesters);
+
+        $sems_in = function ($time) {
+            return cps_semester::in_session($time);
+        };
+
+        $processed_semesters = $sems_in($time) + $sems_in($time + $ninety_days);
 
         $total_sections = 0;
         foreach ($processed_semesters as $semester) {
@@ -194,13 +204,17 @@ class enrol_cps_plugin extends enrol_plugin {
 
                 $cps = cps_semester::upgrade_and_get($semester, $params);
 
+                if (empty($cps->classes_start)) {
+                    continue;
+                }
+
                 $cps->save();
 
                 events_trigger('cps_semester_process', $cps);
 
                 $processed[] = $cps;
             } catch (Exception $e) {
-                $this->errors[] = $e->error;
+                $this->errors[] = $e->getMessage();
             }
         }
 
@@ -247,7 +261,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
                 $processed[] = $cps_course;
             } catch (Exception $e) {
-                $this->errors[] = $e->error;
+                $this->errors[] = $e->getMessage();
             }
         }
 
@@ -262,11 +276,11 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $student_source = $this->provider()->student_source();
 
-        $teachers = $teacher_source->teachers($semester, $course, $section);
-
-        $students = $student_source->students($semester, $course, $section);
-
         try {
+            $teachers = $teacher_source->teachers($semester, $course, $section);
+
+            $students = $student_source->students($semester, $course, $section);
+
             $this->process_teachers($section, $teachers);
 
             $this->process_students($section, $students);
@@ -295,7 +309,7 @@ class enrol_cps_plugin extends enrol_plugin {
             }
 
         } catch (Exception $e) {
-            $this->errors[] = $e->error;
+            $this->errors[] = $e->getMessage();
         }
     }
 
@@ -756,5 +770,13 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         $this->emaillog[] = $what;
+    }
+}
+
+function enrol_cps_supports($feature) {
+    switch ($feature) {
+        case ENROL_RESTORE_TYPE: return ENROL_RESTORE_EXACT;
+
+        default: return null;
     }
 }
