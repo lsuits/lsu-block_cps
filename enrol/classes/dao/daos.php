@@ -5,12 +5,14 @@ require_once dirname(__FILE__) . '/lib.php';
 class cps_semester extends cps_dao {
     var $sections;
 
-    public static function in_session() {
-        $now = time();
+    public static function in_session($when = null) {
+        if (empty($when)) {
+            $when = time();
+        }
 
         $filters = array(
-            'classes_start >= ' . $now,
-            'grades_due <= ' . $now
+            'classes_start <= ' . $when,
+            '(grades_due >= ' . $when . ' OR grades_due IS NULL)'
         );
 
         return self::get_select($filters, true);
