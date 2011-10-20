@@ -597,6 +597,12 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $primary_teacher = cps_teacher::get($teacher_params);
 
+        if (!$primary_teacher) {
+            $teacher_params['primary_flag'] = 0;
+
+            $primary_teacher = cps_teacher::get($teacher_params);
+        }
+
         $assumed_idnumber = $semester->year . $semester->name .
             $course->department . $semester->session_key . $course->cou_number .
             $primary_teacher->userid;
