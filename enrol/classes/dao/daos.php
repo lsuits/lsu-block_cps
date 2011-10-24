@@ -340,7 +340,7 @@ class cps_user extends cps_dao {
         return self::get_name();
     }
 
-    public static function is_teacher($userid = null) {
+    private static function qualified($userid = null) {
         if (!$userid) {
             global $USER;
             $userid = $USER->id;
@@ -351,8 +351,22 @@ class cps_user extends cps_dao {
             '(status = "'.cps::PROCESSED.'" OR status = "'.cps::ENROLLED.'")'
         );
 
-        $count = cps_teacher::count_select($filters);
+        return $filters;
+    }
+
+    public static function is_teacher($userid = null) {
+        $count = cps_teacher::count_select(self::qualified($userid));
 
         return !empty($count);
+    }
+
+    public static function sections($primary = false) {
+        if (!self::is_teacher()) {
+            return array();
+        }
+
+        $teacher = current(cps_teacher::get_select(self::qualified()));
+
+        return $teacher->sections($primary);
     }
 }
