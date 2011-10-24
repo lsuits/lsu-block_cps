@@ -17,18 +17,20 @@ class enrol_cps_plugin extends enrol_plugin {
 
     private $_loaded = false;
 
-    function init() {
+    function __construct() {
         global $CFG;
 
+        $lib = cps::base('classes/dao');
+
+        cps::require_daos();
+        require_once $CFG->dirroot . '/group/lib.php';
+    }
+
+    function init() {
         $this->_loaded = true;
 
         try {
             $this->_provider = cps::create_provider();
-
-            $lib = cps::base('classes/dao');
-
-            cps::require_daos();
-            require_once $CFG->dirroot . '/group/lib.php';
 
         } catch (Exception $e) {
             $a = cps::translate_error($e);
