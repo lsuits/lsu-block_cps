@@ -52,7 +52,7 @@ abstract class cps_preferences extends cps_base {
 }
 
 interface verifiable {
-    function is_valid($sections);
+    public static function is_valid($courses);
 }
 
 interface application {
@@ -194,7 +194,12 @@ class cps_creation extends cps_preferences implements application {
 class cps_setting extends cps_preferences {
 }
 
-class cps_split extends cps_user_section_accessor implements unique, undoable {
+class cps_split extends cps_user_section_accessor implements unique, undoable, verifiable {
+
+    public static function is_valid($courses) {
+        $valids = self::filter_valid($courses);
+        return !empty($valids);
+    }
 
     public static function filter_valid($courses) {
         return array_filter($courses, function ($course) {
@@ -271,7 +276,31 @@ class cps_split extends cps_user_section_accessor implements unique, undoable {
     }
 }
 
-class cps_crosslist extends cps_user_section_accessor implements unique, undoable {
+class cps_crosslist extends cps_user_section_accessor implements unique, undoable, verifiable {
+
+    public static function is_valid($courses) {
+        if (count($courses) <= 1) {
+            return false;
+        }
+
+        // Must have two courses in the same semester
+        $semesters = array();
+        foreach ($courses as $course) {
+            $semid = reset($course->sections)->semesterid;
+
+            if (!isset($semesters[$semid])) {
+                $semesters[$semid] = 0;
+            }
+
+            $semesters[$semid]++;
+        }
+
+        $validation = function ($in, $count) {
+            return ($in || $count > 1);
+        };
+
+        return array_reduce($semesters, $validation, false);
+    }
 
     public static function in_courses(array $courses) {
         global $USER;

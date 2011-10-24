@@ -22,6 +22,9 @@ class block_cps extends block_list {
             return $this->content;
         }
 
+        $sections = cps_user::sections(true);
+        $courses = cps_course::merge_sections($sections);
+
         $content = new stdClass;
 
         $content->items = array();
@@ -32,6 +35,12 @@ class block_cps extends block_list {
 
         foreach ($preferences as $setting => $name) {
             $url = new moodle_url("/blocks/cps/$setting.php");
+
+            $obj = 'cps_' . $setting;
+
+            if (method_exists($obj, 'is_valid') and !$obj::is_valid($courses)) {
+                continue;
+            }
 
             $content->items[] = html_writer::link($url, $name);
         }
