@@ -25,7 +25,7 @@ $string['user_country_desc'] = 'The created user will have this default country 
 $string['course_settings'] = 'Course Creation Settings';
 $string['course_visible_desc'] = 'Upon creation the course will be visible to students.';
 $string['course_shortname_desc'] = 'Generated Shortname for the course';
-$string['course_shortname'] = '{year} {name} {department} {course_number} for {fullname}';
+$string['course_shortname'] = '{year} {name} {department} {session} {course_number} for {fullname}';
 $string['course_format_desc'] = 'Creates a course that uses this format as its default.';
 $string['course_numsections_desc'] = 'Creates a course with this many sections as its default.';
 

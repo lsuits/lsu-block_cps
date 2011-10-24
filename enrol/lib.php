@@ -632,6 +632,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $a = new stdclass;
             $a->year = $semester->year;
             $a->name = $semester->name;
+            $a->session = $session;
             $a->department = $course->department;
             $a->course_number = $course->cou_number;
             $a->fullname = fullname($user);
