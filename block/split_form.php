@@ -13,7 +13,6 @@ abstract class split_form extends cps_form {
     }
 
     protected function forge_split_all($course) {
-
         $grouping = 1;
         foreach ($course->sections as $section) {
             $_POST['shell_name_'.$grouping.'_hidden'] = $section->sec_number;
@@ -110,7 +109,7 @@ class split_form_shells extends split_form {
 
         $m->addElement('header', 'selected_header', $display);
 
-        $seqed = range(1, count($course->sections) - 1);
+        $seqed = range(2, count($course->sections) - 1);
         $options = array_combine($seqed, $seqed);
 
         $m->addElement('select', 'shells', self::_s('split_how_many') ,$options);
