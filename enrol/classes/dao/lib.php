@@ -162,7 +162,7 @@ abstract class cps_dao extends cps_base implements meta_information {
             }
         }
 
-        $to_delete = $DB->get_records(self::call('tablename'), $params);
+        $to_delete = $DB->get_records(self::call('metatablename'), $params);
 
         foreach ($to_delete as $record) {
             $query_params[self::call('get_name').'id'] = $record->id;

@@ -150,7 +150,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $time = time();
         $ninety_days = 24 * 90 * 60 * 60;
-        $now = $semester_source->format_time($time - $ninety_days);
+        $now = cps::format_time($time - $ninety_days);
 
         $this->log('Pulling Semesters for ' . $now . '...');
         $semesters = $semester_source->semesters($now);

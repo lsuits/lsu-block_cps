@@ -34,6 +34,10 @@ abstract class cps {
         require_once $classes . '/provider.php';
     }
 
+    public static function format_time($time) {
+        return strftime('%Y-%m-%d', $time);
+    }
+
     public static function inject_manifest(array $sections, $inject = null, $silent = true) {
         self::unenroll_users($sections, $silent);
 
