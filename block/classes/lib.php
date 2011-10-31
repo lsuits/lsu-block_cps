@@ -3,7 +3,7 @@
 require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
 cps::require_daos();
 
-abstract class cps_preferences extends cps_base {
+abstract class cps_preferences extends cps_external {
     public static function settings() {
         $settings = array('creation', 'split', 'crosslist',
             'team_request', 'material', 'unwant');
@@ -21,22 +21,6 @@ abstract class cps_preferences extends cps_base {
         }
 
         return $remaining_settings;
-    }
-
-    public static function get_all(array $params = array(), $fields = '*') {
-        return self::get_all_internal($params, $fields);
-    }
-
-    public static function get(array $params, $fields = '*') {
-        return current(self::get_all($params, $fields));
-    }
-
-    public static function get_select($filters) {
-        return self::get_select_internal($filters);
-    }
-
-    public static function delete_all(array $params = array()) {
-        return self::delete_all_internal($params);
     }
 
     public static function is_enabled() {
