@@ -2,15 +2,11 @@
 
 $events = array(
     'cps_primary_change',
-    'cps_student_process',
-    'cps_teacher_process',
+    'cps_teacher_release',
     'cps_section_process',
     'cps_course_create',
     'cps_course_severed',
-    'cps_group_emptied',
-    'cps_student_enroll',
-    'cps_student_unenroll',
-    'user_updated'
+    'cps_group_emptied'
 );
 
 $mapper = function ($event) {

@@ -8,11 +8,8 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_student_process($params) {
-        return true;
-    }
-
-    public static function cps_teacher_process($params) {
+    public static function cps_teacher_release($cps_teacher) {
+        // TODO: clear out settings for this instructor
         return true;
     }
 
@@ -231,18 +228,6 @@ abstract class cps_event_handler {
     }
 
     public static function cps_group_emptied($params) {
-        return true;
-    }
-
-    public static function cps_student_enroll($params) {
-        return true;
-    }
-
-    public static function cps_student_unenroll($params) {
-        return true;
-    }
-
-    public static function user_updated($user) {
         return true;
     }
 }
