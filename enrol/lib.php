@@ -731,7 +731,7 @@ class enrol_cps_plugin extends enrol_plugin {
         // Assume those who are set to be processed are enrolled
         // It will be easier this to determine those who should be released
         // at the end
-        cps_teacher::reset_status($section, cps::ENROLLED, cps::PROCESSED);
+        $class::reset_status($section, cps::ENROLLED, cps::PROCESSED);
 
         foreach ($users as $user) {
             $cps_user = $this->create_user($user);
@@ -770,7 +770,7 @@ class enrol_cps_plugin extends enrol_plugin {
         // are no longer set that way
         $by_released = array(
             'status' => cps::ENROLLED,
-            'sectionid' => $sectionid
+            'sectionid' => $section->id
         );
 
         $released = $class::get_all($by_released);
