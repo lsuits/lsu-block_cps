@@ -316,16 +316,12 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function process_teachers($section, $users) {
-        cps_teacher::reset_status($section);
-
         return $this->fill_role('teacher', $section, $users, function($user) {
             return array('primary_flag' => $user->primary_flag);
         });
     }
 
     public function process_students($section, $users) {
-        cps_student::reset_status($section);
-
         return $this->fill_role('student', $section, $users);
     }
 
@@ -732,6 +728,11 @@ class enrol_cps_plugin extends enrol_plugin {
     private function fill_role($type, $section, $users, $extra_params = null) {
         $class = 'cps_'.$type;
 
+        // Assume those who are set to be processed are enrolled
+        // It will be easier this to determine those who should be released
+        // at the end
+        cps_teacher::reset_status($section, cps::ENROLLED, cps::PROCESSED);
+
         foreach ($users as $user) {
             $cps_user = $this->create_user($user);
 
@@ -758,9 +759,27 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $cps_type->save();
 
-            events_trigger($class . '_process', $cps_type);
+            // Only fire a processed event if the user has been processed the
+            // first time or the user's status is pending or unenrolled
+            if (empty($prev) or $prev->status == cps::ENROLLED) {
+                events_trigger($class . '_process', $cps_type);
+            }
         }
 
+        // These users were enrolled, or were set to be enrolled, but
+        // are no longer set that way
+        $by_released = array(
+            'status' => cps::ENROLLED,
+            'sectionid' => $sectionid
+        );
+
+        $released = $class::get_all($by_released);
+        foreach ($released as $cps_type) {
+            $cps_type->status = cps::PENDING;
+            $cps_type->save();
+
+            events_trigger($class . '_release', $cps_type);
+        }
     }
 
     private function determine_role($user) {
