@@ -39,6 +39,31 @@ class cps_course extends cps_dao {
     var $teachers;
     var $student;
 
+    public static function get_departments($filter = null) {
+        global $DB;
+
+        $safe_filter = $filter ? "WHERE department = '".addslashes($filter)."'":'';
+
+        $sql = "SELECT DISTINCT(department)
+                    FROM {enrol_cps_courses} $safe_filter ORDER BY department";
+
+        return array_keys($DB->get_records_sql($sql));
+    }
+
+    public static function flatten_departments($courses) {
+        $departments = array();
+
+        foreach ($courses as $course) {
+            if (!isset($departments[$course->department])) {
+                $departments[$course->department] = array();
+            }
+
+            $departments[$course->department][] = $course->id;
+        }
+
+        return $departments;
+    }
+
     public static function by_department($dept) {
         return cps_course::get_all(array('department' => $dept), true);
     }
@@ -227,6 +252,21 @@ class cps_section extends cps_dao {
 
         return $sections;
     }
+
+    public static function ids_by_course_department($semester, $department) {
+        global $DB;
+
+        $sql = 'SELECT sec.*
+                FROM {enrol_cps_sections} sec,
+                     {enrol_cps_courses} cou
+                     WHERE sec.courseid = cou.id
+                       AND sec.semesterid = :semid
+                       AND cou.department = :dept';
+
+        $params = array('semid' => $semester->id, 'dept' => $department);
+
+        return array_keys($DB->get_records_sql($sql, $params));
+    }
 }
 
 abstract class user_handler extends cps_dao {
@@ -280,11 +320,18 @@ abstract class user_handler extends cps_dao {
     }
 
     public static function reset_status($section, $to = 'pending', $from = 'enrolled') {
+        if (is_object($section)) {
+            $section = $section->id;
+        }
+
         $class = get_called_class();
 
-        $class::update(
+        $class::update_select(
             array('status' => $to),
-            array('sectionid' => $section->id, 'status' => $from)
+            array(
+                'sectionid IN (' . $section . ')',
+                "status = '$from'"
+            )
         );
     }
 }
