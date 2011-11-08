@@ -79,23 +79,7 @@ abstract class cps_base {
     public static function update(array $fields, array $params = array()) {
         global $DB;
 
-        $map = function ($key, $field) { return "$key = :$field"; };
-
-        $trans = function ($new_key, $fields) use ($map) {
-            $oldkeys = array_keys($fields);
-
-            $newnames = function ($field) use ($new_key) {
-                return "{$new_key}_{$field}";
-            };
-
-            $newkeys = array_map($newnames, $oldkeys);
-
-            $params = array_map($map, $oldkeys, $newkeys);
-
-            $new_params = array_combine($newkeys, array_values($fields));
-            return array($new_params, $params);
-        };
-
+        list($map, $trans) = self::update_helpers();
 
         list($set_params, $set_keys) = $trans('set', $fields);
 
@@ -113,6 +97,50 @@ abstract class cps_base {
         }
 
         return $DB->execute($sql, $set_params + $params);
+    }
+
+    private static function update_helpers() {
+        $map = function ($key, $field) { return "$key = :$field"; };
+
+        $trans = function ($new_key, $fields) use ($map) {
+            $oldkeys = array_keys($fields);
+
+            $newnames = function ($field) use ($new_key) {
+                return "{$new_key}_{$field}";
+            };
+
+            $newkeys = array_map($newnames, $oldkeys);
+
+            $params = array_map($map, $oldkeys, $newkeys);
+
+            $new_params = array_combine($newkeys, array_values($fields));
+            return array($new_params, $params);
+        };
+
+        return array($map, $trans);
+    }
+
+    public static function update_select($values, $filters = null, $tables = null) {
+        global $DB;
+
+        list($map, $trans) = self::update_helpers();
+
+        $sql = 'UPDATE {' . self::call('tablename') . '}';
+
+        if ($tables) {
+            $sql .= ' this, ' . implode(', ', $tables);
+        }
+
+        list($set_params, $set_keys) = $trans('set', $values);
+        $set = implode(' ,', $set_keys);
+
+        $sql .= ' SET ' . $set;
+
+        if ($filters) {
+            $sql .= ' WHERE ' . implode(' AND ', $filters);
+        }
+
+        return $DB->execute($sql, $set_params);
     }
 
     public static function get_name() {
