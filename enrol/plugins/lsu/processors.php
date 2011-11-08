@@ -134,6 +134,87 @@ class lsu_courses extends lsu_source implements course_processor {
     }
 }
 
+class lsu_teachers_by_department extends lsu_source implements teacher_by_department {
+    var $serviceId = 'MOODLE_INSTRUCTORS_BY_DEPT';
+
+    function teachers($semester, $department) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
+
+        $campus = $semester->campus == 'LSU' ? self::LSU_CAMPUS : self::LAW_CAMPUS;
+
+        $params = array($semester->session_key, $department, $semester_term, $campus);
+
+        $xml_teachers = $this->invoke($params);
+
+        $teachers = array();
+        foreach ($xml_teachers->ROW as $xml_teacher) {
+
+            $primary_flag = trim($xml_teacher->PRIMARY_INSTRUCTOR);
+
+            list($first, $last) = $this->parse_name($xml_teacher->INDIV_NAME);
+
+            $teacher = new stdClass;
+
+            $teacher->idnumber = (string) $xml_teacher->LSU_ID;
+            $teacher->primary_flag = (string) $primary_flag == 'Y' ? 1 : 0;
+
+            $teacher->firstname = $first;
+            $teacher->lastname = $last;
+            $teacher->username = (string) $xml_teacher->PRIMARY_ACCESS_ID;
+
+            // Section information
+            $teacher->department = $department;
+            $teacher->cou_number = (string) $xml_teacher->CLASS_COURSE_NBR;
+            $teacher->sec_number = (string) $xml_teacher->SECTION_NBR;
+
+            $teachers[] = $teacher;
+        }
+
+        return $teachers;
+    }
+}
+
+class lsu_students_by_department extends lsu_source implements student_by_department {
+    var $serviceId = 'MOODLE_STUDENTS_BY_DEPT';
+
+    function students($semester, $department) {
+        $semester_term = $this->encode_semester($semester->year, $semester->name);
+
+        $campus = $semester->campus == 'LSU' ? self::LSU_CAMPUS : self::LAW_CAMPUS;
+
+        $inst = $semester->campus == 'LSU' ? self::LSU_INST : self::LAW_INST;
+
+        $params = array($campus, $semester_term, $department, $inst, $semester->session_key);
+
+        $xml_students = $this->invoke($params);
+
+        $students = array();
+        foreach ($xml_students->ROW as $xml_student) {
+
+            $student = new stdClass;
+
+            $student->idnumber = (string) $xml_student->LSU_ID;
+            $student->credit_hours = (string) $xml_student->CREDIT_HRS;
+
+            list($first, $last) = $this->parse_name($xml_student->INDIV_NAME);
+
+            $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
+            $student->firstname = $first;
+            $student->lastname = $last;
+            $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
+
+            // Section information
+            $student->department = $department;
+            $student->cou_number = (string) $xml_student->COURSE_NBR;
+            $student->sec_number = (string) $xml_student->SECTION_NBR;
+
+            $students[] = $student;
+        }
+
+        return $students;
+    }
+}
+
 class lsu_teachers extends lsu_source implements teacher_processor {
     var $serviceId = 'MOODLE_INSTRUCTORS';
 
@@ -146,8 +227,6 @@ class lsu_teachers extends lsu_source implements teacher_processor {
             $section->sec_number, $course->department, $semester_term, $campus);
 
         $xml_teachers = $this->invoke($params);
-
-        $by_strategy = $this->user_strategy();
 
         $teachers = array();
         foreach ($xml_teachers->ROW as $xml_teacher) {
@@ -184,8 +263,6 @@ class lsu_students extends lsu_source implements student_processor {
             $course->cou_number, $section->sec_number, $semester->session_key);
 
         $xml_students = $this->invoke($params);
-
-        $by_strategy = $this->user_strategy();
 
         $students = array();
         foreach ($xml_students->ROW as $xml_student) {

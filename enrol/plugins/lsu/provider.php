@@ -84,6 +84,14 @@ class lsu_enrollment_provider extends enrollment_provider {
         return new lsu_anonymous($this->username, $this->password, $this->wsdl);
     }
 
+    function teacher_department_source() {
+        return new lsu_teachers_by_department($this->username, $this->password, $this->wsdl);
+    }
+
+    function student_department_source() {
+        return new lsu_students_by_department($this->username, $this->password, $this->wsdl);
+    }
+
     function postprocess() {
         $semesters_in_session = cps_semester::in_session();
 
