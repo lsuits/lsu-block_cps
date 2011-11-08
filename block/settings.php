@@ -16,6 +16,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('block_cps/course_severed',
         $_s('course_severed'), $_s('course_severed_desc'), 0));
 
+    $settings->add(new admin_setting_configtext('block_cps/course_threshold',
+        $_s('course_threshold'), $_s('course_threshold_desc'), '8000'));
+
     $cps_settings = array('creation', 'unwant', 'material', 'split', 'crosslist', 'team_request');
 
     foreach ($cps_settings as $setting) {
