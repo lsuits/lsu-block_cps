@@ -8,6 +8,14 @@ interface course_processor {
     function courses($semester);
 }
 
+interface teacher_by_department {
+    function teachers($semester, $department);
+}
+
+interface student_by_department {
+    function students($semester, $department);
+}
+
 interface teacher_processor {
     function teachers($semester, $course, $section);
 }

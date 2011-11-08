@@ -12,6 +12,12 @@ interface enrollment_factory {
 
     // Retunrs a student_processor
     function student_source();
+
+    // Returns teacher enrollment information for a given department
+    function teacher_department_source();
+
+    // Returns student enrollment information for a given department
+    function student_department_source();
 }
 
 abstract class enrollment_provider implements enrollment_factory {
