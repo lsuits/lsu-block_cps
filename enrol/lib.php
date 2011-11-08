@@ -124,7 +124,7 @@ class enrol_cps_plugin extends enrol_plugin {
         $this->log('Begin manifestation ...');
         $this->handle_enrollments();
 
-        $this->provider()->postprocess();
+        //$this->provider()->postprocess();
     }
 
     public function handle_enrollments() {
@@ -138,58 +138,145 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function process_all() {
-        $semester_source = $this->provider()->semester_source();
-
-        // Only mark sections that *were* manifested to be pending
-        // The provisioning process will mark those that were skipped to
-        // be processed if necessary
-        cps_section::update(
-            array('status' => cps::PENDING),
-            array('status' => cps::MANIFESTED)
-        );
-
         $time = time();
+
+        $processed_semesters = $this->get_semesters($time);
+
+        foreach ($processed_semesters as $semester) {
+
+            $process_courses = $this->get_courses($semester);
+
+            if (empty($process_courses)) {
+                continue;
+            }
+
+            $departments = cps_course::flatten_departments($process_courses);
+
+            foreach ($departments as $department => $courseids) {
+                $this->process_enrollment_by_department($semester, $department);
+            }
+        }
+    }
+
+    public function get_semesters($time) {
         $ninety_days = 24 * 90 * 60 * 60;
         $now = cps::format_time($time - $ninety_days);
 
         $this->log('Pulling Semesters for ' . $now . '...');
-        $semesters = $semester_source->semesters($now);
 
-        $this->log('Processing ' . count($semesters) . " Semesters...\n");
-        $this->process_semesters($semesters);
+        try {
+            $semester_source = $this->provider()->semester_source();
+            $semesters = $semester_source->semesters($now);
 
-        $sems_in = function ($time) {
-            return cps_semester::in_session($time);
-        };
+            $this->log('Processing ' . count($semesters) . " Semesters...\n");
+            $this->process_semesters($semesters);
 
-        $processed_semesters = $sems_in($time) + $sems_in($time + $ninety_days);
+            $sems_in = function ($time) {
+                return cps_semester::in_session($time);
+            };
 
-        $total_sections = 0;
-        foreach ($processed_semesters as $semester) {
-            $section_count = 0;
+            $processed_semesters = $sems_in($time) + $sems_in($time + $ninety_days);
 
-            $this->log('Pulling Courses / Sections for ' . $semester);
+            return $processed_semesters;
+        } catch (Exception $e) {
+            $this->errors[] = $e->getMessage();
+            return array();
+        }
+    }
+
+    public function get_courses($semester) {
+        $this->log('Pulling Courses / Sections for ' . $semester);
+        try {
             $courses = $this->provider()->course_source()->courses($semester);
 
             $this->log('Processing ' . count($courses) . " Courses...\n");
             $process_courses = $this->process_courses($semester, $courses);
 
-            foreach ($process_courses as $course) {
+            return $process_courses;
+        } catch (Exception $e) {
+            $this->errors[] = $e->getMessage();
+            return array();
+        }
+    }
 
-                foreach ($course->sections as $section) {
-                    $section_count ++;
-                    if ($section_count % 10 == 0) {
-                        $this->log('Processed ' . $section_count . ' Sections');
-                    }
-                    $this->process_enrollment($semester, $course, $section);
-                }
+    public function process_enrollment_by_department($semester, $department) {
+        try {
+            $teacher_source = $this->provider()->teacher_department_source();
+            $student_source = $this->provider()->student_department_source();
+
+            $teachers = $teacher_source->teachers($semester, $department);
+            $students = $student_source->students($semester, $department);
+
+            $sections = cps_section::ids_by_course_department($semester, $department);
+            $sectionids = implode(', ', $sections);
+
+            $filter = array('sectionid IN ('.$sectionids.')');
+            $current_teachers = cps_teacher::get_select($filter);
+            $current_students = cps_student::get_select($filter);
+
+            $ids_param = array('id IN ('.$sectionids.')');
+            $current_sections = cps_section::get_select($ids_param);
+
+            $this->process_teachers_by_department($semester, $department, $teachers, $current_teachers);
+            $this->process_students_by_department($semester, $department, $students, $current_students);
+
+            foreach ($current_sections as $section) {
+                $course = $section->course();
+
+                $this->post_section_process($semester, $course, $section);
             }
 
-            $total_sections += $section_count;
-            $this->log('Finished processing ' . $section_count . " Sections\n");
+            $filters = $ids_param + array(
+                1 => "status != '".cps::PROCESSED."'"
+            );
+
+            cps_section::update_select(
+                array('status' => cps::PENDING), $filters
+            );
+
+        } catch (Exception $e) {
+            $info = "$semester $department";
+            $this->errors[] = 'Failed to process enrollment for ' . $info;
+        }
+    }
+
+    public function process_teachers_by_department($semester, $department, $teachers, $current_teachers) {
+        $this->fill_roles_by_department('teacher', $semester, $department, $teachers, $current_teachers);
+    }
+
+    public function process_students_by_department($semester, $department, $students, $current_students) {
+        $this->fill_roles_by_department('student', $semester, $department, $students, $current_students);
+    }
+
+    private function fill_roles_by_department($type, $semester, $department, $pulled_users, $current_users) {
+        foreach ($pulled_users as $user) {
+            $course_params = array(
+                'department' => $department,
+                'cou_number' => $user->cou_number
+            );
+
+            $course = cps_course::get($course_params);
+
+            if (empty($course)) {
+                continue;
+            }
+
+            $section_params = array(
+                'semesterid' => $semester->id,
+                'courseid' => $course->id,
+                'sec_number' => $user->sec_number
+            );
+
+            $section = cps_section::get($section_params);
+
+            if (empty($section)) {
+                continue;
+            }
+
+            $this->{'process_'.$type.'s'}($section, array($user), $current_users);
         }
 
-        $this->log('Finished processing ' . $total_sections . " Sections\n");
+        $this->release($type, $current_users);
     }
 
     public function process_semesters($semesters) {
@@ -249,11 +336,13 @@ class enrol_cps_plugin extends enrol_plugin {
 
                     $cps_section = cps_section::upgrade_and_get($section, $params);
 
-                    $cps_section->courseid = $cps_course->id;
-                    $cps_section->semesterid = $semester->id;
-                    $cps_section->status = cps::PENDING;
+                    if (empty($cps_section->id)) {
+                        $cps_section->courseid = $cps_course->id;
+                        $cps_section->semesterid = $semester->id;
+                        $cps_section->status = cps::PENDING;
 
-                    $cps_section->save();
+                        $cps_section->save();
+                    }
 
                     $processed_sections[] = $cps_section;
                 }
@@ -280,49 +369,66 @@ class enrol_cps_plugin extends enrol_plugin {
 
         try {
             $teachers = $teacher_source->teachers($semester, $course, $section);
-
             $students = $student_source->students($semester, $course, $section);
 
-            $this->process_teachers($section, $teachers);
+            $filter = array('sectionid' => $section->id);
+            $current_teachers = cps_teacher::get_all($filter);
+            $current_students = cps_student::get_all($filter);
 
-            $this->process_students($section, $students);
+            $this->process_teachers($section, $teachers, $current_teachers);
+            $this->process_students($section, $students, $current_students);
 
-            // Process section only if teachers can be processed
-            // take into consideration outside forces manipulating
-            // processed numbers through event handlers
-            $by_processed = array(
-                'status' => cps::PROCESSED,
-                'sectionid' => $section->id
-            );
+            $this->release('teacher', $current_teachers);
+            $this->release('student', $current_students);
 
-            $processed_teachers = cps_teacher::count($by_processed);
-
-            if (!empty($processed_teachers)) {
-                // Full section
-                $section->semester = $semester;
-                $section->course = $course;
-
-                $section->status = cps::PROCESSED;
-
-                // Allow outside interaction
-                events_trigger('cps_section_process', $section);
-
-                $section->save();
-            }
-
+            $this->post_section_process($semester, $course, $section);
         } catch (Exception $e) {
             $this->errors[] = $e->getMessage();
         }
     }
 
-    public function process_teachers($section, $users) {
-        return $this->fill_role('teacher', $section, $users, function($user) {
+    private function release($type, $users) {
+        foreach ($users as $user) {
+            $user->status = cps::PENDING;
+            $user->save();
+
+            events_trigger('cps_' . $type . '_release', $user);
+        }
+    }
+
+    private function post_section_process($semester, $course, $section) {
+        // Process section only if teachers can be processed
+        // Take into consideration outside forces manipulating
+        // processed numbers through event handlers
+        $by_processed = array(
+            "status IN ('". cps::PROCESSED . "', '" . cps::ENROLLED ."')",
+            'sectionid = ' .$section->id
+        );
+
+        $processed_teachers = cps_teacher::count_select($by_processed);
+
+        if (!empty($processed_teachers)) {
+            // Full section
+            $section->semester = $semester;
+            $section->course = $course;
+
+            $section->status = cps::PROCESSED;
+
+            // Allow outside interaction
+            events_trigger('cps_section_process', $section);
+
+            $section->save();
+        }
+    }
+
+    public function process_teachers($section, $users, &$current_users) {
+        return $this->fill_role('teacher', $section, $users, $current_users, function($user) {
             return array('primary_flag' => $user->primary_flag);
         });
     }
 
-    public function process_students($section, $users) {
-        return $this->fill_role('student', $section, $users);
+    public function process_students($section, $users, &$current_users) {
+        return $this->fill_role('student', $section, $users, $current_users);
     }
 
     public function handle_pending_sections($sections) {
@@ -374,7 +480,6 @@ class enrol_cps_plugin extends enrol_plugin {
                 $section->idnumber = null;
             }
             $section->status = cps::SKIPPED;
-
             $section->save();
         }
 
@@ -401,9 +506,9 @@ class enrol_cps_plugin extends enrol_plugin {
                 $section->status = cps::MANIFESTED;
                 $section->save();
             }
-
-            $this->log('');
         }
+
+        $this->log('');
     }
 
     public function get_instance($courseid) {
@@ -471,24 +576,36 @@ class enrol_cps_plugin extends enrol_plugin {
             cps::PROCESSED => 'enroll'
         );
 
-        $this->log('Manifesting enrollment for: ' . $moodle_course->idnumber .
-            ' ' . $section->sec_number);
+        $unenroll_count = $enroll_count = 0;
 
         foreach (array('teacher', 'student') as $type) {
             $class = 'cps_' . $type;
 
             foreach ($actions as $status => $action) {
                 $action_params = $general_params + array('status' => $status);
-                $action_count = $class::count($action_params);
+                ${$action . '_count'} = $class::count($action_params);
 
-                if ($action_count) {
-                    $this->log('Found ' . $action_count . ' ' . $type .
-                        '(s) to be ' . $action . 'ed');
-
+                if (${$action . '_count'}) {
                     $to_action = $class::get_all($action_params);
                     $this->{$action . '_users'}($group, $to_action);
                 }
             }
+        }
+
+        if ($unenroll_count and $enroll_count) {
+            $this->log('Manifesting enrollment for: ' . $moodle_course->idnumber .
+            ' ' . $section->sec_number);
+
+            $out = '';
+            if ($unenroll_count) {
+                $out .= 'Unenrolled ' . $unenroll_count . ' users; ';
+            }
+
+            if ($enroll_count) {
+                $out .= 'Enrolled ' . $enroll_count . ' users';
+            }
+
+            $this->log($out);
         }
     }
 
@@ -588,17 +705,17 @@ class enrol_cps_plugin extends enrol_plugin {
         global $DB;
 
         $teacher_params = array(
-            'sectionid' => $section->id,
-            'primary_flag' => 1,
-            'status' => cps::PROCESSED
+            'sectionid = ' . $section->id,
+            'primary_flag = 1',
+            "(status = '".cps::PROCESSED."' OR status = '".cps::ENROLLED."')"
         );
 
-        $primary_teacher = cps_teacher::get($teacher_params);
+        $primary_teacher = current(cps_teacher::get_select($teacher_params));
 
         if (!$primary_teacher) {
-            $teacher_params['primary_flag'] = 0;
+            $teacher_params[1] = 'primary_flag = 0';
 
-            $primary_teacher = cps_teacher::get($teacher_params);
+            $primary_teacher = current(cps_teacher::get_select($teacher_params));
         }
 
         $assumed_idnumber = $semester->year . $semester->name .
@@ -725,13 +842,37 @@ class enrol_cps_plugin extends enrol_plugin {
         return $user;
     }
 
-    private function fill_role($type, $section, $users, $extra_params = null) {
+    private function with_reformat_section($type, $section, $function = null) {
         $class = 'cps_'.$type;
 
         // Assume those who are set to be processed are enrolled
         // It will be easier this to determine those who should be released
         // at the end
         $class::reset_status($section, cps::ENROLLED, cps::PROCESSED);
+
+        if ($function) {
+            $function($this);
+        }
+
+        // These users were enrolled, or were set to be enrolled, but
+        // are no longer set that way
+        $by_released = array(
+            "status = '". cps::ENROLLED."'",
+            'sectionid IN ('.$section.')'
+        );
+
+        $released = $class::get_select($by_released);
+        foreach ($released as $cps_type) {
+            $cps_type->status = cps::PENDING;
+            $cps_type->save();
+
+        }
+    }
+
+    private function fill_role($type, $section, $users, &$current_users, $extra_params = null) {
+        $class = 'cps_' . $type;
+
+        $already_enrolled = array(cps::ENROLLED, cps::PROCESSED);
 
         foreach ($users as $user) {
             $cps_user = $this->create_user($user);
@@ -751,6 +892,11 @@ class enrol_cps_plugin extends enrol_plugin {
 
             if ($prev = $class::get($params, true)) {
                 $cps_type->id = $prev->id;
+                unset($current_users[$prev->id]);
+
+                if (in_array($prev->status, $already_enrolled)) {
+                    continue;
+                }
             }
 
             $cps_type->userid = $cps_user->id;
@@ -759,26 +905,9 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $cps_type->save();
 
-            // Only fire a processed event if the user has been processed the
-            // first time or the user's status is pending or unenrolled
-            if (empty($prev) or $prev->status == cps::ENROLLED) {
+            if (empty($prev) or $prev->status == cps::UNENROLLED) {
                 events_trigger($class . '_process', $cps_type);
             }
-        }
-
-        // These users were enrolled, or were set to be enrolled, but
-        // are no longer set that way
-        $by_released = array(
-            'status' => cps::ENROLLED,
-            'sectionid' => $section->id
-        );
-
-        $released = $class::get_all($by_released);
-        foreach ($released as $cps_type) {
-            $cps_type->status = cps::PENDING;
-            $cps_type->save();
-
-            events_trigger($class . '_release', $cps_type);
         }
     }
 
