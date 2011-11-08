@@ -2,6 +2,7 @@
 
 $events = array(
     'cps_primary_change',
+    'cps_teacher_process',
     'cps_teacher_release',
     'cps_section_process',
     'cps_course_create',
