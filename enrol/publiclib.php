@@ -159,7 +159,14 @@ abstract class cps {
         return self::reprocess_sections($teacher->sections(), $silent);
     }
 
-    public static function drop_semester($semester) {
+    public static function drop_semester($semester, $report = false) {
+        $log = function ($msg) use ($report) {
+            if ($report) mtrace($msg);
+        };
+
+        $log('Commencing ' . $semester . " drop...\n");
+
+        $count = 0;
         // Remove data from local tables
         foreach ($semester->sections() as $section) {
             $section_param = array('sectionid' => $section->id);
@@ -178,10 +185,26 @@ abstract class cps {
 
             events_trigger('cps_section_drop', $section);
             cps_section::delete($section->id);
+
+            $count ++;
+
+            $should_report = ($count <= 100 and $count % 10 == 0);
+
+            if ($should_report or $count % 100 == 0) {
+                $log('Dropped ' . $count . " sections...\n");
+            }
+
+            if ($count == 100) {
+                $log("Reporting 100 sections at a time...\n");
+            }
         }
+
+        $log('Dropped all ' . $count . " sections...\n");
 
         events_trigger('cps_semester_drop', $semester);
         cps_semester::delete($semester->id);
+
+        $log('Done');
     }
 
     public static function gen_str($plugin = 'enrol_cps') {

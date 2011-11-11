@@ -107,6 +107,8 @@ $string['fake_cleanup_desc'] = 'Warning: this runs truncate on all the CPS table
 $string['fake_cleanuprun'] = 'Cleanup on run';
 $string['fake_cleanuprun_desc'] = 'Runs "Cleanup" in provider `postprocess`';
 
+$string['no_semester'] = 'The semester you have selected does not exists.';
+
 $string['drop_semester'] = 'Drop {$a->year} {$a->name} {$a->campus} {$a->session_key} and all associated data';
 $string['year'] = 'Year';
 $string['campus'] = 'Campus';
