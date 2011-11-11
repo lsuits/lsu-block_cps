@@ -95,13 +95,44 @@ class lsu_enrollment_provider extends enrollment_provider {
     function postprocess() {
         $semesters_in_session = cps_semester::in_session();
 
+        $now = time();
+
+        $by_closest_lsu = function ($in, $semester) use ($now) {
+            if (empty($in)) {
+                return $semester;
+            } else if ($in->campus == 'LAW') {
+                return $semester;
+            } else if ($semester->campus == 'LAW') {
+                return $in;
+            } else {
+                $start = $semester->classes_start;
+                $closer = ($start <= $now and $start < $in->classes_start);
+                return $closer ? $semester : $in;
+            }
+        };
+
+        $lsu_semester = array_reduce($semesters_in_session, $by_closest_lsu);
+
+        if (empty($lsu_semester)) {
+            return true;
+        }
+
+        $law_semesters = cps_semester::get_all(array(
+            'year' => $lsu_semester->year,
+            'name' => $lsu_semester->name,
+            'campus' => 'LAW',
+            'session_key' => $lsu_semester->session_key
+        ));
+
+        $processed_semesters = array($lsu_semester) + $law_semesters;
+
         $source = $this->student_data_source();
 
         foreach ($semesters_in_session as $semester) {
-            $datas = $source->student_data($semester);
+            try {
+                $datas = $source->student_data($semester);
 
-            foreach ($datas as $data) {
-                try {
+                foreach ($datas as $data) {
                     $params = array('idnumber' => $data->idnumber);
 
                     $user = cps_user::upgrade_and_get($data, $params);
@@ -111,10 +142,12 @@ class lsu_enrollment_provider extends enrollment_provider {
                     }
 
                     $user->save();
-                } catch (Exception $e) {
-                    $this->errors[] = $e->getMessage();
                 }
+            } catch (Exception $e) {
+                return false;
             }
         }
     }
+
+    return true;
 }

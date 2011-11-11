@@ -271,6 +271,8 @@ class fake_enrollment_provider extends enrollment_provider {
 
             cleanup_fake_data();
         }
+
+        return true;
     }
 
     public static function settings() {
