@@ -171,25 +171,20 @@ abstract class cps {
         foreach ($semester->sections() as $section) {
             $section_param = array('sectionid' => $section->id);
 
-            $types = array('student', 'teacher');
+            $types = array('cps_student', 'cps_teacher');
 
-            foreach ($types as $type) {
-                $class = 'cps_' . $type;
-                $users = $class::get_all($section_param);
-
-                foreach ($users as $user) {
-                    events_trigger('cps_'.$type.'_drop', $user);
-                    $class::delete($user->id);
-                }
-            }
-
+            // Triggered before db removal and enrollment drop
             events_trigger('cps_section_drop', $section);
+
+            // Optimize enrollment deletion
+            foreach ($types as $class) {
+                $class::delete_all(array('sectionid' => $section->id));
+            }
             cps_section::delete($section->id);
 
             $count ++;
 
             $should_report = ($count <= 100 and $count % 10 == 0);
-
             if ($should_report or $count % 100 == 0) {
                 $log('Dropped ' . $count . " sections...\n");
             }
