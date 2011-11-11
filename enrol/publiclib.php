@@ -26,6 +26,7 @@ abstract class cps {
         require_once $dao . '/extern.php';
         require_once $dao . '/lib.php';
         require_once $dao . '/daos.php';
+        require_once $dao . '/error.php';
     }
 
     public static function require_extensions() {
