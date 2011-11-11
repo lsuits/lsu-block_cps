@@ -5,6 +5,8 @@ $events = array(
     'cps_teacher_process',
     'cps_teacher_release',
     'cps_section_process',
+    'cps_section_drop',
+    'cps_semester_drop',
     'cps_course_create',
     'cps_course_severed',
     'cps_group_emptied'

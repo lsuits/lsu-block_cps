@@ -120,6 +120,28 @@ abstract class cps_event_handler {
         return true;
     }
 
+    public static function cps_section_drop($section) {
+        $section_settings = array('unwant', 'split', 'crosslist', 'team_section');
+
+        foreach ($section_settings as $settting) {
+            $class = 'cps_' . $settting;
+
+            $class::delete_all(array('sectionid' => $section->id));
+        }
+
+        return true;
+    }
+
+    public static function cps_semester_drop($semester) {
+        $semester_settings = array('cps_creation', 'cps_team_request');
+
+        foreach ($semester_settings as $class) {
+            $class::delete_all(array('semesterid' => $semester->id));
+        }
+
+        return true;
+    }
+
     public static function cps_course_create($course) {
         // Split, Crosslist, and Team teach manipulate the shortname
         // and fullname of a created course
