@@ -128,7 +128,7 @@ class lsu_enrollment_provider extends enrollment_provider {
 
         $source = $this->student_data_source();
 
-        foreach ($semesters_in_session as $semester) {
+        foreach ($processed_semesters as $semester) {
             try {
                 $datas = $source->student_data($semester);
 
