@@ -147,7 +147,7 @@ class lsu_enrollment_provider extends enrollment_provider {
                 return false;
             }
         }
-    }
 
-    return true;
+        return true;
+    }
 }
