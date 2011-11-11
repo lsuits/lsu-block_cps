@@ -81,6 +81,9 @@ abstract class cps_user_section_accessor extends cps_section_accessor {
 
 // Begin Concrete classes
 class cps_unwant extends cps_user_section_accessor implements application, undoable {
+    var $sectionid;
+    var $userid;
+
     public static function active_sections_for($teacher, $is_primary = true) {
         $sections = $teacher->sections($is_primary);
 
@@ -120,6 +123,10 @@ class cps_unwant extends cps_user_section_accessor implements application, undoa
 }
 
 class cps_material extends cps_preferences implements application {
+    var $userid;
+    var $courseid;
+    var $moodleid;
+
     function apply() {
         global $DB, $CFG;
 
@@ -170,6 +177,12 @@ class cps_material extends cps_preferences implements application {
 }
 
 class cps_creation extends cps_preferences implements application {
+    var $userid;
+    var $semesterid;
+    var $courseid;
+    var $enroll_days;
+    var $create_days;
+
     function apply() {
         // TODO: Should we run a reprocess on a creation / enroll day change?
     }
@@ -179,6 +192,9 @@ class cps_setting extends cps_preferences {
 }
 
 class cps_split extends cps_user_section_accessor implements unique, undoable, verifiable {
+    var $userid;
+    var $sectionid;
+    var $groupingid;
 
     public static function is_valid($courses) {
         $valids = self::filter_valid($courses);
@@ -261,6 +277,10 @@ class cps_split extends cps_user_section_accessor implements unique, undoable, v
 }
 
 class cps_crosslist extends cps_user_section_accessor implements unique, undoable, verifiable {
+    var $userid;
+    var $sectionid;
+    var $groupingid;
+    var $shell_name;
 
     public static function is_valid($courses) {
         if (count($courses) <= 1) {
@@ -350,14 +370,12 @@ class cps_crosslist extends cps_user_section_accessor implements unique, undoabl
 
 // Request application involves emails
 class cps_team_request extends cps_preferences implements application, undoable {
-
-    var $semester;
-    var $sections;
-
-    var $owner;
-    var $course;
-    var $other_user;
-    var $other_course;
+    var $semesterid;
+    var $userid;
+    var $courseid;
+    var $requested;
+    var $requested_course;
+    var $approval_flag;
 
     public static function in_course($course, $semester, $approved = false) {
         global $USER;
@@ -617,6 +635,10 @@ class cps_team_request extends cps_preferences implements application, undoable 
 }
 
 class cps_team_section extends cps_section_accessor implements unique, undoable {
+    var $sectionid;
+    var $groupingid;
+    var $shell_name;
+    var $requestid;
 
     public static function in_requests(array $requests) {
         $sections = array();
