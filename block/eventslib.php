@@ -8,6 +8,30 @@ abstract class cps_event_handler {
         return true;
     }
 
+    public static function cps_teacher_process($cps_teacher) {
+        $threshold = get_config('block_cps', 'course_threshold');
+
+        $course = $cps_teacher->section()->course();
+
+        // Must abide by the threshold
+        if ($course->cou_number >= $threshold) {
+            $unwant_params = array(
+                'userid' => $cps_teacher->userid,
+                'sectionid' => $cps_teacher->sectionid
+            );
+
+            $unwant = cps_unwant::get($unwant_params);
+
+            if (empty($unwant)) {
+                $unwant = new cps_unwant();
+                $unwant->fill_params($unwant_params);
+                $unwant->save();
+            }
+        }
+
+        return true;
+    }
+
     public static function cps_teacher_release($cps_teacher) {
         // TODO: clear out settings for this instructor
         return true;
@@ -17,6 +41,8 @@ abstract class cps_event_handler {
         // Semesters are different here on campus.
         // Oddly enough, LAW courses and enrollments are tied to the
         // LSU campus, which means that we have to separate the logic here
+        $semester = $section->semester;
+
         if ($section->course->department == 'LAW') {
             $sem_params = array (
                 'name' => $section->semester->name,
@@ -27,8 +53,9 @@ abstract class cps_event_handler {
 
             $law_semester = cps_semester::get($sem_params);
 
-            $section->semester = $law_semester;
-            $section->semesterid = $law_semester->id;
+            if ($law_semester) {
+                $semester = $law_semester;
+            }
         }
 
         // Unwanted interjection
@@ -39,19 +66,19 @@ abstract class cps_event_handler {
         }
 
         $teacher_params = array(
-            'sectionid' => $section->id,
-            'primary_flag' => 1,
-            'status' => cps::PROCESSED
+            'sectionid = ' . $section->id,
+            'primary_flag = 1',
+            "(status = '". cps::PROCESSED."' OR status = '".cps::ENROLLED."')"
         );
 
         // Creation and Enrollment interjection
-        $primary = cps_teacher::get($teacher_params);
+        $primary = current(cps_teacher::get_select($teacher_params));
 
         // We know a teacher exists for this course, so we'll use a non-primary
         if (!$primary) {
-            unset($teacher_params['primary_flag']);
+            $teacher_params[1] = 'primary_flag = 0';
 
-            $primary = cps_teacher::get($teacher_params);
+            $primary = current(cps_teacher::get_select($teacher_params));
         }
 
         $creation_params = array(
@@ -67,7 +94,7 @@ abstract class cps_event_handler {
             $creation->enroll_days = get_config('block_cps', 'enroll_days');
         }
 
-        $classes_start = $section->semester()->classes_start;
+        $classes_start = $semester->classes_start;
         $diff = $classes_start - time();
 
         $diff_days = ($diff / 60 / 60 / 24);

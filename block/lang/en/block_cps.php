@@ -5,6 +5,12 @@ $string['pluginname_desc'] = 'The Course Preference block allows instructors to
 control craetion and enrollment behavior. These are system wide defaults for
 those who do not actually set any data.';
 
+$string['course_threshold'] = 'Course Number Threshold';
+$string['course_threshold_desc'] = 'Sections belonging to course number that
+are greater than or equal to the specified number, will not be initially created.
+CPS will create unwanted entries for these section so the instructor can opted
+in teaching online.';
+
 $string['course_severed'] = 'Delete upon Severage';
 $string['course_severed_desc'] = 'A course is severed if the Moodle course will
 not longer be handled by the enrollment module, or if enrollment equals zero.';

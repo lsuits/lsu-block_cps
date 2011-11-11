@@ -159,8 +159,33 @@ abstract class cps {
         return self::reprocess_sections($teacher->sections(), $silent);
     }
 
+    public static function drop_semester($semester) {
+        // Remove data from local tables
+        foreach ($semester->sections() as $section) {
+            $section_param = array('sectionid' => $section->id);
+
+            $types = array('student', 'teacher');
+
+            foreach ($types as $type) {
+                $class = 'cps_' . $type;
+                $users = $class::get_all($section_param);
+
+                foreach ($users as $user) {
+                    events_trigger('cps_'.$type.'_drop', $user);
+                    $class::delete($user->id);
+                }
+            }
+
+            events_trigger('cps_section_drop', $section);
+            cps_section::delete($section->id);
+        }
+
+        events_trigger('cps_semester_drop', $semester);
+        cps_semester::delete($semester->id);
+    }
+
     public static function gen_str($plugin = 'enrol_cps') {
-        return function ($key, $a=null) use ($plugin) {
+        return function ($key, $a = null) use ($plugin) {
             return get_string($key, $plugin, $a);
         };
     }

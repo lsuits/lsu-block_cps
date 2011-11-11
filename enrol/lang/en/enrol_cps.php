@@ -1,10 +1,22 @@
 <?php
 
-$string['pluginname'] = 'CPS Enollment';
+$string['pluginname'] = 'CPS Enrollment';
 $string['pluginname_desc'] = 'The CPS (Course Preference System) enrollment module is a pluggable enrollment system that adheres to common university
 criterion including Semesters, Courses, Sections tied to coures, and teacher and student enrollment tied to Sections.
 
 The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
+
+$string['semester_cleanup'] = 'Semester Cleanup';
+$string['reprocess_failures'] = 'Reprocess Failures';
+
+$string['general_settings'] = 'General Settings';
+$string['management'] = 'Internal Links';
+$string['management_links'] = '
+Below are some internal links to manage the enrollment data.
+
+* ['.$string['semester_cleanup'].']({$a->cleanup_url})
+* ['.$string['reprocess_failures'].']({$a->failure_url})
+';
 
 $string['cron_run'] = 'Nightly Cron';
 $string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
@@ -94,3 +106,10 @@ $string['fake_cleanup_desc'] = 'Warning: this runs truncate on all the CPS table
 
 $string['fake_cleanuprun'] = 'Cleanup on run';
 $string['fake_cleanuprun_desc'] = 'Runs "Cleanup" in provider `postprocess`';
+
+$string['drop_semester'] = 'Drop {$a->year} {$a->name} {$a->campus} {$a->session_key} and all associated data';
+$string['year'] = 'Year';
+$string['campus'] = 'Campus';
+$string['session_key'] = 'Session';
+$string['sections'] = 'Sections';
+$string['in_session'] = 'In Session?';

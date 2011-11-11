@@ -109,11 +109,7 @@ XML;
 
         $invoke_params = $this->build_parameters($params);
 
-        try {
-            $response = $client->invoke($invoke_params)->invokeReturn;
-        } catch (Exception $e) {
-            $response = '';
-        }
+        $response = $client->invoke($invoke_params)->invokeReturn;
 
         return new SimpleXmlElement($this->clean_response($response));
     }

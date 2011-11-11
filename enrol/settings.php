@@ -12,6 +12,16 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('enrol_cps_settings', '',
         $_s('pluginname_desc', cps::plugin_base())));
 
+    $urls = new stdClass;
+    $urls->cleanup_url = $CFG->wwwroot . '/enrol/cps/cleanup.php';
+    $urls->failure_url = $CFG->wwwroot . '/enrol/cps/failure.php';
+
+    $settings->add(new admin_setting_heading('enrol_cps_internal_links',
+        $_s('management'), $_s('management_links', $urls)));
+
+    $settings->add(new admin_setting_heading('enrol_cps_genernal_settings',
+        $_s('general_settings'), ''));
+
     $settings->add(new admin_setting_configselect('enrol_cps/enrollment_provider',
         $_s('provider'), $_s('provider_desc'), 'fake', $plugins));
 
