@@ -9,6 +9,14 @@ The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully 
 $string['semester_cleanup'] = 'Semester Cleanup';
 $string['reprocess_failures'] = 'Reprocess Failures';
 
+$string['error_threshold'] = 'Error Threshold';
+$string['error_threshold_desc'] = 'The process will not automatically reprocess failures, if there were more than this many in a single job.';
+
+$string['error_threshold_log'] = 'There are too many errors to reprocess automatically. Either clear out the error queue through the settings page, or raise the threshold number.';
+
+$string['error_params'] = 'Parameters';
+$string['error_when'] = 'Timestamp';
+
 $string['general_settings'] = 'General Settings';
 $string['management'] = 'Internal Links';
 $string['management_links'] = '

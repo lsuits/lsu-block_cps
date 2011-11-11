@@ -50,7 +50,11 @@ class enrol_cps_plugin extends enrol_plugin {
     public function is_cron_required() {
         $automatic = $this->setting('cron_run');
 
+        // Automatic error handling if automatic
         if ($automatic) {
+            $this->handle_automatic_errors();
+
+            // TODO: Make hour:min configurable settings
             $now = (int)date('H');
 
             $right_time = ($now >= 2 and $now <= 3);
@@ -59,6 +63,28 @@ class enrol_cps_plugin extends enrol_plugin {
         }
 
         return true;
+    }
+
+    private function handle_automatic_errors() {
+        $errors = cps_error::get_all();
+
+        $error_threshold = $this->setting('error_threshold');
+
+        if (count($errors) > $error_threshold) {
+            $this->errors[] = cps::_s('error_threshold_log');
+            return;
+        }
+
+        $this->handle_errors($errors);
+    }
+
+    public function handle_errors($errors) {
+        foreach ($errors as $error) {
+            if ($error->handle($this)) {
+                $this->handle_enrollments();
+                cps_error::delete($error->id);
+            }
+        }
     }
 
     public function cron() {
@@ -145,27 +171,30 @@ class enrol_cps_plugin extends enrol_plugin {
         $processed_semesters = $this->get_semesters($time);
 
         foreach ($processed_semesters as $semester) {
+            $this->process_semester($semester);
+        }
+    }
 
-            $process_courses = $this->get_courses($semester);
+    public function process_semester($semester) {
+        $process_courses = $this->get_courses($semester);
 
-            if (empty($process_courses)) {
-                continue;
-            }
+        if (empty($process_courses)) {
+            continue;
+        }
 
-            $departments = cps_course::flatten_departments($process_courses);
+        $departments = cps_course::flatten_departments($process_courses);
 
-            foreach ($departments as $department => $courseids) {
-                $filters = array(
-                    'semesterid = '.$semester->id,
-                    'courseid IN ('.implode(',', $courseids).')',
-                );
+        foreach ($departments as $department => $courseids) {
+            $filters = array(
+                'semesterid = '.$semester->id,
+                'courseid IN ('.implode(',', $courseids).')',
+            );
 
-                $current_sections = cps_section::get_select($filters);
+            $current_sections = cps_section::get_select($filters);
 
-                $this->process_enrollment_by_department(
-                    $semester, $department, $current_sections
-                );
-            }
+            $this->process_enrollment_by_department(
+                $semester, $department, $current_sections
+            );
         }
     }
 
@@ -205,7 +234,11 @@ class enrol_cps_plugin extends enrol_plugin {
 
             return $process_courses;
         } catch (Exception $e) {
-            $this->errors[] = $e->getMessage();
+            $this->errors[] = 'Unable to process courses for ' . $semester;
+
+            // Queue up errors
+            cps_error::courses($semester)->save();
+
             return array();
         }
     }
@@ -218,8 +251,7 @@ class enrol_cps_plugin extends enrol_plugin {
             $teachers = $teacher_source->teachers($semester, $department);
             $students = $student_source->students($semester, $department);
 
-            $sections = cps_section::ids_by_course_department($semester, $department);
-            $sectionids = implode(', ', $sections);
+            $sectionids = cps_section::ids_by_course_department($semester, $department);
 
             $filter = array('sectionid IN ('.$sectionids.')');
             $current_teachers = cps_teacher::get_select($filter);
@@ -234,14 +266,14 @@ class enrol_cps_plugin extends enrol_plugin {
             unset($current_teachers);
             unset($current_students);
 
-            foreach ($all_sections as $section) {
+            foreach ($current_sections as $section) {
                 $course = $section->course();
                 $this->post_section_process($semester, $course, $section);
-                unset($current_sections[$section->id]);
+                unset($all_sections[$section->id]);
             }
 
             // Drop remaining
-            $remaining = implode(', ', array_keys($current_sections));
+            $remaining = implode(', ', array_keys($all_sections));
             if (!empty($remaining)) {
                 cps_section::update_select(
                     array('status' => cps::PENDING),
@@ -252,6 +284,8 @@ class enrol_cps_plugin extends enrol_plugin {
         } catch (Exception $e) {
             $info = "$semester $department";
             $this->errors[] = 'Failed to process enrollment for ' . $info;
+
+            cps_error::department($semester, $department)->save();
         }
     }
 
@@ -399,6 +433,8 @@ class enrol_cps_plugin extends enrol_plugin {
             $this->post_section_process($semester, $course, $section);
         } catch (Exception $e) {
             $this->errors[] = $e->getMessage();
+
+            cps_error::section($section)->save();
         }
     }
 
