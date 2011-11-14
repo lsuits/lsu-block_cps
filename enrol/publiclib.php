@@ -97,6 +97,23 @@ abstract class cps {
         return $enrol->errors;
     }
 
+    public static function reprocess_department($semester, $department, $silent = true) {
+        $enrol = enrol_get_plugin('cps');
+
+        if (!$enrol or $enrol->errors) {
+            return false;
+        }
+
+        $enrol->is_silent = $silent;
+
+        // Work on making department reprocessing code separate
+        cps_error::department($semester, $department)->handle($enrol);
+
+        $enrol->handle_enrollments();
+
+        return true;
+    }
+
     public static function reprocess_course($course, $silent = true) {
         $sections = cps_section::from_course($course, true);
 
@@ -113,9 +130,6 @@ abstract class cps {
         $enrol->is_silent = $silent;
 
         foreach ($sections as $section) {
-            $section->status = self::PENDING;
-            $section->save();
-
             $enrol->process_enrollment(
                 $section->semester(), $section->course(), $section
             );

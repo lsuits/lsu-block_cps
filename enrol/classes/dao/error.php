@@ -50,8 +50,8 @@ class cps_error extends cps_external implements cps_error_types {
                 $semester = cps_semester::get(array('id' => $params['semesterid']));
                 $department = $params['department'];
 
-                $sectionids = cps_section::ids_by_course_department($semester, $department);
-                $sections = cps_section::get_select(array('id IN ('.$sectionids.')'));
+                $ids = cps_section::ids_by_course_department($semester, $department);
+                $sections = cps_section::get_select(array('id IN ('.$ids.')'));
 
                 $enrollment->process_enrollment_by_department(
                     $semester, $department, $sections
