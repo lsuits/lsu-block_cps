@@ -7,7 +7,7 @@
     buttonCheck = function() {
       var disabled, selected;
       selected = $("input[name^='ids']:checked");
-      disabled = selected.length > 0 ? false : true;
+      disabled = selected.length === 0;
       $(grab('reprocess')).attr('disabled', disabled);
       return $(grab('delete')).attr('disabled', disabled);
     };

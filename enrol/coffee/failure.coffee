@@ -4,7 +4,7 @@ $(document).ready ->
 
     buttonCheck = ->
         selected = $("input[name^='ids']:checked")
-        disabled = if selected.length > 0 then false else true
+        disabled = selected.length == 0
 
         $(grab 'reprocess').attr 'disabled', disabled
         $(grab 'delete').attr 'disabled', disabled
