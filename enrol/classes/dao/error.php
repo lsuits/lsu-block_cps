@@ -70,8 +70,10 @@ class cps_error extends cps_external implements cps_error_types {
 
                 // Safely attempt to run user code; keep error on failure;
                 try {
-                    if (isset($handler->file)) {
-                        require_once $CFG->dirroot . $handler->file;
+                    $full_path = $CFG->dirroot . $handler->file;
+
+                    if (isset($handler->file) and file_exists($full_path)) {
+                        require_once $full_path;
                     }
 
                     if (isset($handler->function) and is_callable($handler->function)) {
