@@ -48,9 +48,9 @@ if ($semesterid) {
     if (data_submitted()) {
         // Report the drop
         echo $OUTPUT->box_start();
-        echo $OUTPUT->start_tag('pre');
+        echo html_writer::start_tag('pre');
         cps::drop_semester($semester, true);
-        echo $OUTPUT->end_tag('pre');
+        echo html_writer::end_tag('pre');
         echo $OUTPUT->box_end();
 
         echo $OUTPUT->continue_button(new moodle_url($base));

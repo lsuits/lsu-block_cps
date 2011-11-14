@@ -74,13 +74,14 @@ class cps_error extends cps_external implements cps_error_types {
                         require_once $CFG->dirroot . $handler->file;
                     }
 
-                    if (isset($handler->function) and function_exists($handler->funciton)) {
+                    if (isset($handler->function) and is_callable($handler->function)) {
                         $local_params = array($enrollment, $params['params']);
                         call_user_func_array($handler->function, $local_params);
                     }
                 } catch (Exception $e) {
                     return false;
                 }
+                break;
             default:
                 // Don't handle it
                 return false;
