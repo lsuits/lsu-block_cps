@@ -4,10 +4,37 @@ $string['pluginname'] = 'CPS Enrollment';
 $string['pluginname_desc'] = 'The CPS (Course Preference System) enrollment module is a pluggable enrollment system that adheres to common university
 criterion including Semesters, Courses, Sections tied to coures, and teacher and student enrollment tied to Sections.
 
-The Moodle enrollment module will scan for behaviors defined in *{$a}*. A fully defined behavior will show up in the dropdown below.';
+The Moodle enrollment module will scan for behaviors defined in _{$a}_. A fully defined behavior will show up in the dropdown below.';
 
 $string['semester_cleanup'] = 'Semester Cleanup';
 $string['reprocess_failures'] = 'Reprocess Failures';
+
+$string['reprocess_count'] = 'Found {$a} error(s)';
+
+$string['reprocess'] = 'Reprocess';
+$string['reprocess_all'] = $string['reprocess'] . ' All';
+$string['reprocess_selected'] = $string['reprocess'] . ' Selected';
+$string['reprocess_success'] = 'Reprocessing errors';
+
+$string['delete'] = 'Delete';
+$string['delete_all'] = $string['delete'] . ' All';
+$string['delete_selected'] = $string['delete'] . ' Selected';
+$string['delete_success'] = 'Successfully deleted errors';
+
+$string['no_errors'] = 'Congratulations! You have handled all the enrollment errors.';
+
+$string['cron_run'] = 'Nightly Cron';
+$string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
+
+$string['error_threshold'] = 'Error Threshold';
+$string['error_threshold_desc'] = 'The process will only automatically reprocess errors that occurred during the cron run whose numbers are less than or equal to the specified threshold.
+
+__Note__: This setting only applies if _'.$string['cron_run'].'_ is enabled';
+
+$string['error_threshold_log'] = 'There are too many errors to reprocess automatically. Either clear out the error queue through the settings page, or raise the threshold number.';
+
+$string['error_params'] = 'Parameters';
+$string['error_when'] = 'Timestamp';
 
 $string['general_settings'] = 'General Settings';
 $string['management'] = 'Internal Links';
@@ -18,17 +45,16 @@ Below are some internal links to manage the enrollment data.
 * ['.$string['reprocess_failures'].']({$a->failure_url})
 ';
 
-$string['cron_run'] = 'Nightly Cron';
-$string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
-
 $string['email_report'] = 'Email Logs';
-$string['email_report_desc'] = 'Email CPS execution log to all admins. **Note**: any errors will be reported regardless.';
+$string['email_report_desc'] = 'Email CPS execution log to all admins.
+
+__Note__: Any errors will be reported regardless.';
 
 $string['user_settings'] = 'User Creation Settings';
 $string['user_email'] = 'E-mail suffix';
 $string['user_email_desc'] = 'The created user will have this email domain appended to their username.';
 $string['user_confirm'] = 'Confirmed';
-$string['user_confirm_desc'] = 'The user will be "confirmed" upon creation.';
+$string['user_confirm_desc'] = 'The user will be _confirmed_ upon creation.';
 $string['user_city'] = 'City/town';
 $string['user_city_desc'] = 'The created user will have this default city assigned to them.';
 $string['user_country'] = 'Country';
@@ -46,14 +72,14 @@ $string['provider_desc'] = 'This enrollment provider will be used to pull enroll
 
 $string['provider_problems'] = 'Provider Cannot be Instantiated';
 $string['provider_problems_desc'] = '
-*{$a->pluginname}* cannot be instantiated with the current settings.
+_{$a->pluginname}_ cannot be instantiated with the current settings.
 
-**Problem**: {$a->problem}
+__Problem__: {$a->problem}
 
 This will cause the enrollment plugin to abort in cron. Please address
 these errors.
 
-**Note to Developers**: Consider using the `adv_settings` for server side
+__Note to Developers__: Consider using the `adv_settings` for server side
 validation of settings.';
 
 $string['no_provider'] = 'No Enrollment Provider selected.';
@@ -105,7 +131,7 @@ $string['fake_cleanup'] = 'Cleanup';
 $string['fake_cleanup_desc'] = 'Warning: this runs truncate on all the CPS tables.';
 
 $string['fake_cleanuprun'] = 'Cleanup on run';
-$string['fake_cleanuprun_desc'] = 'Runs "Cleanup" in provider `postprocess`';
+$string['fake_cleanuprun_desc'] = 'Runs _Cleanup_ in provider `postprocess`';
 
 $string['no_semester'] = 'The semester you have selected does not exists.';
 

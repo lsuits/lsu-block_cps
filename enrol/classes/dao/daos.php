@@ -265,7 +265,7 @@ class cps_section extends cps_dao {
 
         $params = array('semid' => $semester->id, 'dept' => $department);
 
-        return array_keys($DB->get_records_sql($sql, $params));
+        return implode(',', array_keys($DB->get_records_sql($sql, $params)));
     }
 }
 

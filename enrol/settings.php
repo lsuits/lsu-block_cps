@@ -14,7 +14,7 @@ if ($ADMIN->fulltree) {
 
     $urls = new stdClass;
     $urls->cleanup_url = $CFG->wwwroot . '/enrol/cps/cleanup.php';
-    $urls->failure_url = $CFG->wwwroot . '/enrol/cps/failure.php';
+    $urls->failure_url = $CFG->wwwroot . '/enrol/cps/failures.php';
 
     $settings->add(new admin_setting_heading('enrol_cps_internal_links',
         $_s('management'), $_s('management_links', $urls)));
@@ -27,6 +27,9 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('enrol_cps/cron_run',
         $_s('cron_run'), $_s('cron_run_desc'), 1));
+
+    $settings->add(new admin_setting_configtext('enrol_cps/error_threshold',
+        $_s('error_threshold'), $_s('error_threshold_desc'), 100));
 
     $settings->add(new admin_setting_configcheckbox('enrol_cps/email_report',
         $_s('email_report'), $_s('email_report_desc'), 1));
