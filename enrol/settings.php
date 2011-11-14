@@ -28,6 +28,14 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_cps/cron_run',
         $_s('cron_run'), $_s('cron_run_desc'), 1));
 
+    $settings->add(new admin_setting_configcheckbox('enrol_cps/running',
+        $_s('running'), $_s('running_desc'), 0));
+
+    $hours = range(0, 23);
+
+    $settings->add(new admin_setting_configselect('enrol_cps/cron_hour',
+        $_s('cron_hour'), $_s('cron_hour_desc'), 2, $hours));
+
     $settings->add(new admin_setting_configtext('enrol_cps/error_threshold',
         $_s('error_threshold'), $_s('error_threshold_desc'), 100));
 

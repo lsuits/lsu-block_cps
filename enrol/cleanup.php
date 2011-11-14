@@ -19,15 +19,17 @@ $blockname = $_s('pluginname');
 
 $action = $_s('semester_cleanup');
 
+$base_url = new moodle_url('/admin/settings.php', array(
+    'section' => 'enrolsettingscps'
+));
+
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 $PAGE->set_title($blockname. ': '. $action);
 $PAGE->set_heading($blockname. ': '. $action);
 $PAGE->set_url('/enrol/cps/cleanup.php');
 $PAGE->set_pagetype('admin-settings-cps-semester-cleanup');
 $PAGE->set_pagelayout('admin');
-$PAGE->navbar->add($blockname, new moodle_url('/admin/settings.php',
-    array('section' => 'enrolsettingscps')
-));
+$PAGE->navbar->add($blockname, $base_url);
 
 $PAGE->navbar->add($action);
 
@@ -67,6 +69,15 @@ if ($semesterid) {
 
 $semesters = cps_semester::get_all();
 $in_session = cps_semester::in_session();
+
+if (empty($semesters)) {
+    echo $OUTPUT->box_start();
+    echo $OUTPUT->notification($_s('no_semesters'));
+    echo $OUTPUT->box_end();
+    echo $OUTPUT->continue_button($base_url);
+    echo $OUTPUT->footer();
+    die();
+}
 
 $table = new html_table();
 
