@@ -23,8 +23,16 @@ $string['delete_success'] = 'Successfully deleted errors';
 
 $string['no_errors'] = 'Congratulations! You have handled all the enrollment errors.';
 
-$string['cron_run'] = 'Nightly Cron';
-$string['cron_run_desc'] = 'Enable the nightly cron run, or run cron manually.';
+$string['cron_run'] = 'Daily Cron';
+$string['cron_run_desc'] = 'Enable the daily cron run, or run cron manually.';
+
+$string['running'] = 'Currently Running';
+$string['running_desc'] = 'If this is checked then it either means that the process is still running, or the process died unexpectingly. Uncheck this if you think the process should be enabled.
+
+__Note__: One of the easiest ways to know the process has ended is to enable email logs.';
+
+$string['cron_hour'] = 'Starting Hour';
+$string['cron_hour_desc'] = 'Start the automatic cron on this hour.';
 
 $string['error_threshold'] = 'Error Threshold';
 $string['error_threshold_desc'] = 'The process will only automatically reprocess errors that occurred during the cron run whose numbers are less than or equal to the specified threshold.
@@ -134,6 +142,7 @@ $string['fake_cleanuprun'] = 'Cleanup on run';
 $string['fake_cleanuprun_desc'] = 'Runs _Cleanup_ in provider `postprocess`';
 
 $string['no_semester'] = 'The semester you have selected does not exists.';
+$string['no_semesters'] = 'There are no semesters in your system. Consider running the enrollment process.';
 
 $string['drop_semester'] = 'Drop {$a->year} {$a->name} {$a->campus} {$a->session_key} and all associated data';
 $string['year'] = 'Year';
