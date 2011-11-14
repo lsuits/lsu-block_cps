@@ -75,16 +75,7 @@ class enrol_cps_plugin extends enrol_plugin {
             return;
         }
 
-        $this->handle_errors($errors);
-    }
-
-    public function handle_errors($errors) {
-        foreach ($errors as $error) {
-            if ($error->handle($this)) {
-                $this->handle_enrollments();
-                cps_error::delete($error->id);
-            }
-        }
+        cps::reprocess_errors($errors);
     }
 
     public function cron() {

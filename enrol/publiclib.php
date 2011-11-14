@@ -160,6 +160,18 @@ abstract class cps {
         return self::reprocess_sections($teacher->sections(), $silent);
     }
 
+    public static function reprocess_errors($errors) {
+
+        $enrol = enrol_get_plugin('cps');
+
+        foreach ($errors as $error) {
+            if ($error->handle($enrol)) {
+                $enrol->handle_enrollments();
+                cps_error::delete($error->id);
+            }
+        }
+    }
+
     public static function drop_semester($semester, $report = false) {
         $log = function ($msg) use ($report) {
             if ($report) mtrace($msg);
