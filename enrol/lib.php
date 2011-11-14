@@ -50,19 +50,25 @@ class enrol_cps_plugin extends enrol_plugin {
     public function is_cron_required() {
         $automatic = $this->setting('cron_run');
 
-        // Automatic error handling if automatic
+        $running = (bool)$this->setting('running');
+
         if ($automatic) {
             $this->handle_automatic_errors();
 
-            // TODO: Make hour:min configurable settings
-            $now = (int)date('H');
+            $current_hour = (int)date('H');
 
-            $right_time = ($now >= 2 and $now <= 3);
+            $acceptable_hour = (int)$this->setting('cron_hour');
 
-            return ($right_time and parent::is_cron_required());
+            $right_time = ($current_hour == $acceptable_hour);
+
+            return (
+                $right_time and
+                parent::is_cron_required() and
+                !$running
+            );
         }
 
-        return true;
+        return !$running;
     }
 
     private function handle_automatic_errors() {
@@ -75,11 +81,11 @@ class enrol_cps_plugin extends enrol_plugin {
             return;
         }
 
-        cps::reprocess_errors($errors);
+        cps::reprocess_errors($errors, true);
     }
 
     public function cron() {
-        $admins = get_admins();
+        $this->setting('running', 1);
 
         if ($this->provider()) {
             $this->log("
@@ -100,20 +106,28 @@ class enrol_cps_plugin extends enrol_plugin {
             $this->log('------------------------------------------------');
             $this->log('CPS enrollment took: ' . $how_long . ' secs');
             $this->log('------------------------------------------------');
+        }
 
+        $this->email_reports();
+
+        $this->setting('running', 0);
+    }
+
+    public function email_reports() {
+        global $CFG;
+
+        $admins = get_admins();
+
+        if ($this->setting('email_report')) {
             $email_text = implode("\n", $this->emaillog);
 
-            if ($this->setting('email_report')) {
-                foreach ($admins as $admin) {
-                    email_to_user($admin, $CFG->noreplyaddress,
-                        'CPS Enrollment Log', $email_text);
-                }
+            foreach ($admins as $admin) {
+                email_to_user($admin, $CFG->noreplyaddress,
+                    'CPS Enrollment Log', $email_text);
             }
         }
 
         if (!empty($this->errors)) {
-            global $CFG;
-
             $error_text = implode("\n", $this->errors);
 
             foreach ($admins as $admin) {
@@ -121,11 +135,14 @@ class enrol_cps_plugin extends enrol_plugin {
                     '[SEVERE] CPS Enrollment Errors', $error_text);
             }
         }
-
     }
 
-    public function setting($key) {
-        return get_config('enrol_cps', $key);
+    public function setting($key, $value = null) {
+        if ($value) {
+            return set_config($key, $value, 'enrol_cps');
+        } else {
+            return get_config('enrol_cps', $key);
+        }
     }
 
     public function full_process() {
@@ -956,7 +973,7 @@ class enrol_cps_plugin extends enrol_plugin {
         return $role;
     }
 
-    private function log($what) {
+    public function log($what) {
         if (!$this->is_silent) {
             mtrace($what);
         }
