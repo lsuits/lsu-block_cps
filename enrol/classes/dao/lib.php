@@ -200,7 +200,7 @@ abstract class cps_dao extends cps_base implements meta_information {
         $extra = $this->meta_fields($fields);
 
         if (empty($extra)) {
-            return true;
+            return $saved;
         }
 
         $fun = function ($e) use ($fields) { return $fields[$e]; };
@@ -222,7 +222,8 @@ abstract class cps_dao extends cps_base implements meta_information {
 
         // Update Pre-existing changes
         foreach ($dbs as $db) {
-            if (isset($meta[$db->name])) {
+            // Exists and changed, then write
+            if (isset($meta[$db->name]) and $db->value != $meta[$db->name]) {
                 $db->value = $meta[$db->name];
 
                 $DB->update_record($metatable, $db);
@@ -242,10 +243,6 @@ abstract class cps_dao extends cps_base implements meta_information {
             $m->id = $DB->insert_record($metatable, $m, true);
 
             $dbs[$m->id] = $m;
-        }
-
-        foreach ($dbs as $db) {
-            $this->{$db->name} = $db->value;
         }
     }
 
