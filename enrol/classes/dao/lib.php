@@ -227,9 +227,9 @@ abstract class cps_dao extends cps_base implements meta_information {
                 $db->value = $meta[$db->name];
 
                 $DB->update_record($metatable, $db);
-
-                unset($meta[$db->name]);
             }
+
+            unset($meta[$db->name]);
         }
 
         // Persist other changes
