@@ -57,7 +57,7 @@ abstract class enrollment_provider implements enrollment_factory {
         return null;
     }
 
-    protected function setting_key($key) {
+    function setting_key($key) {
         return $this->get_name() . '_' . $key;
     }
 
