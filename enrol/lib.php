@@ -187,7 +187,7 @@ class enrol_cps_plugin extends enrol_plugin {
         $process_courses = $this->get_courses($semester);
 
         if (empty($process_courses)) {
-            continue;
+            return;
         }
 
         $departments = cps_course::flatten_departments($process_courses);
@@ -474,9 +474,6 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $previous_status = $section->status;
 
-            // Allow outside interaction
-            events_trigger('cps_section_process', $section);
-
             $count = function ($type) use ($section) {
                 $enrollment = array(
                     'sectionid = '.$section->id,
@@ -490,9 +487,12 @@ class enrol_cps_plugin extends enrol_plugin {
 
             $will_enroll = ($count('teacher') or $count('student'));
 
-            if ($section->status != cps::PENDING and $will_enroll) {
+            if ($will_enroll) {
                 $section->status = cps::PROCESSED;
             }
+
+            // Allow outside interaction
+            events_trigger('cps_section_process', $section);
 
             if ($previous_status != $section->status) {
                 $section->save();
