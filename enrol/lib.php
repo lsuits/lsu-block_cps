@@ -85,7 +85,7 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function cron() {
-        $this->setting('running', 1);
+        $this->setting('running', true);
 
         if ($this->provider()) {
             $this->log("
@@ -110,7 +110,7 @@ class enrol_cps_plugin extends enrol_plugin {
 
         $this->email_reports();
 
-        $this->setting('running', 0);
+        $this->setting('running', false);
     }
 
     public function email_reports() {
@@ -138,7 +138,7 @@ class enrol_cps_plugin extends enrol_plugin {
     }
 
     public function setting($key, $value = null) {
-        if ($value) {
+        if ($value !== null) {
             return set_config($key, $value, 'enrol_cps');
         } else {
             return get_config('enrol_cps', $key);
