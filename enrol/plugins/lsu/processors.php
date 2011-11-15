@@ -277,7 +277,7 @@ class lsu_students extends lsu_source implements student_processor {
             $student->username = (string) $xml_student->PRIMARY_ACCESS_ID;
             $student->firstname = $first;
             $student->lastname = $last;
-            $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
+            $student->user_ferpa = (string) $xml_student->WITHHOLD_DIR_FLG == 'P' ? 1 : 0;
 
             $students[] = $student;
         }
@@ -326,15 +326,21 @@ class lsu_student_data extends lsu_source {
 class lsu_degree extends lsu_source {
     var $serviceId = 'MOODLE_DEGREE_CANDIDATE';
 
-    function graduates($semester) {
+    function student_data($semester) {
         $term = $this->encode_semester($semester->year, $semester->name);
 
         $params = array($term);
 
         if ($semester->campus == 'LSU') {
-            $params += array(self::LSU_CAMPUS, self::LSU_INST);
+            $params += array(
+                1 => self::LSU_INST,
+                2 => self::LSU_CAMPUS
+            );
         } else {
-            $params += array(self::LAW_CAMPUS, self::LAW_INST);
+            $params += array(
+                1 => self::LAW_INST,
+                2 => self::LAW_CAMPUS
+            );
         }
 
         $xml_grads = $this->invoke($params);
@@ -344,7 +350,7 @@ class lsu_degree extends lsu_source {
             $graduate = new stdClass;
 
             $graduate->idnumber = (string) $xml_grad->LSU_ID;
-            $graduate->degree = 'Y';
+            $graduate->user_degree = 'Y';
 
             $graduates[$graduate->idnumber] = $graduate;
         }
@@ -356,7 +362,7 @@ class lsu_degree extends lsu_source {
 class lsu_anonymous extends lsu_source {
     var $serviceId = 'MOODLE_LAW_ANON_NBR';
 
-    function anonymous_numbers($semester) {
+    function student_data($semester) {
         $term = $this->encode_semester($semester->year, $semester->name);
 
         $xml_numbers = $this->invoke(array($term));
@@ -416,7 +422,7 @@ final class lsu_user_cache_strategy extends lsu_source implements lsu_cache_stra
 
         $info = new stdClass;
         $info->username = (string) $profile_info->PRIMARY_ACCESS_ID;
-        $info->user_ferpa = (string) $profile_info->WITHHOLD_DIR_FLG == 'N' ? 0 : 1;
+        $info->user_ferpa = (string) $profile_info->WITHHOLD_DIR_FLG == 'P' ? 1 : 0;
         $info->firstname = $first;
         $info->lastname = $last;
 

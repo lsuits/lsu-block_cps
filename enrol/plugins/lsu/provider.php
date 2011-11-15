@@ -60,6 +60,24 @@ class lsu_enrollment_provider extends enrollment_provider {
         );
     }
 
+    public static function adv_settings() {
+        $optional_pulls = array (
+            'student_data' => 1,
+            'anonymous_numbers' => 0,
+            'degree_candidates' => 0
+        );
+
+        $admin_settings = array();
+
+        foreach ($optional_pulls as $key => $default) {
+            $k = self::get_name() . '_' . $key;
+            $admin_settings[] = new admin_setting_configcheckbox('enrol_cps/' . $k,
+                cps::_s('lsu_'. $key), cps::_s('lsu_' . $key . '_desc'), $default);
+        }
+
+        return $admin_settings;
+    }
+
     function semester_source() {
         return new lsu_semesters($this->username, $this->password, $this->wsdl);
     }
@@ -82,6 +100,10 @@ class lsu_enrollment_provider extends enrollment_provider {
 
     function anonymous_source() {
         return new lsu_anonymous($this->username, $this->password, $this->wsdl);
+    }
+
+    function degree_source() {
+        return new lsu_degree($this->username, $this->password, $this->wsdl);
     }
 
     function teacher_department_source() {
@@ -121,33 +143,59 @@ class lsu_enrollment_provider extends enrollment_provider {
             'year' => $lsu_semester->year,
             'name' => $lsu_semester->name,
             'campus' => 'LAW',
-            'session_key' => $lsu_semester->session_key
         ));
 
         $processed_semesters = array($lsu_semester) + $law_semesters;
 
-        $source = $this->student_data_source();
+        $attempts = array(
+            'student_data' => $this->student_data_source(),
+            'anonymous_numbers' => $this->anonymous_source(),
+            'degree_candidates' => $this->degree_source()
+        );
 
         foreach ($processed_semesters as $semester) {
-            try {
-                $datas = $source->student_data($semester);
 
-                foreach ($datas as $data) {
-                    $params = array('idnumber' => $data->idnumber);
-
-                    $user = cps_user::upgrade_and_get($data, $params);
-
-                    if (empty($user->id)) {
-                        continue;
-                    }
-
-                    $user->save();
+            foreach ($attempts as $key => $source) {
+                if (!$this->get_setting($key)) {
+                    continue;
                 }
-            } catch (Exception $e) {
-                return false;
+
+                try {
+                    $this->process_data_source($source, $semester);
+                } catch (Exception $e) {
+                    $handler = new stdClass;
+
+                    $handler->function = function($enrol, $params) {
+                        extract($params);
+
+                        $semester = cps_semester::get(array('id' => $semesterid));
+
+                        $enrol->provider()->process_data_source($source, $semester);
+                    };
+
+                    $params = array('source' => $source, 'semesterid' => $semester->id);
+
+                    cps_error::custom($handler, $params)->save();
+                }
             }
         }
 
         return true;
+    }
+
+    function process_data_source($source, $semester) {
+        $datas = $source->student_data($semester);
+
+        foreach ($datas as $data) {
+            $params = array('idnumber' => $data->idnumber);
+
+            $user = cps_user::upgrade_and_get($data, $params);
+
+            if (empty($user->id)) {
+                continue;
+            }
+
+            $user->save();
+        }
     }
 }
