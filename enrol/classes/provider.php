@@ -23,9 +23,8 @@ interface enrollment_factory {
 abstract class enrollment_provider implements enrollment_factory {
 
     function get_setting($key, $default=false) {
-        $moodle_setting = $this->get_name() . '_' . $key;
 
-        $attempt = get_config('enrol_cps', $moodle_setting);
+        $attempt = get_config('enrol_cps', $this->setting_key($key));
 
         // Try generated setting defaults first
         $reg_settings = $this->settings();
@@ -56,6 +55,10 @@ abstract class enrollment_provider implements enrollment_factory {
     // Optionally return a source for reverse lookups
     function teacher_info_source() {
         return null;
+    }
+
+    protected function setting_key($key) {
+        return $this->get_name() . '_' . $key;
     }
 
     public static function get_name() {
