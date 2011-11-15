@@ -118,6 +118,15 @@ $string['lsu_no_file'] = 'The WSDL does not exists in wsdl_location';
 $string['lsu_bad_url'] = 'Provide a valid url (define either a http or https protocol)';
 $string['lsu_bad_resp'] = 'Invalid credentials in credential location request';
 
+$string['lsu_student_data'] = 'Process Student Data';
+$string['lsu_student_data_desc'] = 'This will enable processing student data in the `postprocess` section of the LSU provider';
+
+$string['lsu_anonymous_numbers'] = 'Process LAW Numbers';
+$string['lsu_anonymous_numbers_desc'] = 'This will enable processing anonymous numbers in the `postprocess` section of the LSU provider';
+
+$string['lsu_degree_candidates'] = 'Process Degree Candidacy';
+$string['lsu_degree_candidates_desc'] = 'This will enabled processing degree candidate information in the `postprocess` section of the LSU provider';
+
 // Fake for testing
 $string['fake_name'] = 'Fake Source Enrollment Provider';
 $string['fake_course_variant'] = 'Course Variations';
