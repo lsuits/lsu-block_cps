@@ -1,4 +1,4 @@
-(function() {
+(function(){
   $(document).ready(function() {
     var available, bucket, changed, move_selected, move_to_available, move_to_bucket, selected;
     $("input[name^='shell_name_']").keyup(function() {
@@ -54,4 +54,4 @@
     $("input[name='move_right']").click(move_to_bucket);
     return $("input[name='move_left']").click(move_to_available);
   });
-}).call(this);
+})();

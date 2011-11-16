@@ -1,4 +1,4 @@
-(function() {
+(function(){
   $(document).ready(function() {
     var available;
     available = $("select[name^='before']");
@@ -10,15 +10,14 @@
       } else if (available) {
         value = true;
         $("select[name^='shell_']").each(function(index, select) {
-          return value = value && $(select).children().length >= 1;
+          value = value && $(select).children().length >= 1;
+          return value;
         });
-        if (!value) {
-          $("#split_error").text("Each shell must have at least one section.");
-        }
+        !value ? $("#split_error").text("Each shell must have at least one section.") : null;
         return value;
       } else {
         return true;
       }
     });
   });
-}).call(this);
+})();
