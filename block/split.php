@@ -60,9 +60,15 @@ if ($form->is_cancelled()) {
     } else if ($form->next == split_form::FINISHED) {
         $form = new split_form_finish();
 
-        $form->process($data, $valid_courses);
+        try {
+            $form->process($data, $valid_courses);
 
-        $form->display();
+            $form->display();
+        } catch (Exception $e) {
+            echo $OUTPUT->notification($_s('application_errors', $e->getMessage()));
+            echo $OUTPUT->continue_button('/my');
+        }
+
         die();
     }
 

@@ -55,9 +55,14 @@ if ($form->is_cancelled()) {
     } else if ($form->next == crosslist_form::FINISHED) {
         $form = new crosslist_form_finish();
 
-        $form->process($data, $courses);
+        try {
+            $form->process($data, $courses);
 
-        $form->display();
+            $form->display();
+        } catch (Exception $e) {
+            echo $OUTPUT->notification($_s('application_errors', $e->getMessage()));
+            echo $OUTPUT->continue_button('/my');
+        }
         die();
     }
 

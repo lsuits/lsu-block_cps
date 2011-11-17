@@ -54,4 +54,3 @@ $(document).ready () ->
     $("input[name='move_right']").click move_to_bucket
 
     $("input[name='move_left']").click move_to_available
-

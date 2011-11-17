@@ -196,7 +196,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
     function validation($data) {
         $option = $data['crosslist_option'];
 
-        $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
+        $this->next = $option == self::UNDO ? self::LOADING : $this->next;
 
         return true;
     }
@@ -251,7 +251,7 @@ class crosslist_form_shells extends crosslist_form {
         }
 
 
-        $number = min(floor($total / 2), $total - $last);
+        $number = floor($total / 2);
 
         $range = range(1, $number);
         $options = array_combine($range, $range);
@@ -421,7 +421,7 @@ class crosslist_form_decide extends crosslist_form {
 class crosslist_form_confirm extends crosslist_form {
     var $current = self::CONFIRM;
     var $prev = self::DECIDE;
-    var $next = self::FINISHED;
+    var $next = self::LOADING;
 
     public static function build($courses) {
         $data = crosslist_form_decide::build($courses);
@@ -556,18 +556,7 @@ class crosslist_form_finish implements finalized_form {
 
         $_s = cps::gen_str('block_cps');
 
-        $heading = $_s('crosslist_processed');
-
-        echo $OUTPUT->header();
-        echo $OUTPUT->heading($heading);
-
-        echo $OUTPUT->box_start();
-
         echo $OUTPUT->notification($_s('crosslist_thank_you'), 'notifysuccess');
         echo $OUTPUT->continue_button(new moodle_url('/blocks/cps/crosslist.php'));
-
-        echo $OUTPUT->box_end();
-
-        echo $OUTPUT->footer();
     }
 }

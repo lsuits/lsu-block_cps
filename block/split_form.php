@@ -35,7 +35,7 @@ class split_form_select extends split_form {
     function definition() {
         $m =& $this->_form;
 
-        $m->addElement('header', 'select', self::_s('split_select'));
+        $m->addElement('header', 'select', self::_s('select'));
 
         $semesters = cps_semester::get_all();
 
@@ -109,7 +109,7 @@ class split_form_shells extends split_form {
 
         $m->addElement('header', 'selected_header', $display);
 
-        $seqed = range(2, count($course->sections) - 1);
+        $seqed = range(2, count($course->sections));
         $options = array_combine($seqed, $seqed);
 
         $m->addElement('select', 'shells', self::_s('split_how_many') ,$options);
@@ -185,7 +185,7 @@ class split_form_update extends split_form implements updating_form {
         $m->addElement('radio', 'split_option', '', self::_s('split_undo'), self::UNDO);
 
         if (!empty($sections) or count($course->sections) > 2) {
-            $orphaned = range(2, count($sections) + $shells);
+            $orphaned = range(2, count($course->sections));
             $options = array_combine($orphaned, $orphaned);
 
             $m->addElement('radio', 'split_option', '', self::_s('split_reshell'), self::RESHELL);
@@ -208,11 +208,9 @@ class split_form_update extends split_form implements updating_form {
 
         $course = $this->_customdata['course'];
 
-        $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
-
         if ($option == self::UNDO) {
-            $this->next = self::FINISHED;
-        } else if ($option == self::REARRANGE and count($course->sections == 2)) {
+            $this->next = self::LOADING;
+        } else if ($option == self::REARRANGE and count($course->sections) == 2) {
             $this->next = self::CONFIRM;
         } else {
             $this->next;
@@ -341,6 +339,7 @@ class split_form_decide extends split_form {
         $m->addGroup($shifters, 'shifters', '', array(' '), true);
 
         $m->addElement('hidden', 'shells', '');
+        $m->addElement('hidden', 'reshelled', '');
         $m->addElement('hidden', 'selected', '');
 
         $this->generate_states_and_buttons();
@@ -349,7 +348,7 @@ class split_form_decide extends split_form {
 
 class split_form_confirm extends split_form {
     var $current = self::CONFIRM;
-    var $next = self::FINISHED;
+    var $next = self::LOADING;
     var $prev = self::DECIDE;
 
     public static function build($courses) {
@@ -404,6 +403,7 @@ class split_form_confirm extends split_form {
         }
 
         $m->addElement('hidden', 'shells', $this->_customdata['shells']);
+        $m->addElement('hidden', 'reshelled', '');
         $m->addElement('hidden', 'selected', '');
 
         $this->generate_states_and_buttons();
@@ -483,18 +483,7 @@ class split_form_finish implements finalized_form {
 
         $_s = cps::gen_str('block_cps');
 
-        $heading = $_s('split_processed');
-
-        echo $OUTPUT->header();
-        echo $OUTPUT->heading($heading);
-
-        echo $OUTPUT->box_start();
-
         echo $OUTPUT->notification($_s('split_thank_you'), 'notifysuccess');
         echo $OUTPUT->continue_button(new moodle_url('/blocks/cps/split.php'));
-
-        echo $OUTPUT->box_end();
-
-        echo $OUTPUT->footer();
     }
 }

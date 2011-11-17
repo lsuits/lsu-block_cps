@@ -54,6 +54,7 @@ if ($form->is_cancelled()) {
         $form->process($data, $courses);
 
         $form->display();
+
         die();
     } else if ($form->next == team_request_form::SECTIONS) {
         redirect(new moodle_url('/blocks/cps/team_section.php', array(

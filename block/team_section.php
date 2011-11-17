@@ -77,9 +77,14 @@ if ($form->is_cancelled()) {
     } else if ($form->next == team_section_form::FINISHED) {
         $form = new team_section_form_finish();
 
-        $form->process($data, $initial_data);
+        try {
+            $form->process($data, $initial_data);
 
-        $form->display();
+            $form->display();
+        } catch (Exception $e) {
+            echo $OUTPUT->notification($_s('application_errors', $e->getMessage()));
+            echo $OUTPUT->continue_button('/my');
+        }
         die();
     }
 

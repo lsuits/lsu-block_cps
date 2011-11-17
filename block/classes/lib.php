@@ -627,6 +627,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
         // Cascading undo
         $children = $this->sections();
         foreach ($children as $child) {
+            $child->delete($child->id);
             $child->unapply();
         }
 
@@ -716,9 +717,9 @@ class cps_team_section extends cps_section_accessor implements unique, undoable 
 
         $shell = str_replace(' ', '', trim($this->shell_name));
 
-        $courseid = $this->request()->courseid;
+        $requestid = $this->requestid;
 
-        $idnumber = "$sem->year$sem->name{$shell}{$courseid}tt{$this->groupingid}";
+        $idnumber = "$sem->year$sem->name{$shell}{$requestid}tt{$this->groupingid}";
 
         return $idnumber;
     }

@@ -7,6 +7,7 @@ interface generic_states {
     const SHELLS = 'shells';
     const DECIDE = 'decide';
     const CONFIRM = 'confirm';
+    const LOADING = 'loading';
     const FINISHED = 'finish';
     const UPDATE = 'update';
 }
@@ -39,7 +40,7 @@ abstract class cps_form extends moodleform implements generic_states {
     public static function next_from($prefix, $next, $data, $courses) {
         $form = self::create($prefix, $courses, $next, $data);
 
-        self::navs($prefix, $form->current);
+        self::navs($form->current);
 
         $directions = new stdClass;
         $directions->current = $form->current;
@@ -53,6 +54,11 @@ abstract class cps_form extends moodleform implements generic_states {
 
     public static function create($prefix, $courses, $state = null, $extra= null) {
         $state = $state ? $state : self::first();
+
+        // Interject loading screen
+        if ($state == self::LOADING) {
+            return new cps_loading_form($extra);
+        }
 
         $class = $prefix . '_form_' . $state;
 
@@ -96,9 +102,9 @@ abstract class cps_form extends moodleform implements generic_states {
         return $extra;
     }
 
-    public static function navs($prefix, $state) {
+    public static function navs($state) {
         global $PAGE;
-        $PAGE->navbar->add(self::_s($prefix . '_' . $state));
+        $PAGE->navbar->add(self::_s($state));
     }
 
     public function to_display($sem) {
@@ -148,5 +154,60 @@ abstract class cps_form extends moodleform implements generic_states {
         $this->generate_states();
 
         $this->generate_buttons();
+    }
+}
+
+class cps_loading_form implements generic_states {
+    var $next = self::FINISHED;
+    var $current = self::LOADING;
+    var $prev = self::CONFIRM;
+
+    function __construct($data) {
+        unset($data->next);
+        unset($data->current);
+
+        $this->data = $data;
+    }
+
+    function get_data() {
+        $data = data_submitted();
+
+        return (object) $data;
+    }
+
+    // Stub?
+    function set_data($data) {
+    }
+
+    function is_cancelled() {
+        return false;
+    }
+
+    function display() {
+        global $PAGE, $OUTPUT;
+
+        $PAGE->requires->js('/blocks/cps/js/loading.js');
+
+        $_s = cps::gen_str('block_cps');
+
+        echo $OUTPUT->box_start('generalbox cps_loading');
+        echo $OUTPUT->notification($_s('please_wait'));
+
+        $this->data->next = self::FINISHED;
+        $this->data->current = self::LOADING;
+
+        $attrs = array('type' => 'hidden', 'class' => 'passed');
+
+        foreach (get_object_vars($this->data) as $name => $value) {
+            $unqiue = array('name' => $name, 'value' => $value);
+
+            echo html_writer::empty_tag('input', $attrs + $unqiue);
+        }
+
+        echo html_writer::tag('center',
+            $OUTPUT->pix_icon('i/loading', 'Loading')
+        );
+
+        echo $OUTPUT->box_end();
     }
 }

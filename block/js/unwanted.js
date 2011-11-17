@@ -1,4 +1,4 @@
-(function() {
+(function(){
   $(document).ready(function() {
     var apply_event, make_selected;
     make_selected = function(courseid, checked) {
@@ -17,4 +17,4 @@
     $("a[id^='all_']").each(apply_event(true));
     return $("a[id^='none_']").each(apply_event(false));
   });
-}).call(this);
+})();
