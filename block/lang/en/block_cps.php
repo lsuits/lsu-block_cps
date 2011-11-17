@@ -83,11 +83,12 @@ $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splitting';
 
-$string['split_select'] = 'Select a course';
-$string['split_shells'] = 'Course Shells';
-$string['split_decide'] = 'Separate Sections';
-$string['split_confirm'] = 'Review';
-$string['split_update'] = 'Update';
+$string['select'] = 'Select a course';
+$string['shells'] = 'Course Shells';
+$string['decide'] = 'Separate Sections';
+$string['confirm'] = 'Review';
+$string['update'] = 'Update';
+$string['loading'] = 'Applying';
 
 $string['split_how_many'] = 'How many separate course shells would you like to have created?';
 $string['next'] = 'Next';
@@ -122,16 +123,12 @@ $string['crosslist_no_option'] = '(No option taken)';
 $string['crosslist_updating'] = 'Updating your cross-list selections';
 $string['crosslisted'] = 'is cross-listed into <strong>{$a->shell_name}</strong>';
 
-$string['crosslist_select'] = 'Select Courses to be Cross-listed';
-$string['crosslist_shells'] = 'Course Shells';
-$string['crosslist_decide'] = 'Separate Sections';
-$string['crosslist_confirm'] = 'Review';
-$string['crosslist_update'] = 'Update';
-
 $string['crosslist_processed'] = 'Cross-list Courses Processed';
 
 $string['crosslist_thank_you'] = 'Your cross-list courses have been processed. Continue
 to head back to the cross-list home screen.';
+
+$string['crosslist_select'] = 'Select courses to Cross-list';
 
 // Team Requests
 $string['team_request'] = 'Team Teach Requests';
@@ -155,12 +152,6 @@ $string['team_section'] = 'Course Sections';
 
 $string['team_continue_build'] = 'Continue to configure sections.';
 
-$string['team_section_select'] = 'Sections';
-$string['team_section_shells'] = 'Course Shells';
-$string['team_section_decide'] = 'Separate Sections';
-$string['team_section_confirm'] = 'Review';
-$string['team_section_update'] = 'Update';
-
 $string['team_section_note'] = 'You must wait until the owner of this request
 has created shells to work in.';
 
@@ -173,16 +164,15 @@ Continue to head back to the Team Section home.';
 
 $string['team_section_option'] = '(Team Section option taken)';
 
-$string['team_request_select'] = 'Select a Course';
 $string['team_request_shells'] = 'Course Requests';
-$string['team_request_query'] = 'Query a Course';
-$string['team_request_request'] = 'Select Instructor';
-$string['team_request_review'] = 'Review Requests';
+$string['query'] = 'Query a Course';
+$string['request'] = 'Select Instructor';
+$string['review'] = 'Review Requests';
 $string['team_request_finish'] = 'Request Sent';
 $string['team_request_update'] = 'Updating';
 $string['team_request_confirm'] = 'Confirm Actions';
 
-$string['team_request_manage'] = 'Manage Requests';
+$string['manage'] = 'Manage Requests';
 
 $string['team_following'] = 'The current requests';
 $string['team_approved'] = 'Approved';
@@ -246,3 +236,8 @@ $string['team_request_revoke_body'] = '
 {$a->requester} has revoked the invitation to team-teach your {$a->other_course}
 course with his/her {$a->course} course. All instructors and students from
 your {$a->other_course} course will be unenrolled from {$a->course}.';
+
+$string['settings_loading'] = '{$a} - Applying Changes';
+$string['please_wait'] = 'Your settings are being applied. Please be patient as the process completes.';
+
+$string['application_errors'] = 'The following error occurred while applying the settings: {$a}';
