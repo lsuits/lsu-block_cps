@@ -41,9 +41,9 @@ abstract class cps_event_handler {
         // Semesters are different here on campus.
         // Oddly enough, LAW courses and enrollments are tied to the
         // LSU campus, which means that we have to separate the logic here
-        $semester = $section->semester;
+        $semester = $section->semester();
 
-        if ($section->course->department == 'LAW') {
+        if ($section->course()->department == 'LAW') {
             $sem_params = array (
                 'name' => $section->semester->name,
                 'year' => $section->semester->year,
