@@ -42,7 +42,6 @@ if ($form->is_cancelled()) {
 } else if ($data = $form->get_data()) {
     $fields = get_object_vars($data);
 
-    //TODO: perform the application of the materials
     foreach ($fields as $name => $value) {
         if (!preg_match('/^material_(\d+)/', $name, $matches)) {
             continue;
