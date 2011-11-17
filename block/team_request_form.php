@@ -35,7 +35,7 @@ class team_request_form_select extends team_request_form {
 
         $semesters = array();
 
-        $m->addElement('header', 'select_course', self::_s('split_select'));
+        $m->addElement('header', 'select_course', self::_s('select'));
 
         foreach ($courses as $course) {
             foreach ($course->sections as $section) {
@@ -64,6 +64,10 @@ class team_request_form_select extends team_request_form {
     }
 
     function validation($data) {
+        if (empty($data['selected'])) {
+            return array('selected' => self::_s('err_select_one'));
+        }
+
         $course = $this->_customdata['courses'][$data['selected']];
 
         $semester = reset($course->sections)->semester();
@@ -882,6 +886,7 @@ class team_request_form_finish implements finalized_form {
                 if (!$request = cps_team_request::get($params)) {
                     $request = new cps_team_request();
                     $request->fill_params($params);
+                    $request->approval_flag = 0;
                 }
 
                 $request->save();
