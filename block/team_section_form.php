@@ -243,7 +243,7 @@ class team_section_form_update extends team_section_form implements updating_for
 
         $option = $data['team_section_option'];
 
-        $this->next = $option == self::UNDO ? self::FINISHED : $this->next;
+        $this->next = $option == self::UNDO ? self::LOADING: $this->next;
 
         return true;
     }
@@ -495,7 +495,7 @@ class team_section_form_decide extends team_section_form {
 class team_section_form_confirm extends team_section_form {
     var $current = self::CONFIRM;
     var $prev = self::DECIDE;
-    var $next = self::FINISHED;
+    var $next = self::LOADING;
 
     public static function build($courses) {
         $data = team_section_form_decide::build($courses);
@@ -676,20 +676,11 @@ class team_section_form_finish implements finalized_form, updating_form {
 
         $_s = cps::gen_str('block_cps');
 
-        $heading = $_s('team_section_finished');
-
-        echo $OUTPUT->header();
-        echo $OUTPUT->heading($heading);
-
-        echo $OUTPUT->box_start();
         echo $OUTPUT->notification($_s('team_section_processed'), 'notifysuccess');
 
         $params = array('id' => $this->id);
         $url = new moodle_url('/blocks/cps/team_section.php', $params);
 
         echo $OUTPUT->continue_button($url);
-        echo $OUTPUT->box_end();
-
-        echo $OUTPUT->footer();
     }
 }
