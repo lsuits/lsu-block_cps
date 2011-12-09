@@ -18,12 +18,12 @@ class block_cps extends block_list {
 
         require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
-        if (!cps_user::is_teacher()) {
+        if (!ues_user::is_teacher()) {
             return $this->content;
         }
 
-        $sections = cps_user::sections(true);
-        $courses = cps_course::merge_sections($sections);
+        $sections = ues_user::sections(true);
+        $courses = ues_course::merge_sections($sections);
 
         $content = new stdClass;
 

@@ -10,11 +10,11 @@ if (!cps_team_request::is_enabled()) {
     print_error('not_enabled', 'block_cps', '', cps_team_request::name());
 }
 
-if (!cps_user::is_teacher()) {
+if (!ues_user::is_teacher()) {
     print_error('not_teacher', 'block_cps');
 }
 
-$teacher = cps_teacher::get(array('userid' => $USER->id));
+$teacher = ues_teacher::get(array('userid' => $USER->id));
 
 $sections = cps_unwant::active_sections_for($teacher);
 
@@ -22,7 +22,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$courses = cps_course::merge_sections($sections);
+$courses = ues_course::merge_sections($sections);
 
 $courseid = required_param('id', PARAM_INT);
 
@@ -46,7 +46,7 @@ $initial_data = array(
     'requests' => $current_requests
 );
 
-$_s = cps::gen_str('block_cps');
+$_s = ues::gen_str('block_cps');
 
 $blockname = $_s('pluginname');
 $heading = cps_team_request::name();

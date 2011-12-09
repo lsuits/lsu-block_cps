@@ -37,7 +37,7 @@ class split_form_select extends split_form {
 
         $m->addElement('header', 'select', self::_s('select'));
 
-        $semesters = cps_semester::get_all();
+        $semesters = ues_semester::get_all();
 
         $courses = $this->_customdata['courses'];
 
@@ -481,7 +481,7 @@ class split_form_finish implements finalized_form {
     function display() {
         global $OUTPUT;
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         echo $OUTPUT->notification($_s('split_thank_you'), 'notifysuccess');
         echo $OUTPUT->continue_button(new moodle_url('/blocks/cps/split.php'));

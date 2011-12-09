@@ -8,7 +8,7 @@ class creation_form extends moodleform {
 
         $sections = $this->_customdata['sections'];
 
-        $semesters = cps_semester::get_all();
+        $semesters = ues_semester::get_all();
 
         $courses = array();
         $course_semesters = array();
@@ -28,7 +28,7 @@ class creation_form extends moodleform {
 
         unset ($courses, $sections);
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         $bold = function ($text) { return '<strong>'.$text.'</strong>'; };
 
@@ -101,7 +101,7 @@ class creation_form extends moodleform {
             }
         };
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         foreach ($data as $gname => $group) {
             if (preg_match('/^create_group_(\d+)_(\d+)/', $gname, $matches)) {

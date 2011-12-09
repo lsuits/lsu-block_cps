@@ -1,21 +1,21 @@
 <?php
 
 $events = array(
-    'cps_primary_change',
-    'cps_teacher_process',
-    'cps_teacher_release',
-    'cps_section_process',
-    'cps_section_drop',
-    'cps_semester_drop',
-    'cps_course_create',
-    'cps_course_severed',
-    'cps_group_emptied'
+    'ues_primary_change',
+    'ues_teacher_process',
+    'ues_teacher_release',
+    'ues_section_process',
+    'ues_section_drop',
+    'ues_semester_drop',
+    'ues_course_create',
+    'ues_course_severed',
+    'ues_group_emptied'
 );
 
 $mapper = function ($event) {
     return array(
         'handlerfile' => '/blocks/cps/eventslib.php',
-        'handlerfunction' => array('cps_event_handler', $event),
+        'handlerfunction' => array('ues_event_handler', $event),
         'schedule' => 'instant'
     );
 };

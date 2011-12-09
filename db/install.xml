@@ -30,8 +30,8 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="courseidtocourse"/>
-        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_cps_courses" REFFIELDS="id" PREVIOUS="useridtomoodle" NEXT="semesteridtosemester"/>
-        <KEY NAME="semesteridtosemester" TYPE="foreign" FIELDS="semesterid" REFTABLE="enrol_cps_semesters" REFFIELDS="id" PREVIOUS="courseidtocourse"/>
+        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_ues_courses" REFFIELDS="id" PREVIOUS="useridtomoodle" NEXT="semesteridtosemester"/>
+        <KEY NAME="semesteridtosemester" TYPE="foreign" FIELDS="semesterid" REFTABLE="enrol_ues_semesters" REFFIELDS="id" PREVIOUS="courseidtocourse"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usecousem" UNIQUE="true" FIELDS="userid, courseid, semesterid"/>
@@ -46,7 +46,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="sectionidtosection"/>
-        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_cps_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
+        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_ues_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usesec" UNIQUE="true" FIELDS="userid, sectionid"/>
@@ -62,7 +62,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="courseidtocourse"/>
-        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_cps_courses" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
+        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_ues_courses" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usecourse" UNIQUE="true" FIELDS="userid, courseid"/>
@@ -79,7 +79,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="sectionidtosection"/>
-        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_cps_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
+        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_ues_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usesec" UNIQUE="true" FIELDS="userid, sectionid"/>
@@ -96,7 +96,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="sectionidtosection"/>
-        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_cps_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
+        <KEY NAME="sectionidtosection" TYPE="foreign" FIELDS="sectionid" REFTABLE="enrol_ues_sections" REFFIELDS="id" PREVIOUS="useridtomoodle"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usesec" UNIQUE="true" FIELDS="userid, sectionid"/>
@@ -116,9 +116,9 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="useridtomoodle"/>
         <KEY NAME="useridtomoodle" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="primary" NEXT="requestedtomoodle"/>
         <KEY NAME="requestedtomoodle" TYPE="foreign" FIELDS="requested" REFTABLE="user" REFFIELDS="id" PREVIOUS="useridtomoodle" NEXT="courseidtocourse"/>
-        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_cps_courses" REFFIELDS="id" PREVIOUS="requestedtomoodle" NEXT="reqcoursetocourse"/>
-        <KEY NAME="reqcoursetocourse" TYPE="foreign" FIELDS="requested_course" REFTABLE="enrol_cps_courses" REFFIELDS="id" PREVIOUS="courseidtocourse" NEXT="semesteridtosemester"/>
-        <KEY NAME="semesteridtosemester" TYPE="foreign" FIELDS="semesterid" REFTABLE="enrol_cps_semesters" REFFIELDS="id" PREVIOUS="reqcoursetocourse"/>
+        <KEY NAME="courseidtocourse" TYPE="foreign" FIELDS="courseid" REFTABLE="enrol_ues_courses" REFFIELDS="id" PREVIOUS="requestedtomoodle" NEXT="reqcoursetocourse"/>
+        <KEY NAME="reqcoursetocourse" TYPE="foreign" FIELDS="requested_course" REFTABLE="enrol_ues_courses" REFFIELDS="id" PREVIOUS="courseidtocourse" NEXT="semesteridtosemester"/>
+        <KEY NAME="semesteridtosemester" TYPE="foreign" FIELDS="semesterid" REFTABLE="enrol_ues_semesters" REFFIELDS="id" PREVIOUS="reqcoursetocourse"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="usesemrcoureq" UNIQUE="true" FIELDS="userid, semesterid, courseid, requested, requested_course"/>
@@ -134,8 +134,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="sectionidtosection"/>
-        <KEY NAME="sectionidtosection" TYPE="foreign-unique" FIELDS="sectionid" REFTABLE="enrol_cps_sections" REFFIELDS="id" PREVIOUS="primary" NEXT="requestidtorequest"/>
-        <KEY NAME="requestidtorequest" TYPE="foreign" FIELDS="requestid" REFTABLE="enrol_cps_team_requests" REFFIELDS="id" PREVIOUS="sectionidtosection"/>
+        <KEY NAME="sectionidtosection" TYPE="foreign-unique" FIELDS="sectionid" REFTABLE="enrol_ues_sections" REFFIELDS="id" PREVIOUS="primary" NEXT="requestidtorequest"/>
+        <KEY NAME="requestidtorequest" TYPE="foreign" FIELDS="requestid" REFTABLE="enrol_ues_team_requests" REFFIELDS="id" PREVIOUS="sectionidtosection"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="reqsecgro" UNIQUE="false" FIELDS="requestid, sectionid, groupingid"/>

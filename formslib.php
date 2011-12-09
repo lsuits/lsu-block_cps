@@ -188,7 +188,7 @@ class cps_loading_form implements generic_states {
 
         $PAGE->requires->js('/blocks/cps/js/loading.js');
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         echo $OUTPUT->box_start('generalbox cps_loading');
         echo $OUTPUT->notification($_s('please_wait'));

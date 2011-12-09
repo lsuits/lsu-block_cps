@@ -2,22 +2,22 @@
 
 require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
-abstract class cps_event_handler {
+abstract class ues_event_handler {
 
-    public static function cps_primary_change($params) {
+    public static function ues_primary_change($params) {
         return true;
     }
 
-    public static function cps_teacher_process($cps_teacher) {
+    public static function ues_teacher_process($ues_teacher) {
         $threshold = get_config('block_cps', 'course_threshold');
 
-        $course = $cps_teacher->section()->course();
+        $course = $ues_teacher->section()->course();
 
         // Must abide by the threshold
         if ($course->cou_number >= $threshold) {
             $unwant_params = array(
-                'userid' => $cps_teacher->userid,
-                'sectionid' => $cps_teacher->sectionid
+                'userid' => $ues_teacher->userid,
+                'sectionid' => $ues_teacher->sectionid
             );
 
             $unwant = cps_unwant::get($unwant_params);
@@ -32,12 +32,12 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_teacher_release($cps_teacher) {
+    public static function ues_teacher_release($ues_teacher) {
         // TODO: clear out settings for this instructor
         return true;
     }
 
-    public static function cps_section_process($section) {
+    public static function ues_section_process($section) {
         // Semesters are different here on campus.
         // Oddly enough, LAW courses and enrollments are tied to the
         // LSU campus, which means that we have to separate the logic here
@@ -51,7 +51,7 @@ abstract class cps_event_handler {
                 'campus' => 'LAW'
             );
 
-            $law_semester = cps_semester::get($sem_params);
+            $law_semester = ues_semester::get($sem_params);
 
             if ($law_semester) {
                 $semester = $law_semester;
@@ -61,24 +61,24 @@ abstract class cps_event_handler {
         // Unwanted interjection
         $unwanted = cps_unwant::get(array('sectionid' => $section->id));
         if ($unwanted) {
-            $section->status = cps::PENDING;
+            $section->status = ues::PENDING;
             return true;
         }
 
         $teacher_params = array(
             'sectionid = ' . $section->id,
             'primary_flag = 1',
-            "(status = '". cps::PROCESSED."' OR status = '".cps::ENROLLED."')"
+            "(status = '". ues::PROCESSED."' OR status = '".ues::ENROLLED."')"
         );
 
         // Creation and Enrollment interjection
-        $primary = current(cps_teacher::get_select($teacher_params));
+        $primary = current(ues_teacher::get_select($teacher_params));
 
         // We know a teacher exists for this course, so we'll use a non-primary
         if (!$primary) {
             $teacher_params[1] = 'primary_flag = 0';
 
-            $primary = current(cps_teacher::get_select($teacher_params));
+            $primary = current(ues_teacher::get_select($teacher_params));
         }
 
         $creation_params = array(
@@ -100,12 +100,12 @@ abstract class cps_event_handler {
         $diff_days = ($diff / 60 / 60 / 24);
 
         if ($diff_days > $creation->create_days) {
-            $section->status = cps::PENDING;
+            $section->status = ues::PENDING;
             return true;
         }
 
         if ($diff_days > $creation->enroll_days) {
-            cps_student::reset_status($section, cps::PENDING, cps::PROCESSED);
+            ues_student::reset_status($section, ues::PENDING, ues::PROCESSED);
         }
 
         foreach (array('split', 'crosslist', 'team_section') as $setting) {
@@ -120,7 +120,7 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_section_drop($section) {
+    public static function ues_section_drop($section) {
         $section_settings = array('unwant', 'split', 'crosslist', 'team_section');
 
         foreach ($section_settings as $settting) {
@@ -132,7 +132,7 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_semester_drop($semester) {
+    public static function ues_semester_drop($semester) {
         $semester_settings = array('cps_creation', 'cps_team_request');
 
         foreach ($semester_settings as $class) {
@@ -142,12 +142,12 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_course_create($course) {
+    public static function ues_course_create($course) {
         // Split, Crosslist, and Team teach manipulate the shortname
         // and fullname of a created course
         // We must consider these.
 
-        $sections = cps_section::from_course($course);
+        $sections = ues_section::from_course($course);
 
         if (empty($sections)) {
             return true;
@@ -162,7 +162,7 @@ abstract class cps_event_handler {
         }
 
         $semester = $section->semester();
-        $cps_course = $section->course();
+        $ues_course = $section->course();
 
         $owner_params = array(
             'userid' => $primary->userid,
@@ -179,8 +179,8 @@ abstract class cps_event_handler {
         if ($split) {
             $a->year = $semester->year;
             $a->name = $semester->name;
-            $a->department = $cps_course->department;
-            $a->course_number = $cps_course->cou_number;
+            $a->department = $ues_course->department;
+            $a->course_number = $ues_course->cou_number;
             $a->shell_name = $split->shell_name;
             $a->fullname = fullname($primary->user());
 
@@ -209,8 +209,8 @@ abstract class cps_event_handler {
         if (isset($string_key)) {
             $pattern = get_config('block_cps', $string_key);
 
-            $fullname = cps::format_string($pattern, $a);
-            $shortname = cps::format_string($pattern, $a);
+            $fullname = ues::format_string($pattern, $a);
+            $shortname = ues::format_string($pattern, $a);
         }
 
         $course->fullname = $fullname;
@@ -219,7 +219,7 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_course_severed($course) {
+    public static function ues_course_severed($course) {
         // This event only occurs when a Moodle course will no longer be
         // supported. Good news is that the section that caused this
         // severage will still be link to the idnumber until the end of the
@@ -254,7 +254,7 @@ abstract class cps_event_handler {
             return true;
         }
 
-        $sections = cps_section::from_course($course);
+        $sections = ues_section::from_course($course);
 
         if (empty($sections)) {
             return true;
@@ -276,7 +276,7 @@ abstract class cps_event_handler {
         return true;
     }
 
-    public static function cps_group_emptied($params) {
+    public static function ues_group_emptied($params) {
         return true;
     }
 }

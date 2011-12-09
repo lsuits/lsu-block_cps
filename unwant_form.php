@@ -6,11 +6,11 @@ class unwant_form extends moodleform {
     function definition() {
         $m =& $this->_form;
 
-        $semesters = cps_semester::get_all();
+        $semesters = ues_semester::get_all();
 
         $sections = $this->_customdata['sections'];
 
-        $courses = cps_course::merge_sections($sections);
+        $courses = ues_course::merge_sections($sections);
 
         unset($sections);
 

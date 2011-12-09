@@ -554,7 +554,7 @@ class crosslist_form_finish implements finalized_form {
     function display() {
         global $OUTPUT;
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         echo $OUTPUT->notification($_s('crosslist_thank_you'), 'notifysuccess');
         echo $OUTPUT->continue_button(new moodle_url('/blocks/cps/crosslist.php'));

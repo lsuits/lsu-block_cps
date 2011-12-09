@@ -3,12 +3,12 @@
 defined('MOODLE_INTERNAL') or die();
 
 if ($ADMIN->fulltree) {
-    require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
+    require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
     require_once $CFG->dirroot . '/blocks/cps/settingslib.php';
 
     // using the public lib for string generation
-    $_s = cps::gen_str('block_cps');
-    $_m = cps::gen_str('moodle');
+    $_s = ues::gen_str('block_cps');
+    $_m = ues::gen_str('moodle');
 
     $settings->add(new admin_setting_heading('block_cps_settings', '',
         $_s('pluginname_desc')));

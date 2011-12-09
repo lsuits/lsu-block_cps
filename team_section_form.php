@@ -186,7 +186,7 @@ class team_section_form_update extends team_section_form implements updating_for
 
                     $sections = $primary->sections(true);
 
-                    $taught = cps_course::merge_sections($sections);
+                    $taught = ues_course::merge_sections($sections);
                     $section_count += count($taught[$section->courseid]->sections);
                 }
 
@@ -282,7 +282,7 @@ class team_section_form_shells extends team_section_form {
 
             $teacher = $request->other_teacher();
 
-            $taught_courses = cps_course::merge_sections($teacher->sections(true));
+            $taught_courses = ues_course::merge_sections($teacher->sections(true));
 
             $section_count += count($taught_courses[$id]->sections);
         }
@@ -552,7 +552,7 @@ class team_section_form_confirm extends team_section_form {
             $sectionids = $this->_customdata[$value_key];
             $shell_name = $this->_customdata[$name_key];
 
-            $sections = cps_section::get_select('id IN ('.$sectionids.')');
+            $sections = ues_section::get_select('id IN ('.$sectionids.')');
 
             $m->addElement('static', 'shell_'.$number, $shell_name, '');
 
@@ -626,7 +626,7 @@ class team_section_form_finish implements finalized_form, updating_form {
             $shell_name = $data->{'shell_name_'.$number.'_hidden'};
 
             foreach (explode(',', $sectionids) as $sectionid) {
-                $section = cps_section::get(array('id' => $sectionid));
+                $section = ues_section::get(array('id' => $sectionid));
 
                 $requested = $section->primary();
 
@@ -674,7 +674,7 @@ class team_section_form_finish implements finalized_form, updating_form {
     function display() {
         global $OUTPUT;
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         echo $OUTPUT->notification($_s('team_section_processed'), 'notifysuccess');
 

@@ -1,7 +1,7 @@
 <?php
 
-require_once $CFG->dirroot . '/enrol/cps/publiclib.php';
-cps::require_daos();
+require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
+ues::require_daos();
 
 abstract class cps_preferences extends cps_external {
     public static function settings() {
@@ -51,12 +51,12 @@ interface unique extends application {
     function new_idnumber();
 }
 
-abstract class cps_section_accessor extends cps_preferences {
+abstract class ues_section_accessor extends cps_preferences {
     var $section;
 
     public function section() {
         if (empty($this->section)) {
-            $section = cps_section::get(array('id' => $this->sectionid));
+            $section = ues_section::get(array('id' => $this->sectionid));
 
             $this->section = $section;
         }
@@ -65,12 +65,12 @@ abstract class cps_section_accessor extends cps_preferences {
     }
 }
 
-abstract class cps_user_section_accessor extends cps_section_accessor {
+abstract class ues_user_section_accessor extends ues_section_accessor {
     var $user;
 
     public function user() {
         if (empty($this->user)) {
-            $user = cps_user::get(array('id' => $this->userid));
+            $user = ues_user::get(array('id' => $this->userid));
 
             $this->user = $user;
         }
@@ -80,7 +80,7 @@ abstract class cps_user_section_accessor extends cps_section_accessor {
 }
 
 // Begin Concrete classes
-class cps_unwant extends cps_user_section_accessor implements application, undoable {
+class cps_unwant extends ues_user_section_accessor implements application, undoable {
     var $sectionid;
     var $userid;
 
@@ -112,13 +112,13 @@ class cps_unwant extends cps_user_section_accessor implements application, undoa
         $section = $this->section();
 
         // Severage is happening in eventslib.php
-        cps::unenroll_users(array($section));
+        ues::unenroll_users(array($section));
     }
 
     function unapply() {
         $section = $this->section();
 
-        cps::enroll_users(array($section));
+        ues::enroll_users(array($section));
     }
 }
 
@@ -132,24 +132,24 @@ class cps_material extends cps_preferences implements application {
 
         require_once $CFG->dirroot . '/course/lib.php';
 
-        $cps_course = cps_course::get(array('id' => $this->courseid));
-        $user = cps_user::get(array('id' => $this->userid));
+        $ues_course = ues_course::get(array('id' => $this->courseid));
+        $user = ues_user::get(array('id' => $this->userid));
 
         $pattern = get_config('block_cps', 'material_shortname');
 
         $a = new stdClass;
-        $a->department = $cps_course->department;
-        $a->course_number = $cps_course->cou_number;
+        $a->department = $ues_course->department;
+        $a->course_number = $ues_course->cou_number;
         $a->fullname = fullname($user);
 
-        $shortname = cps::format_string($pattern, $a);
+        $shortname = ues::format_string($pattern, $a);
 
         $mcourse = $DB->get_record('course', array('shortname' => $shortname));
 
-        $enrol = enrol_get_plugin('cps');
+        $enrol = enrol_get_plugin('ues');
 
         if (!$mcourse) {
-            $cat_params = array('name' => $cps_course->department);
+            $cat_params = array('name' => $ues_course->department);
             $cat = $DB->get_field('course_categories', 'id', $cat_params);
 
             $course = new stdClass;
@@ -191,7 +191,7 @@ class cps_creation extends cps_preferences implements application {
 class cps_setting extends cps_preferences {
 }
 
-class cps_split extends cps_user_section_accessor implements unique, undoable, verifiable {
+class cps_split extends ues_user_section_accessor implements unique, undoable, verifiable {
     var $userid;
     var $sectionid;
     var $groupingid;
@@ -213,7 +213,7 @@ class cps_split extends cps_user_section_accessor implements unique, undoable, v
         if (empty($course->sections)) {
             $course->sections = array();
 
-            $teacher = cps_teacher::get(array('id' => $USER->id));
+            $teacher = ues_teacher::get(array('id' => $USER->id));
 
             $sections = cps_unwant::active_sections_for($teacher, true);
 
@@ -264,19 +264,19 @@ class cps_split extends cps_user_section_accessor implements unique, undoable, v
     function apply() {
         $sections = array($this->section());
 
-        cps::inject_manifest($sections);
+        ues::inject_manifest($sections);
     }
 
     function unapply() {
         $sections = array($this->section());
 
-        cps::inject_manifest($sections, function ($sec) {
+        ues::inject_manifest($sections, function ($sec) {
             $sec->idnumber = null;
         });
     }
 }
 
-class cps_crosslist extends cps_user_section_accessor implements unique, undoable, verifiable {
+class cps_crosslist extends ues_user_section_accessor implements unique, undoable, verifiable {
     var $userid;
     var $sectionid;
     var $groupingid;
@@ -356,13 +356,13 @@ class cps_crosslist extends cps_user_section_accessor implements unique, undoabl
     function apply() {
         $section = $this->section();
 
-        cps::inject_manifest(array($section));
+        ues::inject_manifest(array($section));
     }
 
     function unapply() {
         $sections = array($this->section());
 
-        cps::inject_manifest($sections, function ($section) {
+        ues::inject_manifest($sections, function ($section) {
             $section->idnumber = null;
         });
     }
@@ -478,7 +478,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
 
     public function other_course() {
         if (empty($this->other_course)) {
-            $course = cps_course::get(array('id' => $this->requested_course));
+            $course = ues_course::get(array('id' => $this->requested_course));
 
             $this->other_course = $course;
         }
@@ -488,7 +488,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
 
     public function other_user() {
         if (empty($this->other_user)) {
-            $this->other_user = cps_user::get(array('id' => $this->requested));
+            $this->other_user = ues_user::get(array('id' => $this->requested));
         }
 
         return $this->other_user;
@@ -510,7 +510,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
 
     public function course() {
         if (empty($this->course)) {
-            $this->course = cps_course::get(array('id' => $this->courseid));
+            $this->course = ues_course::get(array('id' => $this->courseid));
         }
 
         return $this->course;
@@ -518,7 +518,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
 
     public function owner() {
         if (empty($this->owner)) {
-            $this->owner = cps_user::get(array('id' => $this->userid));
+            $this->owner = ues_user::get(array('id' => $this->userid));
         }
 
         return $this->owner;
@@ -526,7 +526,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
 
     public function semester() {
         if (empty($this->semester)) {
-            $this->semester = cps_semester::get(array('id' => $this->semesterid));
+            $this->semester = ues_semester::get(array('id' => $this->semesterid));
         }
 
         return $this->semester;
@@ -577,7 +577,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
     }
 
     function apply() {
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         $a = $this->build_email_obj();
 
@@ -606,7 +606,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
         $requester = $this->owner();
         $requestee = $this->other_user();
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         $a = $this->build_email_obj();
 
@@ -635,7 +635,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
     }
 }
 
-class cps_team_section extends cps_section_accessor implements unique, undoable {
+class cps_team_section extends ues_section_accessor implements unique, undoable {
     var $sectionid;
     var $groupingid;
     var $shell_name;
@@ -727,11 +727,11 @@ class cps_team_section extends cps_section_accessor implements unique, undoable 
     function apply() {
         $section = $this->section();
 
-        cps::inject_manifest(array($section));
+        ues::inject_manifest(array($section));
     }
 
     function unapply() {
-        cps::inject_manifest(array($this->section()), function($sec) {
+        ues::inject_manifest(array($this->section()), function($sec) {
             $sec->idnumber = null;
         });
     }

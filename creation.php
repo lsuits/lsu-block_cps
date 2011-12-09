@@ -10,11 +10,11 @@ if (!cps_creation::is_enabled()) {
     print_error('not_enabled', 'block_cps', '', cps_creation::name());
 }
 
-if (!cps_user::is_teacher()) {
+if (!ues_user::is_teacher()) {
     print_error('not_teacher', 'block_cps');
 }
 
-$teacher = cps_teacher::get(array('userid' => $USER->id));
+$teacher = ues_teacher::get(array('userid' => $USER->id));
 
 $sections = $teacher->sections(true);
 
@@ -22,7 +22,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$_s = cps::gen_str('block_cps');
+$_s = ues::gen_str('block_cps');
 
 $blockname = $_s('pluginname');
 $heading = cps_creation::name();

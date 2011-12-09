@@ -579,7 +579,7 @@ class team_request_form_query extends team_request_form {
             }
 
             // Do any sections exists?
-            $course = cps_course::get($query);
+            $course = ues_course::get($query);
             $a = (object) $query;
 
             if (empty($course)) {
@@ -675,7 +675,7 @@ class team_request_form_request extends team_request_form {
                 continue;
             }
 
-            $other_course = cps_course::get(array(
+            $other_course = ues_course::get(array(
                 'department' => $query['department'],
                 'cou_number' => $query['cou_number']
             ));
@@ -787,7 +787,7 @@ class team_request_form_review extends team_request_form {
 
             $userids = $this->_customdata['selected_users'.$number.'_str'];
 
-            $users = cps_user::get_select('id IN ('. $userids .')');
+            $users = ues_user::get_select('id IN ('. $userids .')');
 
             foreach ($users as $user) {
                 $str = $to_display($query) . ' with ' . fullname($user);
@@ -821,7 +821,7 @@ class team_request_form_finish implements finalized_form {
 
         $course = $courses[$data->selected];
 
-        $semester = cps_semester::get(array('id' => $data->semesterid));
+        $semester = ues_semester::get(array('id' => $data->semesterid));
 
         $teamteaches = cps_team_request::in_course($course, $semester);
 
@@ -867,7 +867,7 @@ class team_request_form_finish implements finalized_form {
         global $USER;
 
         foreach (range(1, $data->shells) as $number) {
-            $requested = cps_course::get($data->{'query'.$number});
+            $requested = ues_course::get($data->{'query'.$number});
             if (empty($requested)) {
                 continue;
             }
@@ -902,7 +902,7 @@ class team_request_form_finish implements finalized_form {
     function display() {
         global $OUTPUT;
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         echo $OUTPUT->header();
         echo $OUTPUT->heading($_s('team_request_finish'));

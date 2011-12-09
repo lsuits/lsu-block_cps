@@ -10,9 +10,9 @@ class material_form extends moodleform {
 
         $sections = $this->_customdata['sections'];
 
-        $courses = cps_course::merge_sections($sections);
+        $courses = ues_course::merge_sections($sections);
 
-        $_s = cps::gen_str('block_cps');
+        $_s = ues::gen_str('block_cps');
 
         $m->addElement('header', 'materials', $_s('creating_materials'));
 
