@@ -3,7 +3,7 @@
 require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
 ues::require_daos();
 
-abstract class cps_preferences extends cps_external {
+abstract class cps_preferences extends ues_external {
     public static function settings() {
         $settings = array('creation', 'split', 'crosslist',
             'team_request', 'material', 'unwant');
