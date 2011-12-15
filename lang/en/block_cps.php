@@ -17,7 +17,8 @@ not longer be handled by the enrollment module, or if enrollment equals zero.';
 
 $string['enabled'] = 'Enabled';
 $string['enabled_desc'] = 'If disabled, the setting will be hidden from the
-instructor and the preexisting settings will **not** be executed.';
+instructor. An Admin who is logged in as teh instructor will still be able to
+see and manipulate the disabled setting.';
 
 $string['nonprimary'] = 'Allow Non-Primaries';
 $string['nonprimary_desc'] = 'If checked, then Non-Primaries will be able to
