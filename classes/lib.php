@@ -24,9 +24,17 @@ abstract class cps_preferences extends ues_external {
     }
 
     public static function is_enabled() {
-        $setting = self::call('get_name');
+        global $USER;
 
-        return get_config('block_cps', $setting);
+        // Allow admins to login as instructors and by-pass disabled settings
+        // to pre-build courses for them
+        if (isset($USER->realuser) and is_siteadmin($USER->realuser)) {
+            return true;
+        } else {
+            $setting = self::call('get_name');
+
+            return (bool) get_config('block_cps', $setting);
+        }
     }
 
     public static function name() {

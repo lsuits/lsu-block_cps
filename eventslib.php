@@ -58,20 +58,12 @@ abstract class ues_event_handler {
             }
         }
 
-        // Unwanted interjection
-        $unwanted = cps_unwant::get(array('sectionid' => $section->id));
-        if ($unwanted) {
-            $section->status = ues::PENDING;
-            return true;
-        }
-
         $teacher_params = array(
             'sectionid = ' . $section->id,
             'primary_flag = 1',
             "(status = '". ues::PROCESSED."' OR status = '".ues::ENROLLED."')"
         );
 
-        // Creation and Enrollment interjection
         $primary = current(ues_teacher::get_select($teacher_params));
 
         // We know a teacher exists for this course, so we'll use a non-primary
@@ -81,6 +73,18 @@ abstract class ues_event_handler {
             $primary = current(ues_teacher::get_select($teacher_params));
         }
 
+        // Unwanted interjection
+        $unwanted = cps_unwant::get(array(
+            'userid' => $primary->userid,
+            'sectionid' => $section->id
+        ));
+
+        if ($unwanted) {
+            $section->status = ues::PENDING;
+            return true;
+        }
+
+        // Creation and Enrollment interjection
         $creation_params = array(
             'userid' => $primary->userid,
             'semesterid' => $section->semesterid,
