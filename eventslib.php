@@ -58,19 +58,12 @@ abstract class ues_event_handler {
             }
         }
 
-        $teacher_params = array(
-            'sectionid = ' . $section->id,
-            'primary_flag = 1',
-            "(status = '". ues::PROCESSED."' OR status = '".ues::ENROLLED."')"
-        );
-
-        $primary = current(ues_teacher::get_select($teacher_params));
+        $primary = $section->primary();
 
         // We know a teacher exists for this course, so we'll use a non-primary
         if (!$primary) {
-            $teacher_params[1] = 'primary_flag = 0';
 
-            $primary = current(ues_teacher::get_select($teacher_params));
+            $primary = current($section->teachers());
         }
 
         // Unwanted interjection

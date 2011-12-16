@@ -233,7 +233,7 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
         $course_section_ids = implode(',', array_keys($course->sections));
 
         $split_filters = array(
-            'userid' => $USER->id,
+            'userid = ' . $USER->id,
             'sectionid IN (' . $course_section_ids . ')'
         );
 
