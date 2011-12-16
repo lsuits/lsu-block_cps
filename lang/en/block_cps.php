@@ -2,22 +2,22 @@
 
 $string['pluginname'] = 'Course Preferences';
 $string['pluginname_desc'] = 'The Course Preference block allows instructors to
-control craetion and enrollment behavior. These are system wide defaults for
+control creation and enrollment behavior. These are system wide defaults for
 those who do not actually set any data.';
 
 $string['course_threshold'] = 'Course Number Threshold';
-$string['course_threshold_desc'] = 'Sections belonging to course number that
-are greater than or equal to the specified number, will not be initially created.
-CPS will create unwanted entries for these section so the instructor can opted
+$string['course_threshold_desc'] = 'Sections belonging to a course number that
+is greater than or equal to the specified number, will not be initially created.
+CPS will create unwanted entries for these sections so the instructor can opted
 in teaching online.';
 
 $string['course_severed'] = 'Delete upon Severage';
 $string['course_severed_desc'] = 'A course is severed if the Moodle course will
-not longer be handled by the enrollment module, or if enrollment equals zero.';
+no longer be handled by the enrollment module, or if enrollment equals zero.';
 
 $string['enabled'] = 'Enabled';
 $string['enabled_desc'] = 'If disabled, the setting will be hidden from the
-instructor. An Admin who is logged in as teh instructor will still be able to
+instructor. A Moodle admin who is logged in as the instructor will still be able to
 see and manipulate the disabled setting.';
 
 $string['nonprimary'] = 'Allow Non-Primaries';
@@ -37,7 +37,7 @@ immediate assistance.';
 $string['no_section'] = 'You do not own any section in the capable role. If you
  believe that you do, please contact the Moodle administrator for immediate assistance.';
 
-$string['no_courses'] = 'You do have have any courses with at least two active
+$string['no_courses'] = 'You do not have any courses with at least two active
 sections.';
 
 $string['err_enrol_days'] = 'Enrollments days cannot be >= Create Days.';
