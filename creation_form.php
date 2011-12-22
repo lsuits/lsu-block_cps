@@ -48,7 +48,17 @@ class creation_form extends moodleform {
         $m->addElement('static', 'def_enroll', $_s('default_enroll_days'),
             $default_enroll_days);
 
+        $course_sorter = function($coursea, $courseb) {
+            if ($coursea->department == $courseb->department) {
+                return strcmp($coursea->cou_number, $courseb->cou_number);
+            } else {
+                return strcmp($coursea->department, $courseb->department);
+            }
+        };
+
         foreach ($course_semesters as $semesterid => $courses) {
+            uasort($courses, $course_sorter);
+
             $semester = $semesters[$semesterid];
             $name = "{$semester->year} {$semester->name}";
 
