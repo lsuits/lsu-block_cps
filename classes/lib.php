@@ -192,7 +192,29 @@ class cps_creation extends cps_preferences implements application {
     var $create_days;
 
     function apply() {
-        // TODO: Should we run a reprocess on a creation / enroll day change?
+        $params = array(
+            'semesterid' => $this->semesterid,
+            'courseid' => $this->courseid
+        );
+
+        // All the section for this course and semester
+        $sections = ues_section::get_all($params);
+
+        $userid = $this->userid;
+
+        $by_teacher = function ($section) use ($userid) {
+            $primary = $section->primary();
+
+            if (empty($primary)) {
+                $primary = current($section->teachers());
+            }
+
+            return $userid == $primary->userid;
+        };
+
+        $associated = array_filter($sections, $by_teacher);
+
+        ues::inject_manifest($associated);
     }
 }
 

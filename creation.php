@@ -66,6 +66,7 @@ if ($form->is_cancelled()) {
             $creation->enroll_days = $enroll_days;
 
             $creation->save();
+            $creation->apply();
 
             unset($creations[$creation->id]);
         }
@@ -73,6 +74,7 @@ if ($form->is_cancelled()) {
 
     foreach ($creations as $creation) {
         cps_creation::delete($creation->id);
+        $creation->apply();
     }
 
     $success = true;
