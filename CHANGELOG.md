@@ -1,3 +1,9 @@
+## v0.0.4 (Snapshot)
+
+- Clean instructor settings on Release [#9](https://github.com/lsuits/cps/issues/9)
+- Team requests shells are now admin configurable [#10](https://github.com/lsuits/cps/issues/10)
+- Some admin settings were ignored [#13](https://github.com/lsuits/cps/issues/13)
+
 ## v0.0.3 (Snapshot)
 
 - Creation / enroll entries are now sorting correctly
