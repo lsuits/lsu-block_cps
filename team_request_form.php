@@ -682,6 +682,7 @@ class team_request_form_request extends team_request_form {
 
             $other_sections = $other_course->sections($semester);
 
+            // Should query allow lookup to non-primaries?
             $other_teachers = $other_course->teachers($semester);
 
             foreach ($other_teachers as $teacher) {

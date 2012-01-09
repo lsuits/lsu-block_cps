@@ -16,7 +16,9 @@ if (!ues_user::is_teacher()) {
 
 $teacher = ues_teacher::get(array('userid' => $USER->id));
 
-$sections = $teacher->sections();
+$non_primaries = (bool) get_config('block_cps', 'material_nonprimary');
+
+$sections = $teacher->sections(!$non_primaries);
 
 if (empty($sections)) {
     print_error('no_section', 'block_cps');

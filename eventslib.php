@@ -245,6 +245,13 @@ abstract class ues_event_handler {
 
         // Should there be no grades, no activities, and no resources
         // we can safely assume that this course is no longer used
+
+        $perform_delete = (bool) get_config('block_cps', 'course_severed');
+
+        if (!$perform_delete) {
+            return true;
+        }
+
         global $DB;
 
         $res = $DB->get_records('resource', array('course' => $course->id));

@@ -16,7 +16,9 @@ if (!ues_user::is_teacher()) {
 
 $teacher = ues_teacher::get(array('userid' => $USER->id));
 
-$sections = cps_unwant::active_sections_for($teacher);
+$non_primaries = (bool) get_config('block_cps', 'team_request_nonprimary');
+
+$sections = cps_unwant::active_sections_for($teacher, !$non_primaries);
 
 if (empty($sections)) {
     print_error('no_section', 'block_cps');
