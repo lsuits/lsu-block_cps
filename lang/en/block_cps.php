@@ -29,6 +29,9 @@ $string['cou_number'] = 'Course Number';
 
 $string['material_shortname'] = 'Master Course {department} {course_number} for {fullname}';
 
+$string['team_request_limit'] = 'Number of Requests';
+$string['team_request_limit_desc'] = 'This is the the maximum number of requests a primary instructor can make (minimum of 1).';
+
 // Error Strings
 $string['not_enabled'] = 'CPS Setting <strong>{$a}</strong> is not enabled.';
 $string['not_teacher'] = 'You are not enrolled or set to be enrolled in any course.
