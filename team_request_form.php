@@ -169,8 +169,8 @@ class team_request_form_update extends team_request_form {
         $m->addElement('radio', 'update_option', '',
             self::_s('team_add_course'), self::ADD_COURSE);
 
-        // TODO: incorporate admin setting
-        $shells_range = range(1, 10 - $groupingid);
+        $limit = get_config('block_cps', 'team_request_limit');
+        $shells_range = range(1, $limit - $groupingid);
 
         $options = array_combine($shells_range, $shells_range);
 
@@ -447,8 +447,7 @@ class team_request_form_shells extends team_request_form {
 
         $m->addElement('header', 'selected_course', $display);
 
-        // TODO: Throw thershold in as admin config
-        $threshold = 10;
+        $threshold = get_config('block_cps', 'team_request_limit');
         $range = range(1, $threshold);
         $options = array_combine($range, $range);
 

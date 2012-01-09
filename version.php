@@ -1,3 +1,3 @@
 <?php
 
-$plugin->version = 2011082300;
+$plugin->version = 2012010914;

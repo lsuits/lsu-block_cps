@@ -31,6 +31,8 @@ class setting_processor {
     public static function team_request($settings, $_s) {
         self::nonprimary('team_request', $settings, $_s, 0);
         self::shortname('team_request', $settings, $_s);
+
+        $settings->add(new admin_setting_configtext('block_cps/team_request_limit', $_s('team_request_limit'), $_s('team_request_limit_desc'), 10));
     }
 
     private static function shortname($setting, $settings, $_s) {
