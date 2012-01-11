@@ -51,11 +51,13 @@ abstract class ues_event_handler {
             'semesterid' => $ues_teacher->section()->semesterid
         );
 
-        cps_creation::delete_all($delete_params + $creation_params);
+        $success = (
+            cps_creation::delete_all($delete_params + $creation_params) and
+            cps_team_request::delete_all($delete_params + $creation_params) and
+            $success
+        );
 
-        cps_team_request::delete_all($delete_params + $creation_params);
-
-        return true;
+        return $success;
     }
 
     public static function ues_section_process($section) {
