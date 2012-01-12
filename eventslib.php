@@ -37,7 +37,7 @@ abstract class ues_event_handler {
 
         $all_section_settings = array('unwant', 'split', 'crosslist');
 
-        $by_successful_delete = function($in, $setting) use ($delete_params) {
+        $by_successful_delete = function($in, $setting) use ($delete_params, $ues_teacher) {
             $class = 'cps_'.$setting;
             return $in && $class::delete_all($delete_params + array(
                 'sectionid' => $ues_teacher->sectionid
