@@ -5,6 +5,15 @@ require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 abstract class ues_event_handler {
 
     public static function ues_primary_change($params) {
+        extract($params);
+
+        // Empty enrollment / idnumber
+        ues::unenroll_users(array($section));
+
+        // Safe keeping
+        $section->status = ues::PROCESSED;
+        $section->save();
+
         return true;
     }
 
@@ -85,7 +94,6 @@ abstract class ues_event_handler {
 
         // We know a teacher exists for this course, so we'll use a non-primary
         if (!$primary) {
-
             $primary = current($section->teachers());
         }
 
