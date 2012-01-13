@@ -14,6 +14,10 @@ abstract class ues_event_handler {
         $section->status = ues::PROCESSED;
         $section->save();
 
+        // Set to re-enroll
+        ues_student::reset_status($section, ues::PROCESSED);
+        ues_teacher::reset_status($section, ues::PROCESSED);
+
         return true;
     }
 

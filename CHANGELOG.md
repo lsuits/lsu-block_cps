@@ -1,3 +1,7 @@
+## v0.0.5 (Snapshot)
+
+- On primary change, enrollment should be dropped [#14](https://github.com/lsuits/cps/issues/14)
+
 ## v0.0.4 (Snapshot)
 
 - Clean instructor settings on Release [#9](https://github.com/lsuits/cps/issues/9)
