@@ -46,9 +46,33 @@ abstract class ues_event_handler {
     }
 
     public static function ues_teacher_release($ues_teacher) {
+        // Check for promotion or demotion
+        $params = array(
+            'userid' => $ues_teacher->userid,
+            'sectionid' => $ues_teacher->sectionid,
+            'status' => ues::PROCESSED
+        );
+
+        $other_self = ues_teacher::get($params);
+
+        if ($other_self) {
+            $promotion = $other_self->primary_flag == 1;
+            $demotion = $other_self->primary_flag == 0;
+        } else {
+            $promotion = $demotion = false;
+        }
+
         $delete_params = array('userid' => $ues_teacher->userid);
 
         $all_section_settings = array('unwant', 'split', 'crosslist');
+
+        if ($promotion) {
+            // Promotion means all settings are in tact
+            return true;
+        } else if ($demotion) {
+            // Demotion means crosslist and split behavior must be effected
+            unset($all_section_settings[0]);
+        }
 
         $by_successful_delete = function($in, $setting) use ($delete_params, $ues_teacher) {
             $class = 'cps_'.$setting;
