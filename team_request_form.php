@@ -787,7 +787,7 @@ class team_request_form_review extends team_request_form {
 
             $userids = $this->_customdata['selected_users'.$number.'_str'];
 
-            $users = ues_user::get_select('id IN ('. $userids .')');
+            $users = ues_user::get_all(ues::where('id')->in(explode($userids)));
 
             foreach ($users as $user) {
                 $str = $to_display($query) . ' with ' . fullname($user);

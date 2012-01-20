@@ -552,7 +552,7 @@ class team_section_form_confirm extends team_section_form {
             $sectionids = $this->_customdata[$value_key];
             $shell_name = $this->_customdata[$name_key];
 
-            $sections = ues_section::get_select('id IN ('.$sectionids.')');
+            $sections = ues_section::get_all(ues::where('id')->in(explode($sectionids)));
 
             $m->addElement('static', 'shell_'.$number, $shell_name, '');
 
