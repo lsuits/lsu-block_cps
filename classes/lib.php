@@ -252,14 +252,11 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
             }
         }
 
-        $course_section_ids = implode(',', array_keys($course->sections));
+        $split_filters = ues::where()
+            ->userid->equal($USER->id)
+            ->sectionid->in(array_keys($course->sections));
 
-        $split_filters = array(
-            'userid = ' . $USER->id,
-            'sectionid IN (' . $course_section_ids . ')'
-        );
-
-        $splits = self::get_select($split_filters);
+        $splits = self::get_all($split_filters);
 
         return $splits;
     }
@@ -340,18 +337,17 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
         global $USER;
 
         // Flatten sections
-        $course_to_sectionids = function ($course) {
-            return implode(',', array_keys($course->sections));
+        $course_to_sectionids = function ($in, $course) {
+            return array_merge($in, array_keys($course->sections));
         };
 
-        $sectionids = implode(',', array_map($course_to_sectionids, $courses));
+        $sectionids = array_reduce($courses, $course_to_sectionids, array());
 
-        $crosslist_params = array(
-            'userid = ' . $USER->id,
-            'sectionid IN (' . $sectionids . ')'
-        );
+        $crosslist_params = ues::where()
+            ->userid->equal($USER->id)
+            ->sectionid->in($sectionids);
 
-        $crosslists = self::get_select($crosslist_params);
+        $crosslists = self::get_all($crosslist_params);
 
         return $crosslists;
     }
