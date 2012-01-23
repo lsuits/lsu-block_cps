@@ -1,3 +1,8 @@
+## v0.0.6 (Snapshot)
+
+- Makes use of UES DAO DSL [#16](https://github.com/lsuits/cps/issues/16)
+- Same instructor promotion details are handled [#15](https://github.com/lsuits/cps/issues/15)
+
 ## v0.0.5 (Snapshot)
 
 - On primary change, enrollment should be dropped [#14](https://github.com/lsuits/cps/issues/14)
