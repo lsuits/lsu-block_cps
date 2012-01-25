@@ -298,7 +298,7 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
         $sections = array($this->section());
 
         ues::inject_manifest($sections, function ($sec) {
-            $sec->idnumber = null;
+            $sec->idnumber = '';
         });
     }
 }
@@ -389,7 +389,7 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
         $sections = array($this->section());
 
         ues::inject_manifest($sections, function ($section) {
-            $section->idnumber = null;
+            $section->idnumber = '';
         });
     }
 }
@@ -758,7 +758,7 @@ class cps_team_section extends ues_section_accessor implements unique, undoable 
 
     function unapply() {
         ues::inject_manifest(array($this->section()), function($sec) {
-            $sec->idnumber = null;
+            $sec->idnumber = '';
         });
     }
 }
