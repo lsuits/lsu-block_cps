@@ -2,7 +2,7 @@
 
 require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
-abstract class ues_event_handler {
+abstract class cps_ues_event_handler {
 
     public static function ues_primary_change($params) {
         extract($params);
