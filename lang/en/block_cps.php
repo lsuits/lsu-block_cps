@@ -245,3 +245,12 @@ $string['settings_loading'] = '{$a} - Applying Changes';
 $string['please_wait'] = 'Your settings are being applied. Please be patient as the process completes.';
 
 $string['application_errors'] = 'The following error occurred while applying the settings: {$a}';
+
+// Meta Strings
+$string['user_year'] = 'Year';
+$string['user_ferpa'] = 'Ferpa';
+$string['user_reg_status'] = 'Registration';
+$string['user_degree'] = 'Degree';
+$string['user_college'] = 'College';
+$string['user_major'] = 'Major';
+$string['user_keypadid'] = 'Keypad ID';
