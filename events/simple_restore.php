@@ -12,8 +12,13 @@ abstract class cps_simple_restore_handler {
 
         $course = $DB->get_record('course', array('id' => $id));
 
+        // Maintain the correct config
+        $course->fullname = $fullname;
         $course->shortname = $shortname;
         $course->idnumber = $idnumber;
+        $course->format = $format;
+        $course->summary = $summary;
+        $course->visible = $visible;
 
         $success = $DB->update_record('course', $course);
 
