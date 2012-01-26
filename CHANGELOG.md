@@ -1,5 +1,8 @@
 ## v0.0.6 (Snapshot)
 
+- Refactors event handlers [#19](https://github.com/lsuits/cps/issues/19)
+  - Add Simple Restore integration [#17](https://github.com/lsuits/cps/issues/17)
+  - Add UES Meta Viewer integration [#18](https://github.com/lsuits/cps/issues/18)
 - Makes use of UES DAO DSL [#16](https://github.com/lsuits/cps/issues/16)
 - Same instructor promotion details are handled [#15](https://github.com/lsuits/cps/issues/15)
 
