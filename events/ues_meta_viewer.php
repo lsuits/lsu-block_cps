@@ -19,7 +19,9 @@ abstract class cps_ues_meta_viewer_handler {
         if (in_array($handler->ui_element->key(), $handled)) {
             $field = $handler->ui_element->key();
 
-            $handler->ui_element = new cps_meta_ui_element($field, $field);
+            $name = get_string($field, 'block_cps');
+
+            $handler->ui_element = new cps_meta_ui_element($field, $name);
         }
 
         return true;

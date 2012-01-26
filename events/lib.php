@@ -3,14 +3,6 @@
 require_once $CFG->dirroot . '/blocks/ues_meta_viewer/classes/lib.php';
 
 class cps_meta_ui_element extends meta_data_text_box {
-    public function name($name = null) {
-        if ($name == $this->key()) {
-            $this->name = get_string($this->key(), 'block_cps');
-        }
-
-        return $this->name;
-    }
-
     public function format($user) {
         switch ($this->key()) {
             case 'user_degree':
