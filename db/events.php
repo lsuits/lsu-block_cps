@@ -26,6 +26,7 @@ $modules_events = array(
         'simple_restore_complete'
     ),
     'ues_meta_viewer' => array(
+        'ues_user_data_ui_keys',
         'ues_user_data_ui_element'
     )
 );
