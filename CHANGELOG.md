@@ -1,5 +1,6 @@
 ## v0.0.6 (Snapshot)
 
+- Added sport filtering to the User Data Viewer [#20](https://github.com/lsuits/cps/issues/20)
 - Refactors event handlers [#19](https://github.com/lsuits/cps/issues/19)
   - Add Simple Restore integration [#17](https://github.com/lsuits/cps/issues/17)
   - Add UES Meta Viewer integration [#18](https://github.com/lsuits/cps/issues/18)
