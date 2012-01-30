@@ -254,3 +254,4 @@ $string['user_degree'] = 'Degree';
 $string['user_college'] = 'College';
 $string['user_major'] = 'Major';
 $string['user_keypadid'] = 'Keypad ID';
+$string['user_sport1'] = 'Sport';
