@@ -1,11 +1,12 @@
 # CPS Instructor Settings
 
 The CPS (Course Preferences System) allows for instructors to inject certain
-creation and enrollment behaviors into the UES.
+creation and enrollment behaviors into the [UES][ues] enrollment process.
 
 More specific information can be found at the repository's [wiki][wiki].
 
 [wiki]: https://github.com/lsuits/cps/wiki
+[ues]: https://github.com/lsuits/ues
 
 ## Features
 
