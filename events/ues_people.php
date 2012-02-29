@@ -12,6 +12,9 @@ abstract class cps_ues_people_handler {
         $_s = ues::gen_str('block_cps');
 
         foreach ($interfere as $meta) {
+            if (!isset($data->outputs[$meta])) {
+                continue;
+            }
             $data->outputs[$meta] = new cps_people_element($meta, $_s($meta));
         }
 

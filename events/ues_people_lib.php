@@ -9,7 +9,8 @@ class cps_people_element extends ues_people_element_output {
             case 'user_ferpa':
                 return !empty($user->{$this->field}) ? 'Y' : 'N';
             case 'user_reg_status':
-                return date('m-d-Y', $user->{$this->field});
+                return isset($user->{$this->field}) ?
+                    date('m-d-Y', $user->{$this->field}) : '';
             default:
                 return parent::format($user);
         }
