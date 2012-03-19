@@ -1,3 +1,15 @@
+## v1.1.0
+
+- UES People Integration [488bbd3][488bbd3]
+- Clean up internal form library [c0ad42c](https://github.com/lsuits/cps/commit/c0ad42cb01c1f4c8815a3ddde13f647cd778efcc)
+- Add Styles [3636dc50](https://github.com/lsuits/cps/commit/3636dc50b134ef61558ff5c7cb6d2abe3f9d22a8)
+
+[488bbd3]: https://github.com/lsuits/cps/commit/488bbd3dff5fc4c6c9cda94ccf25d068de9c24b0
+
+## v1.0.0
+
+- Public open source release
+
 ## v0.0.6 (Snapshot)
 
 - Added sport filtering to the User Data Viewer [#20](https://github.com/lsuits/cps/issues/20)
