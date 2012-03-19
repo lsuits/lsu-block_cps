@@ -62,10 +62,15 @@ class split_form_select extends split_form {
     function validation($data) {
         $courses = $this->_customdata['courses'];
 
-        $errors = array();
-        if (empty($courses[$data['selected']])) {
-            $errors['selected'] = self::_s('err_select');
+        if (empty($data['selected'])) {
+            return array('selected' => self::_s('err_select_one'));
         }
+
+        if (empty($courses[$data['selected']])) {
+            return array('selected' => self::_s('err_select'));
+        }
+
+        $errors = array();
 
         $course = $courses[$data['selected']];
 
