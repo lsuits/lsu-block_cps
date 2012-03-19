@@ -367,21 +367,13 @@ class crosslist_form_decide extends crosslist_form {
             </div>
         ');
 
-        $move_left =& $m->createElement('button', 'move_left', self::_s('move_left'));
-        $move_right =& $m->createElement('button', 'move_right', self::_s('move_right'));
-
-        $button_html =& $m->createElement('html', '
-            <div class="split_movers">
-                '.$move_left->toHtml().'<br/>
-                '.$move_right->toHtml().'
-            </div>
-        ');
-
         $shell_html =& $m->createElement('html', '
             <div class="split_bucket_sections">
                 '. implode('<br/>', $shells) . '
             </div>
         ');
+
+        $button_html =& $m->createElement('html', $this->split_movers());
 
         $shifters = array($previous_html, $button_html, $shell_html);
 

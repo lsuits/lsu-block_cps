@@ -155,6 +155,27 @@ abstract class cps_form extends moodleform implements generic_states {
 
         $this->generate_buttons();
     }
+
+    protected function split_movers() {
+        global $OUTPUT;
+
+        $move_left = html_writer::empty_tag('input', array(
+            'type' => 'button',
+            'value' => $OUTPUT->larrow(),
+            'name' => 'move_left'
+        ));
+
+        $move_right= html_writer::empty_tag('input', array(
+            'type' => 'button',
+            'value' => $OUTPUT->rarrow(),
+            'name' => 'move_right'
+        ));
+
+        return html_writer::tag('div',
+            $move_left . '<br/>' . $move_right,
+            array('class' => 'split_movers')
+        );
+    }
 }
 
 class cps_loading_form implements generic_states {

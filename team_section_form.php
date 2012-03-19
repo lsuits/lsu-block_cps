@@ -419,15 +419,7 @@ class team_section_form_decide extends team_section_form {
             </div>
         ');
 
-        $move_left =& $m->createElement('button', 'move_left', self::_s('move_left'));
-        $move_right =& $m->createElement('button', 'move_right', self::_s('move_right'));
-
-        $button_html =& $m->createElement('html', '
-            <div class="split_movers">
-                '.$move_left->toHtml().'<br/>
-                '.$move_right->toHtml().'
-            </div>
-        ');
+        $button_html =& $m->createElement('html', $this->split_movers());
 
         $shell_html =& $m->createElement('html', '
             <div class="split_bucket_sections">
