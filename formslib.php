@@ -176,6 +176,27 @@ abstract class cps_form extends moodleform implements generic_states {
             array('class' => 'split_movers')
         );
     }
+
+    protected function mover_form($previous_label, $previous, $shells) {
+        $this->_form->addElement('html', '<div id="split_error"></div>');
+
+        $previous_html = html_writer::tag('div',
+            $previous_label->toHtml() . '<br/>' . $previous->toHtml(),
+            array('class' => 'split_available_sections')
+        );
+
+        $button_html = $this->split_movers();
+
+        $split_html = html_writer::tag('div',
+            implode('<br/>', $shells),
+            array('class' => 'split_bucket_sections')
+        );
+
+        return html_writer::tag('div',
+            implode(' ', array($previous_html, $button_html, $split_html)),
+            array('class' => 'split_mover_form')
+        );
+    }
 }
 
 class cps_loading_form implements generic_states {

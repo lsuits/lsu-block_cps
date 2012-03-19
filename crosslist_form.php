@@ -358,26 +358,9 @@ class crosslist_form_decide extends crosslist_form {
         $previous =& $m->createElement('select', 'before', '', $before);
         $previous->setMultiple(true);
 
-        $m->addElement('html', '<div id="split_error"></div>');
+        $form_html = $this->mover_form($previous_label, $previous, $shells);
 
-        $previous_html =& $m->createElement('html', '
-            <div class="split_available_sections">
-                '.$previous_label->toHtml().'<br/>
-                '.$previous->toHtml().'
-            </div>
-        ');
-
-        $shell_html =& $m->createElement('html', '
-            <div class="split_bucket_sections">
-                '. implode('<br/>', $shells) . '
-            </div>
-        ');
-
-        $button_html =& $m->createElement('html', $this->split_movers());
-
-        $shifters = array($previous_html, $button_html, $shell_html);
-
-        $m->addGroup($shifters, 'shifters', '', array(' '), true);
+        $m->addElement('html', $form_html);
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'reshelled', '');
