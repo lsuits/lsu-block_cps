@@ -155,6 +155,48 @@ abstract class cps_form extends moodleform implements generic_states {
 
         $this->generate_buttons();
     }
+
+    protected function split_movers() {
+        global $OUTPUT;
+
+        $move_left = html_writer::empty_tag('input', array(
+            'type' => 'button',
+            'value' => $OUTPUT->larrow(),
+            'name' => 'move_left'
+        ));
+
+        $move_right= html_writer::empty_tag('input', array(
+            'type' => 'button',
+            'value' => $OUTPUT->rarrow(),
+            'name' => 'move_right'
+        ));
+
+        return html_writer::tag('div',
+            $move_left . '<br/>' . $move_right,
+            array('class' => 'split_movers')
+        );
+    }
+
+    protected function mover_form($previous_label, $previous, $shells) {
+        $this->_form->addElement('html', '<div id="split_error"></div>');
+
+        $previous_html = html_writer::tag('div',
+            $previous_label->toHtml() . '<br/>' . $previous->toHtml(),
+            array('class' => 'split_available_sections')
+        );
+
+        $button_html = $this->split_movers();
+
+        $split_html = html_writer::tag('div',
+            implode('<br/>', $shells),
+            array('class' => 'split_bucket_sections')
+        );
+
+        return html_writer::tag('div',
+            implode(' ', array($previous_html, $button_html, $split_html)),
+            array('class' => 'split_mover_form')
+        );
+    }
 }
 
 class cps_loading_form implements generic_states {

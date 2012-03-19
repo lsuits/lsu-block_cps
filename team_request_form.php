@@ -544,7 +544,6 @@ class team_request_form_query extends team_request_form {
         $m->addElement('hidden', 'reshell', 0);
         $m->addElement('hidden', 'semesterid', $semester->id);
 
-
         $this->generate_states_and_buttons();
     }
 
@@ -621,7 +620,7 @@ class team_request_form_request extends team_request_form {
         foreach (range(1, $data['shells']) as $number) {
             $key = 'query' . $number;
 
-            $query = required_param($key, PARAM_ALPHANUM);
+            $query = required_param_array($key, PARAM_RAW);
 
             $queries[$key] = $query;
 
@@ -748,7 +747,7 @@ class team_request_form_review extends team_request_form {
         foreach (range(1, $data['shells']) as $number) {
             $key = 'selected_users'. $number;
 
-            $users = optional_param($key, null, PARAM_INT);
+            $users = optional_param_array($key, null, PARAM_INT);
             $userids = optional_param($key . '_str', null, PARAM_TEXT);
 
             $userid = ($users) ? implode(',', $users) : $userids;
@@ -787,7 +786,7 @@ class team_request_form_review extends team_request_form {
 
             $userids = $this->_customdata['selected_users'.$number.'_str'];
 
-            $users = ues_user::get_all(ues::where('id')->in(explode($userids)));
+            $users = ues_user::get_all(ues::where('id')->in(explode(",",$userids)));
 
             foreach ($users as $user) {
                 $str = $to_display($query) . ' with ' . fullname($user);

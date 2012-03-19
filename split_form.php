@@ -62,10 +62,15 @@ class split_form_select extends split_form {
     function validation($data) {
         $courses = $this->_customdata['courses'];
 
-        $errors = array();
-        if (empty($courses[$data['selected']])) {
-            $errors['selected'] = self::_s('err_select');
+        if (empty($data['selected'])) {
+            return array('selected' => self::_s('err_select_one'));
         }
+
+        if (empty($courses[$data['selected']])) {
+            return array('selected' => self::_s('err_select'));
+        }
+
+        $errors = array();
 
         $course = $courses[$data['selected']];
 
@@ -309,34 +314,9 @@ class split_form_decide extends split_form {
         $previous =& $m->createElement('select', 'before', '', $before);
         $previous->setMultiple(true);
 
-        $m->addElement('html', '<div id="split_error"></div>');
+        $form_html = $this->mover_form($previous_label, $previous, $shells);
 
-        $previous_html =& $m->createElement('html', '
-            <div class="split_available_sections">
-                '.$previous_label->toHtml().'<br/>
-                '.$previous->toHtml().'
-            </div>
-        ');
-
-        $move_left =& $m->createElement('button', 'move_left', self::_s('move_left'));
-        $move_right =& $m->createElement('button', 'move_right', self::_s('move_right'));
-
-        $button_html =& $m->createElement('html', '
-            <div class="split_movers">
-                '.$move_left->toHtml().'<br/>
-                '.$move_right->toHtml().'
-            </div>
-        ');
-
-        $shell_html =& $m->createElement('html', '
-            <div class="split_bucket_sections">
-                '. implode('<br/>', $shells) . '
-            </div>
-        ');
-
-        $shifters = array($previous_html, $button_html, $shell_html);
-
-        $m->addGroup($shifters, 'shifters', '', array(' '), true);
+        $m->addElement('html', $form_html);
 
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'reshelled', '');
