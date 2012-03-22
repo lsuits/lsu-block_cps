@@ -3,7 +3,7 @@
     var apply_event, make_selected;
     make_selected = function(courseid, checked) {
       return function() {
-        $("input[id^='id_course" + courseid + "']").attr('checked', checked);
+        $("input[id*='course" + courseid + "_']").attr('checked', checked);
         return false;
       };
     };

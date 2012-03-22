@@ -1,7 +1,7 @@
 $(document).ready ->
     make_selected = (courseid, checked) ->
         ->
-            $("input[id^='id_course"+ courseid + "']").attr 'checked', checked
+            $("input[id*='course"+ courseid + "_']").attr 'checked', checked
             false
 
     apply_event = (checked) ->
