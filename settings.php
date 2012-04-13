@@ -19,6 +19,11 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('block_cps/course_threshold',
         $_s('course_threshold'), $_s('course_threshold_desc'), '8000'));
 
+    $field_cats = $DB->get_records_menu('user_info_category', null, '', 'id, name');
+
+    $settings->add(new admin_setting_configselect('block_cps/user_field_catid',
+        $_s('user_field_category'), $_s('user_field_category_desc'), 1, $field_cats));
+
     $cps_settings = array('creation', 'unwant', 'material', 'split', 'crosslist', 'team_request');
 
     foreach ($cps_settings as $setting) {

@@ -339,6 +339,67 @@ abstract class cps_ues_handler {
         return true;
     }
 
+    public static function ues_lsu_anonymous_updated($user) {
+        global $DB;
+
+        $catid = get_config('block_cps', 'user_field_catid');
+
+        // Backup
+        $sql = 'SELECT id FROM {user_info_category} LIMIT 1';
+
+        $catid = empty($catid) ? $DB->get_field_sql($sql) : $catid;
+
+        $params = array('id' => $catid);
+
+        if (!$category = $DB->get_record('user_info_category', $params)) {
+            $category = new stdClass;
+            $category->name = get_string('user_info_category', 'block_cps');
+            $category->sortorder = 1;
+
+            $category->id = $DB->insert_record('user_info_category', $category);
+        }
+
+        $params = array(
+            'categoryid' => $category->id,
+            'shortname' => 'user_anonymous_number'
+        );
+
+        if (!$field = $DB->get_record('user_info_field', $params)) {
+            $field = new stdClass;
+            $field->shortname = 'user_anonymous_number';
+            $field->name = get_string('user_anonymous_number', 'block_cps');
+            $field->description = get_string('auto_field_desc', 'block_cps');
+            $field->descriptionformat = 1;
+            $field->datatype = 'text';
+            $field->categoryid = $category->id;
+            $field->locked = 1;
+            $field->visible = 1;
+            $field->param1 = 30;
+            $field->param2 = 2048;
+
+            $field->id = $DB->insert_record('user_info_field', $field);
+        }
+
+        $params = array(
+            'userid' => $user->id,
+            'fieldid' => $field->id
+        );
+
+        if (!$data = $DB->get_record('user_info_data', $params)) {
+            $data = new stdClass;
+            $data->userid = $user->id;
+            $data->fieldid = $field->id;
+
+            $data->data = '';
+
+            $data->id = $DB->insert_record('user_info_data', $data);
+        }
+
+        $data->data = $user->user_anonymous_number;
+
+        return $DB->update_record('user_info_data', $data);
+    }
+
     public static function ues_group_emptied($params) {
         return true;
     }
