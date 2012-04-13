@@ -24,6 +24,7 @@ abstract class cps_ues_meta_viewer_handler {
 
         // Play nice, only handle what I need
         $handled = array(
+            'username',
             'user_ferpa',
             'user_reg_status',
             'user_degree',

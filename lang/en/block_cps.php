@@ -251,6 +251,7 @@ $string['user_field_category_desc'] = 'CPS will attempt to create Moodle user pr
 $string['auto_field_desc'] = 'This field was automatically generated through CPS. Do not change the field settings unless you are absolutely certain of what you are doing.';
 
 // Meta Strings
+$string['username'] = 'Username';
 $string['user_year'] = 'Year';
 $string['user_ferpa'] = 'Ferpa';
 $string['user_reg_status'] = 'Registration';
