@@ -1,3 +1,11 @@
+## v1.1.1
+
+- Moodle profile fields for anonymous numbers [#25][25]
+- Anonymous numbers are handled in Peoepl and Meta viewer [1b60c2][1b60c2]
+
+[25]: https://github.com/lsuits/cps/issues/25
+[1b60c2]: https://github.com/lsuits/cps/commit/1b60c2982844753814e15923e9e6ce3a16bcc180
+
 ## v1.1.0
 
 - UES People Integration [488bbd3][488bbd3]
