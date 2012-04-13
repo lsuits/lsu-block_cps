@@ -31,7 +31,8 @@ abstract class cps_ues_meta_viewer_handler {
             'user_major',
             'user_college',
             'user_keypadid',
-            'user_sport1'
+            'user_sport1',
+            'user_anonymous_number'
         );
 
         if (in_array($handler->ui_element->key(), $handled)) {
