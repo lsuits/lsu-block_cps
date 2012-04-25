@@ -1,3 +1,9 @@
+## v1.1.2
+
+- Removed explicit check for LAW semester on section process [#26][26]
+
+[26]: https://github.com/lsuits/cps/issues/26
+
 ## v1.1.1
 
 - Moodle profile fields for anonymous numbers [#25][25]
