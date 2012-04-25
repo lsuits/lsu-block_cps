@@ -98,25 +98,7 @@ abstract class cps_ues_handler {
     }
 
     public static function ues_section_process($section) {
-        // Semesters are different here on campus.
-        // Oddly enough, LAW courses and enrollments are tied to the
-        // LSU campus, which means that we have to separate the logic here
         $semester = $section->semester();
-
-        if ($section->course()->department == 'LAW') {
-            $sem_params = array (
-                'name' => $section->semester->name,
-                'year' => $section->semester->year,
-                'session_key' => $section->semester->session_key,
-                'campus' => 'LAW'
-            );
-
-            $law_semester = ues_semester::get($sem_params);
-
-            if ($law_semester) {
-                $semester = $law_semester;
-            }
-        }
 
         $primary = $section->primary();
 
