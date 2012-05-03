@@ -157,8 +157,7 @@ class cps_material extends cps_preferences implements application {
         $enrol = enrol_get_plugin('ues');
 
         if (!$mcourse) {
-            $cat_params = array('name' => $ues_course->department);
-            $cat = $DB->get_field('course_categories', 'id', $cat_params);
+            $category = $enrol->manifest_category($ues_course);
 
             $course = new stdClass;
             $course->visible = 0;
@@ -168,7 +167,7 @@ class cps_material extends cps_preferences implements application {
             $course->fullname = $shortname;
             $course->shortname = $shortname;
             $course->summary = $shortname;
-            $course->category = $cat;
+            $course->category = $category->id;
 
             $mcourse = create_course($course);
         }
