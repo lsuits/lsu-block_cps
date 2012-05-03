@@ -1,3 +1,11 @@
+## v1.1.3
+
+- Better simple restore handling [20cb74][20cb74]
+- Material course creation creates course categories [#27][27]
+
+[20cb74]: https://github.com/lsuits/cps/commit/20cb748699460fa2bcae13b22c74d7954523493b
+[27]: https://github.com/lsuits/cps/issues/27
+
 ## v1.1.2
 
 - Removed explicit check for LAW semester on section process [#26][26]
