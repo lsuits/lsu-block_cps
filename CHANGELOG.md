@@ -2,7 +2,9 @@
 
 - Better simple restore handling [20cb74][20cb74]
 - Material course creation creates course categories [#27][27]
+- Material course language change [feb157][feb157]
 
+[feb157]: https://github.com/lsuits/cps/commit/feb157d483dd30ada59624cddaf84cbc9a0c10cb
 [20cb74]: https://github.com/lsuits/cps/commit/20cb748699460fa2bcae13b22c74d7954523493b
 [27]: https://github.com/lsuits/cps/issues/27
 
