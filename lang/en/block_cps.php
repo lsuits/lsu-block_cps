@@ -82,7 +82,7 @@ $string['default_enroll_days'] = 'Days before classes to enroll students';
 
 $string['unwant'] = 'Unwanted';
 
-$string['material'] = 'Materials Course';
+$string['material'] = 'Master Course';
 $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splitting';
