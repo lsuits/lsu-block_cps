@@ -1,3 +1,9 @@
+## v1.1.4
+
+- Improperly formatting Degree cacndidates [40cdf4][40cdf4]
+
+[40cdf4]: https://github.com/lsuits/cps/commit/40cdf4391a74905ff00e1fa45c064403bab09670
+
 ## v1.1.3
 
 - Better simple restore handling [20cb74][20cb74]
