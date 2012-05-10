@@ -1,7 +1,11 @@
 ## v1.1.4
 
+- Cross-list semester fix [#28][28]
 - Improperly formatting Degree cacndidates [40cdf4][40cdf4]
+- Restore entire course config from previous course [5c2de0][5c2de0]
 
+[28]: https://github.com/lsuits/cps/issues/28
+[5c2de0]: https://github.com/lsuits/cps/commit/5c2de03372123aeac64d44e4a356163a512cf802
 [40cdf4]: https://github.com/lsuits/cps/commit/40cdf4391a74905ff00e1fa45c064403bab09670
 
 ## v1.1.3
