@@ -3,7 +3,8 @@
 abstract class cps_simple_restore_handler {
     public static function simple_restore_complete($params) {
         extract($params);
-        extract($course_settings);
+        $restore_to = $course_settings['restore_to'];
+        $old_course = $course_settings['course'];
 
         // This is an import, ignore
         if ($restore_to == 1) {
@@ -12,16 +13,31 @@ abstract class cps_simple_restore_handler {
 
         global $DB, $CFG;
 
+        $course = $DB->get_record('course', array('id' => $old_course->id));
+
         $keep_enrollments = (bool) get_config('simple_restore', 'keep_roles_and_enrolments');
         $keep_groups = (bool) get_config('simple_restore', 'keep_groups_and_groupings');
 
-        $enrol_instances = $DB->get_records('enrol', array(
-            'courseid' => $id,
-            'enrol' => 'ues'
-        ));
+        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
+
+        // Maintain the correct config
+        foreach (get_object_vars($old_course) as $key => $value) {
+            if (in_array($key, $skip)) {
+                continue;
+            }
+
+            $course->$key = $value;
+        }
+
+        $DB->update_record('course', $course);
 
         // No need to re-enroll
         if ($keep_groups and $keep_enrollments) {
+            $enrol_instances = $DB->get_records('enrol', array(
+                'courseid' => $old_course->id,
+                'enrol' => 'ues'
+            ));
+
             // Cleanup old instances
             $ues = enrol_get_plugin('ues');
 
@@ -29,34 +45,21 @@ abstract class cps_simple_restore_handler {
                 $ues->delete_instance($instance);
             }
 
-            return true;
+        } else {
+            require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
+            ues::require_daos();
+
+            $sections = ues_section::from_course($course);
+
+            // Nothing to do
+            if (empty($sections)) {
+                return true;
+            }
+
+            // Rebuild enrollment
+            ues::enroll_users(ues_section::from_course($course));
         }
 
-        require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
-        ues::require_daos();
-
-        $course = $DB->get_record('course', array('id' => $id));
-
-        // Maintain the correct config
-        $course->fullname = $fullname;
-        $course->shortname = $shortname;
-        $course->idnumber = $idnumber;
-        $course->format = $format;
-        $course->summary = $summary;
-        $course->visible = $visible;
-
-        $success = $DB->update_record('course', $course);
-
-        $sections = ues_section::from_course($course);
-
-        // Nothing to do
-        if (empty($sections)) {
-            return true;
-        }
-
-        // Rebuild enrollment
-        ues::enroll_users(ues_section::from_course($course));
-
-        return $success;
+        return true;
     }
 }
