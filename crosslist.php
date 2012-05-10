@@ -22,7 +22,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$courses = ues_course::merge_sections($sections);
+$semesters = ues_semester::merge_sections($sections);
 
 $_s = ues::gen_str('block_cps');
 
@@ -42,7 +42,7 @@ $PAGE->requires->js('/lib/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/crosslist.js');
 
-$form = crosslist_form::create($courses);
+$form = crosslist_form::create($semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -56,7 +56,7 @@ if ($form->is_cancelled()) {
         $form = new crosslist_form_finish();
 
         try {
-            $form->process($data, $courses);
+            $form->process($data, $semesters);
 
             $form->display();
         } catch (Exception $e) {
@@ -66,7 +66,7 @@ if ($form->is_cancelled()) {
         die();
     }
 
-    $form = crosslist_form::next_from($form->next, $data, $courses);
+    $form = crosslist_form::next_from($form->next, $data, $semesters);
 }
 
 echo $OUTPUT->header();

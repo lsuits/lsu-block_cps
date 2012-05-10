@@ -115,10 +115,10 @@ $string['split_rearrange'] = 'Rearrange sections?';
 $string['customize_name'] = 'Customize name';
 
 $string['shortname_desc'] = 'Split course creation uses these defaults.';
-$string['split_shortname'] = '{year} {name} {department} {course_number} {shell_name} for {fullname}';
+$string['split_shortname'] = '{year} {name}{session} {department} {course_number} {shell_name} for {fullname}';
 
 $string['crosslist'] = 'Cross-listing';
-$string['crosslist_shortname'] = '{year} {name} {shell_name} for {fullname}';
+$string['crosslist_shortname'] = '{year} {name}{session} {shell_name} for {fullname}';
 $string['crosslist_you_have'] = 'You have selected to cross-list';
 
 $string['crosslist_option_taken'] = 'Cross-list option taken';
@@ -204,7 +204,7 @@ and sent. Continue to head back to the team teach home.';
 
 $string['team_with'] = 'to be team taught with...';
 
-$string['team_request_shortname'] = '{year} {name} {shell_name}';
+$string['team_request_shortname'] = '{year} {name}{session} {shell_name}';
 
 $string['team_request_approved_subject'] = 'Moodle Team-Teaching Request Accepted';
 $string['team_request_approved_body'] = '

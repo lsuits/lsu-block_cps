@@ -108,13 +108,22 @@ abstract class cps_form extends moodleform implements generic_states {
     }
 
     public function to_display($sem) {
-        return function ($course) use ($sem) {
-            return "$sem->year $sem->name $course->department $course->cou_number";
+        $func = array($this, 'display_course');
+        return function ($course) use ($sem, $func) {
+            return call_user_func_array($func, array($course, $sem));
         };
     }
 
     public function display_course($course, $sem) {
-        return "$sem->year $sem->name $course->department $course->cou_number";
+        $semester_name = $this->display_semester($sem);
+        return "$semester_name $course->department $course->cou_number";
+    }
+
+    public function display_semester($sem) {
+        $session = !empty($sem->session_key) ?
+            ' (' . $sem->session_key. ')' : '';
+
+        return "$sem->year $sem->name$session";
     }
 
     protected function generate_states() {

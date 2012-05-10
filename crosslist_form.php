@@ -16,51 +16,36 @@ class crosslist_form_select extends crosslist_form {
     var $current = self::SELECT;
     var $next = self::SHELLS;
 
-    public static function build($courses) {
-        return array('courses' => $courses);
+    public static function build($semesters) {
+        return array('semesters' => $semesters);
     }
 
     function definition() {
         $m =& $this->_form;
 
-        $courses = $this->_customdata['courses'];
-
-        $semesters = array();
+        $semesters = $this->_customdata['semesters'];
 
         $m->addElement('header', 'select_course', self::_s('crosslist_select'));
 
         $m->addElement('static', 'selected_label', '', '');
-        foreach ($courses as $course) {
-            foreach ($course->sections as $section) {
-                $id = $section->semesterid;
-                if (isset($semesters[$id])) {
-                    continue;
+        foreach ($semesters as $semester) {
+            foreach ($semester->courses as $course) {
+                $display = $this->display_course($course, $semester);
+
+                if (cps_crosslist::exists($course)) {
+                    $display .= ' (' . self::_s('crosslist_option_taken') . ')';
                 }
 
-                $semesters[$id] = $section->semester();
+                $key = 'selected_' . $semester->id . '_' . $course->id;
+                $m->addElement('checkbox', $key, '', $display);
             }
-
-            $semester = $semesters[reset($course->sections)->semesterid];
-
-            $display = "$semester->year $semester->name $course->department $course->cou_number";
-
-            if (cps_crosslist::exists($course)) {
-                $display .= ' (' . self::_s('crosslist_option_taken') . ')';
-            }
-
-            $m->addElement('checkbox', 'selected_' . $course->id, '', $display);
         }
 
         $this->generate_buttons();
-
-        // Used later in validation
-        $this->semesters = $semesters;
     }
 
     function validation($data) {
-        $courses = $this->_customdata['courses'];
-
-        $semesters = $this->semesters;
+        $semesters = $this->_customdata['semesters'];
 
         $errors = array();
 
@@ -70,16 +55,16 @@ class crosslist_form_select extends crosslist_form {
         $selected_semester = null;
         $updating = false;
         foreach ($data as $key => $value) {
-            $is_a_match = preg_match('/^selected_(\d+)/', $key, $matches);
+            $is_a_match = preg_match('/^selected_(\d+)_(\d+)/', $key, $matches);
 
             if ($is_a_match) {
                 $selected ++;
 
-                $course = $courses[$matches[1]];
+                $course = $semesters[$matches[1]]->courses[$matches[2]];
 
                 $updating = ($updating or cps_crosslist::exists($course));
 
-                $current_semester = reset($course->sections)->semesterid;
+                $current_semester = $matches[1];
 
                 if (empty($selected_semester)) {
                     $selected_semester = $current_semester;
@@ -108,8 +93,8 @@ class crosslist_form_update extends crosslist_form implements updating_form {
     var $next = self::DECIDE;
     var $prev = self::SELECT;
 
-    public static function build($courses) {
-        return self::prep_reshell() + crosslist_form_shells::build($courses);
+    public static function build($semesters) {
+        return self::prep_reshell() + crosslist_form_shells::build($semesters);
     }
 
     public function definition() {
@@ -207,24 +192,28 @@ class crosslist_form_shells extends crosslist_form {
     var $next = self::DECIDE;
     var $prev = self::SELECT;
 
-    public static function build($courses) {
+    public static function build($semesters) {
 
-        $semester = null;
-
+        $selected_semester = null;
         $selected_courses = array();
-        foreach ($courses as $course) {
-            $selected = optional_param('selected_' . $course->id, null, PARAM_INT);
+        foreach ($semesters as $semester) {
+            foreach ($semester->courses as $course) {
+                $key = 'selected_' . $semester->id . '_' . $course->id;
+                $selected = optional_param($key, null, PARAM_INT);
 
-            if (!$semester) {
-                $semester = reset($course->sections)->semester();
+                if ($selected) {
+                    $selected_semester = $semester;
+                    $selected_courses[$key] = $course;
+                }
             }
 
-            if ($selected) {
-                $selected_courses['selected_' . $course->id] = $course;
+            // No need to continue; found semester
+            if ($selected_semester) {
+                break;
             }
         }
 
-        return array('selected_courses' => $selected_courses, 'semester' => $semester);
+        return array('selected_courses' => $selected_courses, 'semester' => $selected_semester);
     }
 
     function definition() {
@@ -239,7 +228,7 @@ class crosslist_form_shells extends crosslist_form {
         $total = $last = 0;
 
         foreach ($courses as $selected => $course) {
-            $display = "$semester->year $semester->name $course->department $course->cou_number";
+            $display = $this->display_course($course, $semester);
 
             $m->addElement('static', 'course_' . $course->id,
                 $this->display_course($course, $semester));
@@ -249,7 +238,6 @@ class crosslist_form_shells extends crosslist_form {
             $last = count($course->sections);
             $total += $last;
         }
-
 
         $number = floor($total / 2);
 
@@ -267,8 +255,8 @@ class crosslist_form_decide extends crosslist_form {
     var $next = self::CONFIRM;
     var $prev = self::SHELLS;
 
-    public static function build($courses) {
-        return self::conform_reshell() + crosslist_form_shells::build($courses);
+    public static function build($semesters) {
+        return self::conform_reshell() + crosslist_form_shells::build($semesters);
     }
 
     function definition() {
@@ -288,7 +276,7 @@ class crosslist_form_decide extends crosslist_form {
 
         $course_names = implode (' / ', array_map($to_coursenames, $courses));
 
-        $display = "$semester->year $semester->name $course_names";
+        $display = $this->display_semester($semester) . ' ' . $course_names;
 
         $m->addElement('header', 'selected_courses', $display);
 
@@ -325,7 +313,7 @@ class crosslist_form_decide extends crosslist_form {
             }
 
             $shell_label =& $m->createElement('static', 'shell_' . $groupingid .
-                '_label', '', $semester->year . ' ' . $semester->name .
+                '_label', '', $this->display_semester($semester) .
                 ' <span id="shell_name_'.$groupingid.'">'
                 . $shell_name_value . '</span>');
             $shell =& $m->createElement('select', 'shell_'.$groupingid, '', $shell_options);
@@ -398,8 +386,8 @@ class crosslist_form_confirm extends crosslist_form {
     var $prev = self::DECIDE;
     var $next = self::LOADING;
 
-    public static function build($courses) {
-        $data = crosslist_form_decide::build($courses);
+    public static function build($semesters) {
+        $data = crosslist_form_decide::build($semesters);
 
         $extra = array();
         foreach (range(1, $data['shells']) as $number) {
@@ -430,7 +418,7 @@ class crosslist_form_confirm extends crosslist_form {
 
         $course_names = implode(' / ', array_map($to_coursenames, $courses));
 
-        $display = "$semester->year $semester->name";
+        $display = $this->display_semester($semester);
 
         $m->addElement('header', 'selected_courses', "$display $course_names");
 
@@ -451,7 +439,7 @@ class crosslist_form_confirm extends crosslist_form {
             $html = '<ul class="split_review_sections">';
             foreach (explode(',', $values) as $sectionid) {
                 $section = $sections[$sectionid];
-                $key = 'selected_'.$section->courseid;
+                $key = 'selected_' . $semester->id . '_' . $section->courseid;
 
                 $course_name = $to_coursenames($courses[$key]);
 
@@ -476,8 +464,8 @@ class crosslist_form_confirm extends crosslist_form {
 }
 
 class crosslist_form_finish implements finalized_form {
-    function process($data, $courses) {
-        $extra = crosslist_form_shells::build($courses);
+    function process($data, $semesters) {
+        $extra = crosslist_form_shells::build($semesters);
 
         $current_crosslists = cps_crosslist::in_courses($extra['selected_courses']);
 

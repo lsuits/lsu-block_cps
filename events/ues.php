@@ -200,6 +200,9 @@ abstract class cps_ues_handler {
         }
 
         $semester = $section->semester();
+        $session = !empty($semester->session_key) ?
+            ' (' . $semester->session_key . ')' : '';
+
         $ues_course = $section->course();
 
         $owner_params = array(
@@ -217,6 +220,7 @@ abstract class cps_ues_handler {
         if ($split) {
             $a->year = $semester->year;
             $a->name = $semester->name;
+            $a->session = $session;
             $a->department = $ues_course->department;
             $a->course_number = $ues_course->cou_number;
             $a->shell_name = $split->shell_name;
@@ -229,6 +233,7 @@ abstract class cps_ues_handler {
         if ($crosslist) {
             $a->year = $semester->year;
             $a->name = $semester->name;
+            $a->session = $session;
             $a->shell_name = $crosslist->shell_name;
             $a->fullname = fullname($primary->user());
 
@@ -239,6 +244,7 @@ abstract class cps_ues_handler {
         if ($team_teach) {
             $a->year = $semester->year;
             $a->name = $semester->name;
+            $a->session = $session;
             $a->shell_name = $team_teach->shell_name;
 
             $string_key = 'team_request_shortname';

@@ -370,11 +370,12 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
     function new_idnumber() {
         $section = $this->section();
         $sem = $section->semester();
+        $session_key = $sem->session_key;
 
         $shell = str_replace(' ', '', trim($this->shell_name));
         $userid = $this->userid;
 
-        $idnumber = "$sem->year$sem->name{$shell}{$userid}cl{$this->groupingid}";
+        $idnumber = "$sem->year$sem->name$session_key{$shell}{$userid}cl{$this->groupingid}";
         return $idnumber;
     }
 
