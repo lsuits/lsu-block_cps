@@ -24,38 +24,30 @@ class team_request_form_select extends team_request_form {
     var $current = self::SELECT;
     var $next = self::SHELLS;
 
-    public static function build($courses) {
-        return array('courses' => $courses);
+    public static function build($semesters) {
+        return array('semesters' => $semesters);
     }
 
     function definition() {
         $m =& $this->_form;
 
-        $courses = $this->_customdata['courses'];
-
-        $semesters = array();
+        $semesters = $this->_customdata['semesters'];
 
         $m->addElement('header', 'select_course', self::_s('select'));
 
-        foreach ($courses as $course) {
-            foreach ($course->sections as $section) {
-                $id = $section->semesterid;
-                if (isset($semesters[$id])) {
-                    continue;
+        foreach ($semesters as $semester) {
+            foreach ($semester->courses as $course) {
+
+                $display = $this->display_course($course, $semester);
+
+                if (cps_team_request::exists($course, $semester)) {
+                    $display .= ' (' . self::_s('team_request_option') . ')';
                 }
 
-                $semesters[$id] = $section->semester();
+                $key = $semester->id . '_' . $course->id;
+
+                $m->addElement('radio', 'selected', '', $display, $key);
             }
-
-            $semester = $semesters[$id];
-
-            $display = "$semester->year $semester->name $course->department $course->cou_number";
-
-            if (cps_team_request::exists($course, $semester)) {
-                $display .= ' (' . self::_s('team_request_option') . ')';
-            }
-
-            $m->addElement('radio', 'selected', '', $display, $course->id);
         }
 
         $m->addRule('selected', self::_s('err_select_one'), 'required', null, 'client');
@@ -68,9 +60,11 @@ class team_request_form_select extends team_request_form {
             return array('selected' => self::_s('err_select_one'));
         }
 
-        $course = $this->_customdata['courses'][$data['selected']];
+        list($semid, $couid) = explode('_', $data['selected']);
+        $semesters = $this->_customdata['semesters'];
 
-        $semester = reset($course->sections)->semester();
+        $semester = $semesters[$semid];
+        $course = $semester->courses[$couid];
 
         if (cps_team_request::exists($course, $semester)) {
             $this->next = self::UPDATE;
@@ -107,9 +101,7 @@ class team_request_form_update extends team_request_form {
 
         $semester = $this->_customdata['semester'];
 
-        $to_display = function ($course) use ($semester) {
-            return "$semester->year $semester->name $course->department $course->cou_number";
-        };
+        $to_display = $this->to_display($semester);
 
         $m->addElement('header', 'selected_course', $to_display($course));
 
@@ -193,8 +185,6 @@ class team_request_form_update extends team_request_form {
         $m->addElement('hidden', 'selected', '');
         $m->addElement('hidden', 'shells', $groupingid);
 
-        $m->addElement('hidden', 'semesterid', $semester->id);
-
         foreach ($queries as $number => $query) {
             $users = implode(',', $selected_users[$number]);
 
@@ -249,9 +239,7 @@ class team_request_form_manage extends team_request_form {
 
         $semester = $this->_customdata['semester'];
 
-        $to_display = function ($course) use ($semester) {
-            return "$semester->year $semester->name $course->department $course->cou_number";
-        };
+        $to_display = $this->to_display($semester);
 
         $to_bold = function ($text) { return "<strong>$text</strong>"; };
 
@@ -314,7 +302,6 @@ class team_request_form_manage extends team_request_form {
         }
 
         $m->addElement('hidden', 'selected', '');
-        $m->addElement('hidden', 'semesterid', $semester->id);
 
         $m->addElement('hidden', 'update_option', '');
 
@@ -367,9 +354,7 @@ class team_request_form_confirm extends team_request_form {
 
         $semester = $this->_customdata['semester'];
 
-        $to_display = function ($course) use ($semester) {
-            return "$semester->year $semester->name $course->department $course->cou_number";
-        };
+        $to_display = $this->to_display($semester);
 
         $team_teaches = cps_team_request::in_course($course, $semester);
 
@@ -417,7 +402,6 @@ class team_request_form_confirm extends team_request_form {
 
         $m->addElement('hidden', 'selected', '');
         $m->addElement('hidden', 'update_option', '');
-        $m->addElement('hidden', 'semesterid', $semester->id);
 
         $this->generate_states_and_buttons();
     }
@@ -428,12 +412,15 @@ class team_request_form_shells extends team_request_form {
     var $prev = self::SELECT;
     var $next = self::QUERY;
 
-    public static function build($courses) {
-        $selected = required_param('selected', PARAM_INT);
+    public static function build($semesters) {
+        $selected = required_param('selected', PARAM_RAW);
 
-        $semester = reset($courses[$selected]->sections)->semester();
+        list($semid, $couid) = explode('_', $selected);
 
-        return array('selected_course' => $courses[$selected], 'semester' => $semester);
+        $semester = $semesters[$semid];
+        $course = $semester->courses[$couid];
+
+        return array('selected_course' => $course, 'semester' => $semester);
     }
 
     function definition() {
@@ -443,7 +430,7 @@ class team_request_form_shells extends team_request_form {
 
         $sem = $this->_customdata['semester'];
 
-        $display = "$sem->year $sem->name $course->department $course->cou_number";
+        $display = $this->display_course($course, $sem);
 
         $m->addElement('header', 'selected_course', $display);
 
@@ -454,8 +441,6 @@ class team_request_form_shells extends team_request_form {
         $m->addElement('select', 'shells', self::_s('team_how_many'), $options);
 
         $m->addElement('hidden', 'selected', '');
-        $m->addElement('hidden', 'semesterid', $sem->id);
-
 
         $this->generate_states_and_buttons();
     }
@@ -501,7 +486,7 @@ class team_request_form_query extends team_request_form {
             $this->prev = self::UPDATE;
         }
 
-        $display = "$semester->year $semester->name $course->department $course->cou_number";
+        $display = $this->display_course($course, $semester);
 
         $m->addElement('header', 'selected_course', $display);
 
@@ -542,7 +527,6 @@ class team_request_form_query extends team_request_form {
         $m->addElement('hidden', 'shells', '');
 
         $m->addElement('hidden', 'reshell', 0);
-        $m->addElement('hidden', 'semesterid', $semester->id);
 
         $this->generate_states_and_buttons();
     }
@@ -652,9 +636,7 @@ class team_request_form_request extends team_request_form {
                 $this->prev;
         }
 
-        $to_display = function ($course) use ($semester) {
-            return "$semester->year $semester->name $course->department $course->cou_number";
-        };
+        $to_display = $this->to_display($semester);
 
         $m->addElement('header', 'selected_course', $to_display($selected_course));
 
@@ -706,8 +688,6 @@ class team_request_form_request extends team_request_form {
         $m->addElement('hidden', 'selected', '');
         $m->addElement('hidden', 'shells', '');
         $m->addElement('hidden', 'reshell', 0);
-        $m->addElement('hidden', 'semesterid', $semester->id);
-
 
         $this->generate_states_and_buttons();
     }
@@ -765,9 +745,7 @@ class team_request_form_review extends team_request_form {
 
         $semester = $this->_customdata['semester'];
 
-        $to_display = function ($course) use ($semester) {
-            return "$semester->year $semester->name $course->department $course->cou_number";
-        };
+        $to_display = $this->to_display($semester);
 
         $m->addElement('header', 'review', self::_s('review_selection'));
 
@@ -809,18 +787,17 @@ class team_request_form_review extends team_request_form {
             $m->addElement('hidden', 'update_option', $update_option);
         }
 
-        $m->addElement('hidden', 'semesterid', $semester->id);
-
         $this->generate_states_and_buttons();
     }
 }
 
 class team_request_form_finish implements finalized_form {
-    function process($data, $courses) {
+    function process($data, $semesters) {
 
-        $course = $courses[$data->selected];
+        list($semid, $couid) = explode('_', $data->selected);
 
-        $semester = ues_semester::get(array('id' => $data->semesterid));
+        $semester = $semesters[$semid];
+        $course = $semester->courses[$couid];
 
         $teamteaches = cps_team_request::in_course($course, $semester);
 
@@ -829,7 +806,7 @@ class team_request_form_finish implements finalized_form {
         if ($exists and $data->update_option == team_request_form_update::MANAGE_REQUESTS) {
             $this->handle_approvals($data, $teamteaches);
         } else {
-            $this->save_or_update($data, $teamteaches);
+            $this->save_or_update($data, $teamteaches, $couid, $semid);
         }
     }
 
@@ -862,7 +839,7 @@ class team_request_form_finish implements finalized_form {
         }
     }
 
-    function save_or_update($data, $current_teamteaches) {
+    function save_or_update($data, $current_teamteaches, $couid, $semid) {
         global $USER;
 
         foreach (range(1, $data->shells) as $number) {
@@ -876,8 +853,8 @@ class team_request_form_finish implements finalized_form {
             foreach ($selected as $userid) {
                 $params = array (
                     'userid' => $USER->id,
-                    'courseid' => $data->selected,
-                    'semesterid' => $data->semesterid,
+                    'courseid' => $couid,
+                    'semesterid' => $semid,
                     'requested_course' => $requested->id,
                     'requested' => $userid
                 );

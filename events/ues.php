@@ -200,8 +200,7 @@ abstract class cps_ues_handler {
         }
 
         $semester = $section->semester();
-        $session = !empty($semester->session_key) ?
-            ' (' . $semester->session_key . ')' : '';
+        $session = $semester->get_session_key();
 
         $ues_course = $section->course();
 

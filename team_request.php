@@ -24,7 +24,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$courses = ues_course::merge_sections($sections);
+$semesters = ues_semester::merge_sections($sections);
 
 $_s = ues::gen_str('block_cps');
 
@@ -40,7 +40,7 @@ $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/team_request.php');
 $PAGE->set_pagetype('cps-teamteach');
 
-$form = team_request_form::create($courses);
+$form = team_request_form::create($semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -53,7 +53,7 @@ if ($form->is_cancelled()) {
     } else if ($form->next == team_request_form::FINISHED) {
         $form = new team_request_form_finish();
 
-        $form->process($data, $courses);
+        $form->process($data, $semesters);
 
         $form->display();
 
@@ -64,7 +64,7 @@ if ($form->is_cancelled()) {
         )));
     }
 
-    $form = team_request_form::next_from($form->next, $data, $courses);
+    $form = team_request_form::next_from($form->next, $data, $semesters);
 }
 
 echo $OUTPUT->header();

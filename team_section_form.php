@@ -84,7 +84,7 @@ class team_section_form_select extends team_section_form {
 
         $m->addElement('static', 'continue_build', '', self::_s('team_continue_build'));
 
-        $m->addElement('hidden', 'id', $course->id);
+        $m->addElement('hidden', 'id', $semester->id . '_' . $course->id);
 
         $this->is_a_master = $is_a_master;
         $this->not_a_master = $not_a_master;
@@ -312,7 +312,7 @@ class team_section_form_decide extends team_section_form {
 
         list($course, $semester, $requests) = $this->extract_data();
 
-        $display = "$semester->year $semester->name";
+        $display = "$semester->year $semester->name" . $semester->get_session_key();
 
         $all_courses = array($course->id => $course);
 
@@ -495,7 +495,7 @@ class team_section_form_confirm extends team_section_form {
 
         list($course, $semester, $requests) = $this->extract_data();
 
-        $display = "$semester->year $semester->name";
+        $display = "$semester->year $semester->name" . $semester->get_session_key();
 
         $to_coursename = function ($course) {
             return "$course->department $course->cou_number";
@@ -566,8 +566,6 @@ class team_section_form_finish implements finalized_form, updating_form {
     var $id;
 
     function process($data, $initial_data) {
-        $this->id = $data->id;
-
         $requests = $initial_data['requests'];
         $course = $initial_data['course'];
 

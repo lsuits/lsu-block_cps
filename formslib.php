@@ -120,8 +120,7 @@ abstract class cps_form extends moodleform implements generic_states {
     }
 
     public function display_semester($sem) {
-        $session = !empty($sem->session_key) ?
-            ' (' . $sem->session_key. ')' : '';
+        $session = $sem->get_session_key();
 
         return "$sem->year $sem->name$session";
     }

@@ -137,7 +137,7 @@ $string['crosslist_select'] = 'Select courses to Cross-list';
 // Team Requests
 $string['team_request'] = 'Team Teach Requests';
 
-$string['team_query_for'] = 'Query a course: {$a->year} {$a->name}';
+$string['team_query_for'] = 'Query course: {$a->year} {$a->name} {$a->session_key}';
 
 $string['team_teachers'] = 'Select one or more Instructors';
 

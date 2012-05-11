@@ -22,17 +22,17 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$courses = ues_course::merge_sections($sections);
+$semesters = ues_semester::merge_sections($sections);
 
-$courseid = required_param('id', PARAM_INT);
+$key = required_param('id', PARAM_RAW);
+list($semid, $couid) = explode('_', $key);
 
-if (!isset($courses[$courseid])) {
+if (!isset($semesters[$semid]) or !isset($semesters[$semid]->courses[$couid])) {
     print_error('not_course', 'block_cps');
 }
 
-$course = $courses[$courseid];
-
-$semester = reset($course->sections)->semester();
+$semester = $semesters[$semid];
+$course = $semester->courses[$couid];
 
 $current_requests = cps_team_request::in_course($course, $semester, true);
 
@@ -57,7 +57,7 @@ $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
-$PAGE->set_url('/blocks/cps/team_section.php', array('id' => $courseid));
+$PAGE->set_url('/blocks/cps/team_section.php', array('id' => $key));
 $PAGE->set_pagetype('cps-teamteach');
 
 $PAGE->requires->js('/lib/jquery.js');

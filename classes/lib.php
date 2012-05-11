@@ -579,8 +579,9 @@ class cps_team_request extends cps_preferences implements application, undoable 
         }
 
         $sem = $this->semester();
+        $session = $sem->get_session_key();
 
-        $label = "$sem->year $sem->name $course->department $course->cou_number";
+        $label = "$sem->year $sem->name$session $course->department $course->cou_number";
 
         return $label . ' with ' . fullname($user);
     }
