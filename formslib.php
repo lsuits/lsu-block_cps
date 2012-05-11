@@ -259,5 +259,10 @@ class cps_loading_form implements generic_states {
         );
 
         echo $OUTPUT->box_end();
+        echo html_writer::tag('div',
+            $OUTPUT->notification($_s('network_failure')) .
+            $OUTPUT->continue_button(new moodle_url('/my')),
+            array('class' => 'network_failure', 'style' => 'display: none;')
+        );
     }
 }

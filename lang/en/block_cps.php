@@ -261,3 +261,5 @@ $string['user_major'] = 'Major';
 $string['user_keypadid'] = 'Keypad ID';
 $string['user_sport1'] = 'Sport';
 $string['user_anonymous_number'] = 'Anonymous';
+
+$string['network_failure'] = 'There was a network error that caused the process to fail. You can either refresh this page or go back to re-apply the settings.';
