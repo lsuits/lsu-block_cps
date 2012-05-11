@@ -28,8 +28,8 @@ class split_form_select extends split_form {
     var $current = self::SELECT;
     var $next = self::SHELLS;
 
-    public static function build($courses) {
-        return array('courses' => $courses);
+    public static function build($semesters) {
+        return array('semesters' => $semesters);
     }
 
     function definition() {
@@ -37,21 +37,20 @@ class split_form_select extends split_form {
 
         $m->addElement('header', 'select', self::_s('select'));
 
-        $semesters = ues_semester::get_all();
+        $semesters = $this->_customdata['semesters'];
 
-        $courses = $this->_customdata['courses'];
+        foreach ($semesters as $semester) {
 
-        foreach ($courses as $course) {
+            foreach ($semester->courses as $course) {
+                $display = ' ' . $this->display_course($course, $semester);
 
-            $semester = $semesters[reset($course->sections)->semesterid];
+                if (cps_split::exists($course)) {
+                    $display .= ' (' . self::_s('split_option_taken') . ')';
+                }
 
-            $display = ' ' . $this->display_course($course, $semester);
-
-            if (cps_split::exists($course)) {
-                $display .= ' (' . self::_s('split_option_taken') . ')';
+                $key = $semester->id . '_' . $course->id;
+                $m->addElement('radio', 'selected', '', $display, $key);
             }
-
-            $m->addElement('radio', 'selected', '', $display, $course->id);
         }
 
         $m->addRule('selected', self::_s('err_select_one'), 'required', null, 'client');
@@ -60,19 +59,20 @@ class split_form_select extends split_form {
     }
 
     function validation($data) {
-        $courses = $this->_customdata['courses'];
+        $semesters = $this->_customdata['semesters'];
 
         if (empty($data['selected'])) {
             return array('selected' => self::_s('err_select_one'));
         }
 
-        if (empty($courses[$data['selected']])) {
+        list($semid, $couid) = explode('_', $data['selected']);
+        if (empty($semesters[$semid]->courses[$couid])) {
             return array('selected' => self::_s('err_select'));
         }
 
         $errors = array();
 
-        $course = $courses[$data['selected']];
+        $course = $semesters[$semid]->courses[$couid];
 
         $section_count = count($course->sections);
 
@@ -97,10 +97,12 @@ class split_form_shells extends split_form {
     var $next = self::DECIDE;
     var $prev = self::SELECT;
 
-    public static function build($courses) {
-        $selected = required_param('selected', PARAM_INT);
+    public static function build($semesters) {
+        $selected = required_param('selected', PARAM_RAW);
 
-        return array('course' => $courses[$selected]);
+        list($semid, $couid) = explode('_', $selected);
+
+        return array('course' => $semesters[$semid]->courses[$couid]);
     }
 
     function definition() {
@@ -406,8 +408,9 @@ class split_form_confirm extends split_form {
 
 class split_form_finish implements finalized_form {
 
-    function process($data, $valid_courses) {
-        $course = $valid_courses[$data->selected];
+    function process($data, $semesters) {
+        list($semid, $couid) = explode('_', $data->selected);
+        $course = $semesters[$semid]->courses[$couid];
 
         $current_splits = cps_split::in_course($course);
 

@@ -226,13 +226,20 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
     var $groupingid;
 
     public static function is_valid($courses) {
-        $valids = self::filter_valid($courses);
+        $valids = self::filter_valid_courses($courses);
         return !empty($valids);
     }
 
-    public static function filter_valid($courses) {
+    public static function filter_valid_courses($courses) {
         return array_filter($courses, function ($course) {
             return count($course->sections) > 1;
+        });
+    }
+
+    public static function filter_valid($semesters) {
+        return array_filter($semesters, function($semester) {
+            $semester->courses = cps_split::filter_valid_courses($semester->courses);
+            return count($semester->courses) > 0;
         });
     }
 
@@ -247,6 +254,9 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
             $sections = cps_unwant::active_sections_for($teacher, true);
 
             foreach ($sections as $section) {
+                if ($section->courseid != $course->id) {
+                    continue;
+                }
                 $course->sections[$section->id] = $section;
             }
         }

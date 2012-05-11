@@ -22,11 +22,11 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$courses = ues_course::merge_sections($sections);
+$semesters = ues_semester::merge_sections($sections);
 
-$valid_courses = cps_split::filter_valid($courses);
+$valid_semesters = cps_split::filter_valid($semesters);
 
-if (empty($valid_courses)) {
+if (empty($valid_semesters)) {
     print_error('no_courses', 'block_cps');
 }
 
@@ -48,7 +48,7 @@ $PAGE->requires->js('/lib/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/split.js');
 
-$form = split_form::create($valid_courses);
+$form = split_form::create($valid_semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -61,7 +61,7 @@ if ($form->is_cancelled()) {
         $form = new split_form_finish();
 
         try {
-            $form->process($data, $valid_courses);
+            $form->process($data, $valid_semesters);
 
             $form->display();
         } catch (Exception $e) {
@@ -72,7 +72,7 @@ if ($form->is_cancelled()) {
         die();
     }
 
-    $form = split_form::next_from($form->next, $data, $valid_courses);
+    $form = split_form::next_from($form->next, $data, $valid_semesters);
 }
 
 echo $OUTPUT->header();
