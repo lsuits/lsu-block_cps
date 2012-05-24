@@ -14,7 +14,7 @@ class block_cps extends block_list {
             return $this->content;
         }
 
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
@@ -43,6 +43,8 @@ class block_cps extends block_list {
             }
 
             $content->items[] = html_writer::link($url, $name);
+            $content->icons[] = $OUTPUT->pix_icon($setting, $name,
+                'block_cps', array('class' => 'icon'));
         }
 
         $this->content = $content;
