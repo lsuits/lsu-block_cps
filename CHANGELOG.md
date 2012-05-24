@@ -1,3 +1,9 @@
+## v1.1.5
+
+- Added plugin icons, and action icons [e07512][e07512]
+
+[e07512]: https://github.com/lsuits/cps/commit/e07512e7667106c7cf2e2c2cf9f78a5c4860fa15db
+
 ## v1.1.4
 
 - $.ajaxError will report network issues [#30][30]
