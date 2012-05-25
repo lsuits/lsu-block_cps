@@ -37,6 +37,7 @@ $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
+$PAGE->set_title($heading);
 $PAGE->set_url('/blocks/cps/team_request.php');
 $PAGE->set_pagetype('cps-teamteach');
 

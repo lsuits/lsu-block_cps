@@ -35,6 +35,7 @@ $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
+$PAGE->set_title($heading);
 $PAGE->set_url('/blocks/cps/material.php');
 
 $form = new material_form(null, array('sections' => $sections));

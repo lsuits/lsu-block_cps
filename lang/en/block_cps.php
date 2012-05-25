@@ -69,6 +69,7 @@ $string['err_select_teacher'] = 'You must select at least one Instructor';
 // Setting names
 $string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
+$string['creation_settings'] = 'Course Creation Settings';
 
 $string['create_days'] = 'Days before Creation';
 $string['create_days_desc'] = 'The number of days before sections are created.';

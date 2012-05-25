@@ -36,6 +36,7 @@ $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
 $PAGE->set_url('/blocks/cps/crosslist.php');
+$PAGE->set_title($heading);
 $PAGE->set_pagetype('cps-crosslist');
 
 $PAGE->requires->js('/lib/jquery.js');

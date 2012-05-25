@@ -199,6 +199,11 @@ abstract class cps_ues_handler {
             return true;
         }
 
+        $creation_settings = cps_setting::get_all(ues::where()
+            ->userid->equal($primary->userid)
+            ->name->starts_with('creation_')
+        );
+
         $semester = $section->semester();
         $session = $semester->get_session_key();
 
@@ -258,6 +263,13 @@ abstract class cps_ues_handler {
 
         $course->fullname = $fullname;
         $course->shortname = $shortname;
+
+        // Instructor overrides
+        foreach ($creation_settings as $setting) {
+            $key = str_replace('creation_', '', $setting->name);
+
+            $course->$key = $setting->value;
+        }
 
         return true;
     }

@@ -218,6 +218,20 @@ class cps_creation extends cps_preferences implements application {
 }
 
 class cps_setting extends cps_preferences {
+    var $userid;
+    var $name;
+    var $value;
+
+    public static function get_to_name($params) {
+        $settings = self::get_all($params);
+
+        $to_named_settings = array();
+        foreach ($settings as $setting) {
+            $to_named_settings[$setting->name] = $setting;
+        }
+
+        return $to_named_settings;
+    }
 }
 
 class cps_split extends ues_user_section_accessor implements unique, undoable, verifiable {

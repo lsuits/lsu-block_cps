@@ -56,6 +56,36 @@ class creation_form extends moodleform {
             }
         };
 
+        $m->addElement('header', 'create_header', $_s('creation_settings'));
+
+        $options = array();
+        $formats = get_plugin_list('format');
+        foreach ($formats as $format => $ignore) {
+            $options[$format] = get_string('pluginname', "format_$format");
+        }
+
+        $default_format = get_config('moodlecourse', 'format');
+
+        $str = get_string('format');
+        $m->addElement('select', "creation_format", $str, $options);
+        $m->setDefault('creation_format', $default_format);
+
+        $maxsections = get_config('moodlecourse', 'maxsections');
+        $default_number = get_config('moodlecourse', 'numsections');
+        $options = array_combine(range(1, $maxsections), range(1, $maxsections));
+        $str = get_string('numberweeks');
+        $m->addElement('select', 'creation_numsections', $str, $options);
+        $m->setDefault('creation_numsections', $default_number);
+
+        $default_visibility = get_config('moodlecourse', 'visible');
+        $options = array(
+            '0' => get_string('courseavailablenot'),
+            '1' => get_string('courseavailable')
+        );
+        $str = get_string('availability');
+        $m->addElement('select', 'creation_visible', $str, $options);
+        $m->setDefault('creation_visible', $default_visibility);
+
         foreach ($course_semesters as $semesterid => $courses) {
             uasort($courses, $course_sorter);
 
@@ -95,6 +125,7 @@ class creation_form extends moodleform {
     function validation($data) {
         $create_days = array();
         $enroll_days = array();
+        $settings = array();
 
         $errors = array();
 
@@ -114,6 +145,11 @@ class creation_form extends moodleform {
         $_s = ues::gen_str('block_cps');
 
         foreach ($data as $gname => $group) {
+            if (preg_match('/^creation_/', $gname)) {
+                $settings[$gname] = $group;
+                continue;
+            }
+
             if (preg_match('/^create_group_(\d+)_(\d+)/', $gname, $matches)) {
                 $semesterid = $matches[1];
                 $courseid = $matches[2];
@@ -148,6 +184,7 @@ class creation_form extends moodleform {
 
         $this->create_days = $create_days;
         $this->enroll_days = $enroll_days;
+        $this->settings = $settings;
 
         return $errors;
     }

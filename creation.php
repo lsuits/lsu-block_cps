@@ -33,6 +33,7 @@ $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
 $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
+$PAGE->set_title($heading);
 $PAGE->set_url('/blocks/cps/creation.php');
 
 $form = new creation_form(null, array('sections' => $sections));
@@ -40,7 +41,30 @@ $form = new creation_form(null, array('sections' => $sections));
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
 } else if ($data = $form->get_data()) {
+    $settings = cps_setting::get_to_name(ues::where()
+        ->userid->equal($USER->id)
+        ->name->starts_with('creation_')
+    );
+
     $creations = cps_creation::get_all(array('userid' => $USER->id));
+
+    foreach ($form->settings as $name => $value) {
+        if (!isset($settings[$name])) {
+            $setting = new cps_setting();
+            $setting->name = $name;
+            $setting->userid = $USER->id;
+            $setting->value = null;
+        } else {
+            $setting = $settings[$name];
+        }
+
+        if ($setting->value == $value) {
+            continue;
+        }
+
+        $setting->value = $value;
+        $setting->save();
+    }
 
     foreach ($form->create_days as $semesterid => $courses) {
         foreach ($courses as $courseid => $create_days) {
@@ -81,8 +105,16 @@ if ($form->is_cancelled()) {
 }
 
 $creations = cps_creation::get_all(array('userid' => $USER->id));
+$settings = cps_setting::get_all(ues::where()
+    ->userid->equal($USER->id)
+    ->starts_with('creation_')
+);
 
 $form_data = array();
+foreach ($settings as $setting) {
+    $form_data[$setting->name] = $setting->value;
+}
+
 foreach ($creations as $creation) {
     $semesterid = $creation->semesterid;
     $courseid = $creation->courseid;
