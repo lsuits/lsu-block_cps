@@ -1,7 +1,11 @@
 ## v1.1.5
 
+- Material course creation uses correct format [#31][31]
+- Instructor can override some course creation settings [#32][32]
 - Added plugin icons, and action icons [e07512][e07512]
 
+[32]: https://github.com/lsuits/cps/issues/32
+[31]: https://github.com/lsuits/cps/issues/31
 [e07512]: https://github.com/lsuits/cps/commit/e07512e7667106c7cf2e2c2cf9f78a5c4860fa15db
 
 ## v1.1.4
