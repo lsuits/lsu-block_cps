@@ -161,13 +161,23 @@ class cps_material extends cps_preferences implements application {
 
             $course = new stdClass;
             $course->visible = 0;
-            $course->numsections = $enrol->setting('course_numsections');
-            $course->format = $enrol->setting('course_format');
+            $course->numsections = get_config('moodlecourse', 'numsections');
+            $course->format = get_config('moodlecourse', 'format');
 
             $course->fullname = $shortname;
             $course->shortname = $shortname;
             $course->summary = $shortname;
             $course->category = $category->id;
+
+            $settings = cps_setting::get_all(ues::where()
+                ->userid->equal($this->userid)
+                ->name->starts_with('creation_')
+            );
+
+            foreach ($settings as $setting) {
+                $key = str_replace('creation_', '', $setting->name);
+                $course->$key = $setting->value;
+            }
 
             $mcourse = create_course($course);
         }
