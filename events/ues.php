@@ -51,7 +51,7 @@ abstract class cps_profile_field_helper {
         if (!$field = $DB->get_record('user_info_field', $params)) {
             $field = new stdClass;
             $field->shortname = $params['shortname'];
-            $field->name = get_string($shortname, 'block_cps');
+            $field->name = get_string($field->shortname, 'block_cps');
             $field->description = get_string('auto_field_desc', 'block_cps');
             $field->descriptionformat = 1;
             $field->datatype = 'text';
@@ -83,6 +83,26 @@ abstract class cps_profile_field_helper {
         $data->data = $info;
 
         return $DB->update_record('user_info_data', $data);
+    }
+
+    public static function clear_field_data($user, $shortname) {
+        global $DB;
+
+        $category = self::get_category();
+
+        $params = array(
+            'categoryid' => $category->id,
+            'shortname' => $shortname
+        );
+
+        $field = self::default_profile_field($params);
+
+        $params = array(
+            'fieldid' => $field->id,
+            'userid' => $user->id
+        );
+
+        return $DB->delete_records('user_info_data', $params);
     }
 }
 
@@ -423,10 +443,18 @@ abstract class cps_ues_handler {
     }
 
     public static function ues_lsu_student_data_updated($user) {
+        if (empty($user->user_keypadid)) {
+            return cps_profile_field_helper::clear_field_data($user, 'user_keypadid');
+        }
+
         return cps_profile_field_helper::process($user, 'user_keypadid');
     }
 
     public static function ues_lsu_anonymous_updated($user) {
+        if (empty($user->user_anonymous_number)) {
+            return cps_profile_field_helper::clear_field_data($user, 'user_anonymous_number');
+        }
+
         return cps_profile_field_helper::process($user, 'user_anonymous_number');
     }
 
