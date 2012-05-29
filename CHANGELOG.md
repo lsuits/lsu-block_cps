@@ -1,11 +1,13 @@
 ## v1.1.5
 
-- Keypad ID, is now populated on use profile [10b7c4][10b7c4]
+- Team request link is correct [#34][34]
+- Keypad ID, is now populated on use profile [#33][33]
 - Material course creation uses correct format [#31][31]
 - Instructor can override some course creation settings [#32][32]
 - Added plugin icons, and action icons [e07512][e07512]
 
-[10b7c4]: https://github.com/lsuits/cps/commit/10b7c47d154b69a2f4608cfe8a47f407504cf118
+[34]: https://github.com/lsuits/cps/issues/34
+[33]: https://github.com/lsuits/cps/issues/33
 [32]: https://github.com/lsuits/cps/issues/32
 [31]: https://github.com/lsuits/cps/issues/31
 [e07512]: https://github.com/lsuits/cps/commit/e07512e7667106c7cf2e2c2cf9f78a5c4860fa15db
