@@ -20,6 +20,7 @@ $modules_events = array(
         'ues_semester_drop',
         'ues_course_create',
         'ues_course_severed',
+        'ues_lsu_student_data_updated',
         'ues_lsu_anonymous_updated',
         'ues_group_emptied'
     ),

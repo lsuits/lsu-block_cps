@@ -2,6 +2,90 @@
 
 require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
 
+abstract class cps_profile_field_helper {
+
+    public static function process($user, $shortname) {
+        $category = self::get_category();
+
+        $params = array(
+            'categoryid' => $category->id,
+            'shortname' => $shortname
+        );
+
+        $field = self::default_profile_field($params);
+
+        $params = array(
+            'userid' => $user->id,
+            'fieldid' => $field->id
+        );
+
+        return self::set_profile_data($user->$shortname, $params);
+    }
+
+    public static function get_category() {
+        global $DB;
+
+        $catid = get_config('block_cps', 'user_field_catid');
+
+        // Backup
+        $sql = 'SELECT id FROM {user_info_category} LIMIT 1';
+
+        $catid = empty($catid) ? $DB->get_field_sql($sql) : $catid;
+
+        $params = array('id' => $catid);
+
+        if (!$category = $DB->get_record('user_info_category', $params)) {
+            $category = new stdClass;
+            $category->name = get_string('user_info_category', 'block_cps');
+            $category->sortorder = 1;
+
+            $category->id = $DB->insert_record('user_info_category', $category);
+        }
+
+        return $category;
+    }
+
+    public static function default_profile_field($params) {
+        global $DB;
+
+        if (!$field = $DB->get_record('user_info_field', $params)) {
+            $field = new stdClass;
+            $field->shortname = $params['shortname'];
+            $field->name = get_string($shortname, 'block_cps');
+            $field->description = get_string('auto_field_desc', 'block_cps');
+            $field->descriptionformat = 1;
+            $field->datatype = 'text';
+            $field->categoryid = $params['categoryid'];
+            $field->locked = 1;
+            $field->visible = 1;
+            $field->param1 = 30;
+            $field->param2 = 2048;
+
+            $field->id = $DB->insert_record('user_info_field', $field);
+        }
+
+        return $field;
+    }
+
+    public static function set_profile_data($info, $params) {
+        global $DB;
+
+        if (!$data = $DB->get_record('user_info_data', $params)) {
+            $data = new stdClass;
+            $data->userid = $params['userid'];
+            $data->fieldid = $params['fieldid'];
+
+            $data->data = '';
+
+            $data->id = $DB->insert_record('user_info_data', $data);
+        }
+
+        $data->data = $info;
+
+        return $DB->update_record('user_info_data', $data);
+    }
+}
+
 abstract class cps_ues_handler {
 
     public static function ues_primary_change($params) {
@@ -338,65 +422,12 @@ abstract class cps_ues_handler {
         return true;
     }
 
+    public static function ues_lsu_student_data_updated($user) {
+        return cps_profile_field_helper::process($user, 'user_keypadid');
+    }
+
     public static function ues_lsu_anonymous_updated($user) {
-        global $DB;
-
-        $catid = get_config('block_cps', 'user_field_catid');
-
-        // Backup
-        $sql = 'SELECT id FROM {user_info_category} LIMIT 1';
-
-        $catid = empty($catid) ? $DB->get_field_sql($sql) : $catid;
-
-        $params = array('id' => $catid);
-
-        if (!$category = $DB->get_record('user_info_category', $params)) {
-            $category = new stdClass;
-            $category->name = get_string('user_info_category', 'block_cps');
-            $category->sortorder = 1;
-
-            $category->id = $DB->insert_record('user_info_category', $category);
-        }
-
-        $params = array(
-            'categoryid' => $category->id,
-            'shortname' => 'user_anonymous_number'
-        );
-
-        if (!$field = $DB->get_record('user_info_field', $params)) {
-            $field = new stdClass;
-            $field->shortname = 'user_anonymous_number';
-            $field->name = get_string('user_anonymous_number', 'block_cps');
-            $field->description = get_string('auto_field_desc', 'block_cps');
-            $field->descriptionformat = 1;
-            $field->datatype = 'text';
-            $field->categoryid = $category->id;
-            $field->locked = 1;
-            $field->visible = 1;
-            $field->param1 = 30;
-            $field->param2 = 2048;
-
-            $field->id = $DB->insert_record('user_info_field', $field);
-        }
-
-        $params = array(
-            'userid' => $user->id,
-            'fieldid' => $field->id
-        );
-
-        if (!$data = $DB->get_record('user_info_data', $params)) {
-            $data = new stdClass;
-            $data->userid = $user->id;
-            $data->fieldid = $field->id;
-
-            $data->data = '';
-
-            $data->id = $DB->insert_record('user_info_data', $data);
-        }
-
-        $data->data = $user->user_anonymous_number;
-
-        return $DB->update_record('user_info_data', $data);
+        return cps_profile_field_helper::process($user, 'user_anonymous_number');
     }
 
     public static function ues_group_emptied($params) {
