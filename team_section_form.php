@@ -566,6 +566,8 @@ class team_section_form_finish implements finalized_form, updating_form {
     var $id;
 
     function process($data, $initial_data) {
+        $this->id = $data->id;
+
         $requests = $initial_data['requests'];
         $course = $initial_data['course'];
 
