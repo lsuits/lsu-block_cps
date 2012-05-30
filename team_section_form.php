@@ -626,7 +626,6 @@ class team_section_form_finish implements finalized_form, updating_form {
 
                 $params = array(
                     'sectionid' => $sectionid,
-                    'shell_name' => $shell_name,
                     'groupingid' => $number,
                     'requestid' => $associate->id
                 );
@@ -636,6 +635,7 @@ class team_section_form_finish implements finalized_form, updating_form {
                     $req_sec->fill_params($params);
                 }
 
+                $req_sec->shell_name = $shell_name;
                 $req_sec->save();
                 $req_sec->apply();
 
