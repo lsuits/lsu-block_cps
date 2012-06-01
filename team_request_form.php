@@ -176,8 +176,12 @@ class team_request_form_update extends team_request_form {
             self::_s('team_manage_requests'), self::MANAGE_REQUESTS);
 
         if ($any_approved) {
+            global $OUTPUT;
+
+            $icon = $OUTPUT->help_icon('team_manage_sections', 'block_cps');
+
             $m->addElement('radio', 'update_option', '',
-                self::_s('team_manage_sections'), self::MANAGE_SECTIONS);
+                self::_s('team_manage_sections') . $icon, self::MANAGE_SECTIONS);
         }
 
         $m->setDefault('update_option', self::MANAGE_REQUESTS);

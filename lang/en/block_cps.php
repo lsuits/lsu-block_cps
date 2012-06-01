@@ -116,6 +116,10 @@ $string['update'] = 'Update';
 $string['loading'] = 'Applying';
 
 $string['split_how_many'] = 'How many separate course shells would you like to have created?';
+$string['split_how_many_help'] = 'A _course shell_ is a Moodle course that encapsulates one or more sections.
+For example: If you were splitting a course with three sections, you may decide to make
+two _course shells_, one containing one section, and the other containing two. In most cases,
+the number of _course shells_ is limited to the number of sections within a course.';
 $string['next'] = 'Next';
 $string['back'] = 'Back';
 
@@ -222,6 +226,13 @@ $string['team_current'] = 'Manage invites to current courses';
 $string['team_add_course'] = 'Make additional requests';
 $string['team_manage_requests'] = 'Manage Requests';
 $string['team_manage_sections'] = 'Manage Sections';
+$string['team_manage_sections_help'] = 'Once a _Team teach_ request has been
+successfully approved by an invited instructor, the inviting instructor can
+now specify how the online course is built. The inviting instructor has full
+control over the number of course shells that is represented by the _Team teach_ request.
+
+
+__Note__: All invited instructors must wait to participate until the inviting instructor has determined how the course is built.';
 
 $string['team_to_approve'] = 'Requests to Approve';
 $string['team_to_revoke'] = 'Requests to Cancel';
