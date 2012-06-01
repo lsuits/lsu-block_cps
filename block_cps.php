@@ -23,7 +23,7 @@ class block_cps extends block_list {
         }
 
         $sections = ues_user::sections(true);
-        $courses = ues_course::merge_sections($sections);
+        $semesters = ues_semester::merge_sections($sections);
 
         $content = new stdClass;
 
@@ -38,7 +38,7 @@ class block_cps extends block_list {
 
             $obj = 'cps_' . $setting;
 
-            if (method_exists($obj, 'is_valid') and !$obj::is_valid($courses)) {
+            if (method_exists($obj, 'is_valid') and !$obj::is_valid($semesters)) {
                 continue;
             }
 

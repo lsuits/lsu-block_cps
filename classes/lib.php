@@ -44,7 +44,7 @@ abstract class cps_preferences extends ues_external {
 }
 
 interface verifiable {
-    public static function is_valid($courses);
+    public static function is_valid($semesters);
 }
 
 interface application {
@@ -249,8 +249,8 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
     var $sectionid;
     var $groupingid;
 
-    public static function is_valid($courses) {
-        $valids = self::filter_valid_courses($courses);
+    public static function is_valid($semesters) {
+        $valids = self::filter_valid($semesters);
         return !empty($valids);
     }
 
@@ -342,25 +342,10 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
     var $groupingid;
     var $shell_name;
 
-    public static function is_valid($courses) {
-        if (count($courses) <= 1) {
-            return false;
-        }
-
+    public static function is_valid($semesters) {
         // Must have two courses in the same semester
-        $semesters = array();
-        foreach ($courses as $course) {
-            $semid = reset($course->sections)->semesterid;
-
-            if (!isset($semesters[$semid])) {
-                $semesters[$semid] = 0;
-            }
-
-            $semesters[$semid]++;
-        }
-
-        $validation = function ($in, $count) {
-            return ($in || $count > 1);
+        $validation = function ($in, $semester) {
+            return ($in || count($semester->courses) < 2);
         };
 
         return array_reduce($semesters, $validation, false);
