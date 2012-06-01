@@ -139,10 +139,20 @@ $string['crosslist_select'] = 'Select courses to Cross-list';
 
 // Team Requests
 $string['team_request'] = 'Team Teach Requests';
+$string['team_request_help'] = '
+Team teach requests are made by an instructor who want to _Team teach_ with
+one or multiple instructors. There is one request for each department and course number desired.
+For example: to teach teach with one or more instructors in BIOL 1201, then only one request is
+required. Begin making a request by first selecting from a course from a list of courses you teach.';
 
 $string['team_query_for'] = 'Query course: {$a->year} {$a->name} {$a->session_key}';
 
 $string['team_teachers'] = 'Select one or more Instructors';
+$string['team_teachers_help'] = 'Sometimes multiple instructors teach in the
+same department and course number. Based on your previous entries, the dropdown
+contains a list of instructors that teach sections in those courses. You are
+not limited to the number of instructors you invite, though an invited instructor
+is free to reject your invitation.';
 
 $string['review_selection'] = 'Please reivew your selections';
 
@@ -152,6 +162,9 @@ an email from you, inviting them to team teach. You can revoke team teach
 privileges at any time.';
 
 $string['team_how_many'] = 'How many courses will you combine?';
+$string['team_how_many_help'] = 'This number represents how many different
+course departments and numbers you are combining. In the next screen you will
+decide which courses.';
 
 $string['team_request_option'] = 'Team Teach option taken';
 

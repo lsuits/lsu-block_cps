@@ -638,7 +638,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
             $body_key = 'team_request_invite_body';
 
             $url = new moodle_url('/blocks/cps/team_request.php');
-            $a->link = $url->out();
+            $a->link = $url->out(false);
 
             $to = $this->other_user();
             $from = $this->owner();
