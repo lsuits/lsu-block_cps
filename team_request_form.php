@@ -439,6 +439,7 @@ class team_request_form_shells extends team_request_form {
         $options = array_combine($range, $range);
 
         $m->addElement('select', 'shells', self::_s('team_how_many'), $options);
+        $m->addHelpButton('shells', 'team_how_many', 'block_cps');
 
         $m->addElement('hidden', 'selected', '');
 
@@ -681,6 +682,8 @@ class team_request_form_request extends team_request_form {
                 self::_s('team_teachers'), $users);
 
             $select->setMultiple(true);
+
+            $m->addHelpButton('selected_users' . $number, 'team_teachers', 'block_cps');
 
             $m->addElement('hidden', 'selected_users'.$number.'_str', '');
         }

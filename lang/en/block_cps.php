@@ -69,6 +69,16 @@ $string['err_select_teacher'] = 'You must select at least one Instructor';
 // Setting names
 $string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
+$string['creation_help'] = 'Creation and Enrollment settings allow instructors
+to specified when an online course is created and enrolled in Moodle. In addition
+to when the course is created, the instructor can also decide _how_ the course
+is created:
+
+- Whether or not to create it visible to students
+- What course format to use
+- How many topics/sections a course should be created with
+';
+
 $string['creation_settings'] = 'Course Creation Settings';
 
 $string['create_days'] = 'Days before Creation';
@@ -84,11 +94,19 @@ $string['default_enroll_days'] = 'Days before classes to enroll students';
 $string['use_defaults'] = 'Use system defaults';
 
 $string['unwant'] = 'Unwanted';
+$string['unwant_help'] = 'Unwanted sections will be removed from Moodle. Undoing
+an unwanted selection will re-enroll and/or re-create the sections in Moodle.';
 
 $string['material'] = 'Master Course';
+$string['material_help'] = 'A _Master Course_ is a Moodle course designated to store
+course materials for selected courses. These created courses will __not__
+contain student enrollment.';
+
 $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splitting';
+$string['split_help'] = 'Splitting allows an instructor to separate online courses
+with two or more sections into multiple online courses.';
 
 $string['select'] = 'Select a course';
 $string['shells'] = 'Course Shells';
@@ -121,6 +139,9 @@ $string['shortname_desc'] = 'Split course creation uses these defaults.';
 $string['split_shortname'] = '{year} {name}{session} {department} {course_number} {shell_name} for {fullname}';
 
 $string['crosslist'] = 'Cross-listing';
+$string['crosslist_help'] = 'Cross-listing enables an instructor to combine
+sections from different multiple courses into a __single online course__.';
+
 $string['crosslist_shortname'] = '{year} {name}{session} {shell_name} for {fullname}';
 $string['crosslist_you_have'] = 'You have selected to cross-list';
 
@@ -140,10 +161,10 @@ $string['crosslist_select'] = 'Select courses to Cross-list';
 // Team Requests
 $string['team_request'] = 'Team Teach Requests';
 $string['team_request_help'] = '
-Team teach requests are made by an instructor who want to _Team teach_ with
+Team teach requests are made by an instructor who wants to _Team teach_ with
 one or multiple instructors. There is one request for each department and course number desired.
 For example: to teach teach with one or more instructors in BIOL 1201, then only one request is
-required. Begin making a request by first selecting from a course from a list of courses you teach.';
+required.';
 
 $string['team_query_for'] = 'Query course: {$a->year} {$a->name} {$a->session_key}';
 
