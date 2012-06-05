@@ -1,3 +1,9 @@
+## v1.1.6
+
+- Field cat setting if one exists [#37][37]
+
+[37]: https://github.com/lsuits/cps/issues/37
+
 ## v1.1.5
 
 - Team request link is correct [#34][34]
