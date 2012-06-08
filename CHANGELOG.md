@@ -1,8 +1,10 @@
 ## v1.1.6
 
 - Field cat setting if one exists [#37][37]
+- Completion info added to Creation default settings [#38][38]
 
 [37]: https://github.com/lsuits/cps/issues/37
+[38]: https://github.com/lsuits/cps/issues/38
 
 ## v1.1.5
 
