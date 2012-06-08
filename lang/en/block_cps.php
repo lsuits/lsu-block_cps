@@ -81,6 +81,8 @@ are enrolled.';
 $string['default_create_days'] = 'Days before classes to create courses';
 $string['default_enroll_days'] = 'Days before classes to enroll students';
 
+$string['use_defaults'] = 'Use system defaults';
+
 $string['unwant'] = 'Unwanted';
 
 $string['material'] = 'Master Course';

@@ -38,15 +38,20 @@ $PAGE->set_url('/blocks/cps/creation.php');
 
 $form = new creation_form(null, array('sections' => $sections));
 
+$setting_params = ues::where()
+    ->userid->equal($USER->id)
+    ->name->starts_with('creation_');
+
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
 } else if ($data = $form->get_data()) {
-    $settings = cps_setting::get_to_name(ues::where()
-        ->userid->equal($USER->id)
-        ->name->starts_with('creation_')
-    );
+    $settings = cps_setting::get_to_name($setting_params);
 
     $creations = cps_creation::get_all(array('userid' => $USER->id));
+
+    if (isset($data->creation_defaults)) {
+        cps_setting::delete_all($setting_params);
+    }
 
     foreach ($form->settings as $name => $value) {
         if (!isset($settings[$name])) {
@@ -105,12 +110,14 @@ if ($form->is_cancelled()) {
 }
 
 $creations = cps_creation::get_all(array('userid' => $USER->id));
-$settings = cps_setting::get_all(ues::where()
-    ->userid->equal($USER->id)
-    ->starts_with('creation_')
-);
+$settings = cps_setting::get_all($setting_params);
 
 $form_data = array();
+
+if (empty($settings)) {
+    $form_data['creation_defaults'] = 1;
+}
+
 foreach ($settings as $setting) {
     $form_data[$setting->name] = $setting->value;
 }

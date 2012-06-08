@@ -1,6 +1,7 @@
 <?php
 
 require_once $CFG->libdir . '/formslib.php';
+require_once $CFG->libdir . '/completionlib.php';
 
 class creation_form extends moodleform {
     function definition() {
@@ -58,6 +59,8 @@ class creation_form extends moodleform {
 
         $m->addElement('header', 'create_header', $_s('creation_settings'));
 
+        $m->addElement('checkbox', 'creation_defaults', $_s('use_defaults'));
+
         $options = array();
         $formats = get_plugin_list('format');
         foreach ($formats as $format => $ignore) {
@@ -69,6 +72,7 @@ class creation_form extends moodleform {
         $str = get_string('format');
         $m->addElement('select', "creation_format", $str, $options);
         $m->setDefault('creation_format', $default_format);
+        $m->disabledIf('creation_format', 'creation_defaults', 'checked');
 
         $maxsections = get_config('moodlecourse', 'maxsections');
         $default_number = get_config('moodlecourse', 'numsections');
@@ -76,6 +80,7 @@ class creation_form extends moodleform {
         $str = get_string('numberweeks');
         $m->addElement('select', 'creation_numsections', $str, $options);
         $m->setDefault('creation_numsections', $default_number);
+        $m->disabledIf('creation_numsections', 'creation_defaults', 'checked');
 
         $default_visibility = get_config('moodlecourse', 'visible');
         $options = array(
@@ -85,6 +90,26 @@ class creation_form extends moodleform {
         $str = get_string('availability');
         $m->addElement('select', 'creation_visible', $str, $options);
         $m->setDefault('creation_visible', $default_visibility);
+        $m->disabledIf('creation_visible', 'creation_defaults', 'checked');
+
+        if (completion_info::is_enabled_for_site()) {
+            $options = array(
+                0 => get_string('completiondisabled', 'completion'),
+                1 => get_string('completionenabled', 'completion')
+            );
+
+            $m->addElement('static', '',
+                '<strong>' . get_string('progress', 'completion') . '</strong>', '');
+            $m->addElement('select', 'creation_enablecompletion', get_string('completion', 'completion'), $options);
+            $m->setDefault('creation_enablecompletion', get_config('moodlecourse', 'enablecompletion'));
+            $m->disabledIf('creation_enablecompletion', 'creation_defaults', 'checked');
+
+            $m->addElement('checkbox', 'creation_completionstartonenrol', get_string('completionstartonenrol', 'completion'));
+            $m->setDefault('creation_completionstartonenrol', get_config('moodlecourse', 'completionstartonenrol'));
+
+            $m->disabledIf('creation_completionstartonenrol', 'creation_enablecompletion', 'eq', 0);
+            $m->disabledIf('creation_completionstartonenrol', 'creation_defaults', 'checked');
+        }
 
         foreach ($course_semesters as $semesterid => $courses) {
             uasort($courses, $course_sorter);
@@ -145,6 +170,10 @@ class creation_form extends moodleform {
         $_s = ues::gen_str('block_cps');
 
         foreach ($data as $gname => $group) {
+            if ($gname === 'creation_defaults') {
+                continue;
+            }
+
             if (preg_match('/^creation_/', $gname)) {
                 $settings[$gname] = $group;
                 continue;
