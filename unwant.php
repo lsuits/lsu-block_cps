@@ -85,7 +85,7 @@ foreach ($unwants as $unwant) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($heading);
+echo $OUTPUT->heading_with_help($heading, 'unwant', 'block_cps');
 
 if (isset($success) and $success) {
     echo $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');

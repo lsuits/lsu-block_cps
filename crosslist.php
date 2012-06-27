@@ -71,7 +71,7 @@ if ($form->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($heading);
+echo $OUTPUT->heading_with_help($heading, 'crosslist', 'block_cps');
 
 $form->display();
 
