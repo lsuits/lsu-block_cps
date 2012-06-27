@@ -29,6 +29,10 @@ $string['cou_number'] = 'Course Number';
 
 $string['material_shortname'] = 'Master Course {department} {course_number} for {fullname}';
 
+$string['setting'] = 'User preferences';
+$string['setting_help'] = 'Faculty are allowed to change their first name to a
+preferred name. This change will be permanent until otherwise specified.';
+
 $string['team_request_limit'] = 'Number of Requests';
 $string['team_request_limit_desc'] = 'This is the the maximum number of requests a primary instructor can make (minimum of 1).';
 

@@ -12,6 +12,9 @@ class setting_processor {
             $_s('enroll_days'), $_s('enroll_days_desc'), 14, $days));
     }
 
+    public static function setting($settings) {
+    }
+
     public static function unwant($settings) {
     }
 

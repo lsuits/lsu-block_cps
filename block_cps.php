@@ -14,13 +14,9 @@ class block_cps extends block_list {
             return $this->content;
         }
 
-        global $CFG, $OUTPUT;
+        global $CFG, $OUTPUT, $USER;
 
         require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
-
-        if (!ues_user::is_teacher()) {
-            return $this->content;
-        }
 
         $sections = ues_user::sections(true);
         $semesters = ues_semester::merge_sections($sections);
@@ -38,7 +34,7 @@ class block_cps extends block_list {
 
             $obj = 'cps_' . $setting;
 
-            if (method_exists($obj, 'is_valid') and !$obj::is_valid($semesters)) {
+            if (!$obj::is_valid($semesters)) {
                 continue;
             }
 

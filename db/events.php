@@ -22,7 +22,8 @@ $modules_events = array(
         'ues_course_severed',
         'ues_lsu_student_data_updated',
         'ues_lsu_anonymous_updated',
-        'ues_group_emptied'
+        'ues_group_emptied',
+        'user_updated'
     ),
     'simple_restore' => array(
         'simple_restore_complete'
