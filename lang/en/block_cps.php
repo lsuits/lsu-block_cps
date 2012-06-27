@@ -70,13 +70,14 @@ $string['err_select_teacher'] = 'You must select at least one Instructor';
 $string['default_settings'] = 'Default Settings';
 $string['creation'] = 'Creation / Enrollment';
 $string['creation_help'] = 'Creation and Enrollment settings allow instructors
-to specified when an online course is created and enrolled in Moodle. In addition
+to specify when an online course is created and enrolled in Moodle. In addition
 to when the course is created, the instructor can also decide _how_ the course
 is created:
 
 - Whether or not to create it visible to students
 - What course format to use
 - How many topics/sections a course should be created with
+- Whether or not to include completion activity
 ';
 
 $string['creation_settings'] = 'Course Creation Settings';
@@ -106,7 +107,8 @@ $string['creating_materials'] = 'Create master courses';
 
 $string['split'] = 'Splitting';
 $string['split_help'] = 'Splitting allows an instructor to separate online courses
-with two or more sections into multiple online courses.';
+with two or more sections into multiple online courses. This is especially useful
+for separating the gradebook and other activities.';
 
 $string['select'] = 'Select a course';
 $string['shells'] = 'Course Shells';
