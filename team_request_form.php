@@ -176,8 +176,12 @@ class team_request_form_update extends team_request_form {
             self::_s('team_manage_requests'), self::MANAGE_REQUESTS);
 
         if ($any_approved) {
+            global $OUTPUT;
+
+            $icon = $OUTPUT->help_icon('team_manage_sections', 'block_cps');
+
             $m->addElement('radio', 'update_option', '',
-                self::_s('team_manage_sections'), self::MANAGE_SECTIONS);
+                self::_s('team_manage_sections') . $icon, self::MANAGE_SECTIONS);
         }
 
         $m->setDefault('update_option', self::MANAGE_REQUESTS);
@@ -439,6 +443,7 @@ class team_request_form_shells extends team_request_form {
         $options = array_combine($range, $range);
 
         $m->addElement('select', 'shells', self::_s('team_how_many'), $options);
+        $m->addHelpButton('shells', 'team_how_many', 'block_cps');
 
         $m->addElement('hidden', 'selected', '');
 
@@ -681,6 +686,8 @@ class team_request_form_request extends team_request_form {
                 self::_s('team_teachers'), $users);
 
             $select->setMultiple(true);
+
+            $m->addHelpButton('selected_users' . $number, 'team_teachers', 'block_cps');
 
             $m->addElement('hidden', 'selected_users'.$number.'_str', '');
         }

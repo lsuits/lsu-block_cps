@@ -166,6 +166,8 @@ class crosslist_form_update extends crosslist_form implements updating_form {
             $m->addElement('radio', 'crosslist_option', '', self::_s('split_reshell'), self::RESHELL);
             $m->addElement('select', 'reshelled', self::_s('split_how_many'), $options);
 
+            $m->addHelpButton('reshelled', 'split_how_many', 'block_cps');
+
             $m->disabledIf('reshelled', 'crosslist_option', 'neq', self::RESHELL);
         }
 
@@ -245,6 +247,7 @@ class crosslist_form_shells extends crosslist_form {
         $options = array_combine($range, $range);
 
         $m->addElement('select', 'shells', self::_s('split_how_many'), $options);
+        $m->addHelpButton('shells', 'split_how_many', 'block_cps');
 
         $this->generate_states_and_buttons();
     }

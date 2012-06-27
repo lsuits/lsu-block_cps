@@ -223,6 +223,7 @@ class team_section_form_update extends team_section_form implements updating_for
 
             $m->addElement('radio', 'team_section_option', '', self::_s('split_reshell'), self::RESHELL);
             $m->addElement('select', 'reshelled', self::_s('split_how_many'), $options);
+            $m->addHelpButton('reshelled', 'split_how_many', 'block_cps');
 
             $m->disabledIf('reshelled', 'team_section_option', 'neq', self::RESHELL);
         }
@@ -292,6 +293,7 @@ class team_section_form_shells extends team_section_form {
         $options = array_combine($shell_range, $shell_range);
 
         $m->addElement('select', 'shells', self::_s('split_how_many'), $options);
+        $m->addHelpButton('shells', 'split_how_many', 'block_cps');
 
         $m->addElement('hidden', 'id', $course->id);
         $this->generate_states_and_buttons();
