@@ -1,8 +1,10 @@
 ## v1.1.6
 
+- UES people field highlighting [8c6517][8c6517]
 - Field cat setting if one exists [#37][37]
 - Completion info added to Creation default settings [#38][38]
 
+[8c6517]: https://github.com/lsuits/cps/commit/8c651765138d5c8255208fc1f88cdd89aafa90a0
 [37]: https://github.com/lsuits/cps/issues/37
 [38]: https://github.com/lsuits/cps/issues/38
 
