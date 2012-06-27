@@ -4,9 +4,10 @@ require_once $CFG->dirroot . '/blocks/cps/events/ues_people_lib.php';
 
 abstract class cps_ues_people_handler {
     public static function ues_people_outputs($data) {
+        // Contains the requested order
         $interfere = array(
-            'user_ferpa', 'user_college', 'user_year', 'user_reg_status',
-            'user_keypadid', 'user_major', 'user_degree', 'user_sport1',
+            'user_degree', 'user_ferpa', 'user_keypadid', 'user_college',
+            'user_major', 'user_year', 'user_reg_status', 'user_sport1',
             'user_anonymous_number'
         );
 
@@ -16,6 +17,7 @@ abstract class cps_ues_people_handler {
             if (!isset($data->outputs[$meta])) {
                 continue;
             }
+            unset($data->outputs[$meta]);
             $data->outputs[$meta] = new cps_people_element($meta, $_s($meta));
         }
 
