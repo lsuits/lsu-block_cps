@@ -1,17 +1,17 @@
 <?php
 
 $string['pluginname'] = 'Course Preferences';
-$string['pluginname_desc'] = 'The Course Preference block allows instructors to
-control creation and enrollment behavior. These are system wide defaults for
+$string['pluginname_desc'] = 'The Course Preferences block allows instructors to
+control course creation and enrollment behavior. These are system wide defaults for
 those who do not actually set any data.';
 
 $string['course_threshold'] = 'Course Number Threshold';
 $string['course_threshold_desc'] = 'Sections belonging to a course number that
-is greater than or equal to the specified number, will not be initially created.
+is greater than or equal to the specified number will not be initially created.
 CPS will create unwanted entries for these sections so the instructor can opted
 in teaching online.';
 
-$string['course_severed'] = 'Delete upon Severage';
+$string['course_severed'] = 'Delete severed Courses';
 $string['course_severed_desc'] = 'A course is severed if the Moodle course will
 no longer be handled by the enrollment module, or if enrollment equals zero.';
 
@@ -74,10 +74,10 @@ to specify when an online course is created and enrolled in Moodle. In addition
 to when the course is created, the instructor can also decide _how_ the course
 is created:
 
-- Whether or not to create it visible to students
+- Whether it is available to students or not
 - What course format to use
-- How many topics/sections a course should be created with
-- Whether or not to include completion activity
+- How many topics or weeks a course should be created with
+- Whether or not to include activity completion
 ';
 
 $string['creation_settings'] = 'Course Creation Settings';
