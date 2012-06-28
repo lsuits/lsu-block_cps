@@ -108,6 +108,23 @@ abstract class cps_profile_field_helper {
 
 abstract class cps_ues_handler {
 
+    public static function user_updated($user) {
+        global $DB;
+
+        $firstname = cps_setting::get(array(
+            'userid' => $user->id,
+            'name' => 'user_firstname'
+        ));
+
+        // No preference or firstname is the same as preference
+        if (empty($firstname) or $user->firstname == $firstname->value) {
+            return true;
+        }
+
+        $user->firstname = $firstname->value;
+        return $DB->update_record('user', $user);
+    }
+
     public static function ues_primary_change($params) {
         extract($params);
 

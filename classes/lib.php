@@ -3,10 +3,14 @@
 require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
 ues::require_daos();
 
-abstract class cps_preferences extends ues_external {
+interface verifiable {
+    public static function is_valid($semesters);
+}
+
+abstract class cps_preferences extends ues_external implements verifiable {
     public static function settings() {
         $settings = array('creation', 'split', 'crosslist',
-            'team_request', 'material', 'unwant');
+            'team_request', 'material', 'unwant', 'setting');
 
         $remaining_settings = array();
 
@@ -41,10 +45,9 @@ abstract class cps_preferences extends ues_external {
         return get_string(self::call('get_name'), 'block_cps');
     }
 
-}
-
-interface verifiable {
-    public static function is_valid($semesters);
+    public static function is_valid($semesters) {
+        return !empty($semesters);
+    }
 }
 
 interface application {
@@ -232,6 +235,12 @@ class cps_setting extends cps_preferences {
     var $name;
     var $value;
 
+    public static function is_valid($semesters) {
+        global $USER;
+
+        return parent::is_valid($semesters) || is_siteadmin($USER->id);
+    }
+
     public static function get_to_name($params) {
         $settings = self::get_all($params);
 
@@ -244,7 +253,7 @@ class cps_setting extends cps_preferences {
     }
 }
 
-class cps_split extends ues_user_section_accessor implements unique, undoable, verifiable {
+class cps_split extends ues_user_section_accessor implements unique, undoable {
     var $userid;
     var $sectionid;
     var $groupingid;
@@ -336,7 +345,7 @@ class cps_split extends ues_user_section_accessor implements unique, undoable, v
     }
 }
 
-class cps_crosslist extends ues_user_section_accessor implements unique, undoable, verifiable {
+class cps_crosslist extends ues_user_section_accessor implements unique, undoable {
     var $userid;
     var $sectionid;
     var $groupingid;
