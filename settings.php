@@ -28,7 +28,10 @@ if ($ADMIN->fulltree) {
             $_s('user_field_category'), $_s('user_field_category_desc'), $first, $field_cats));
     }
 
-    $cps_settings = array('creation', 'unwant', 'material', 'split', 'crosslist', 'team_request');
+    $cps_settings = array(
+        'setting', 'creation', 'unwant', 'material',
+        'split', 'crosslist', 'team_request'
+    );
 
     foreach ($cps_settings as $setting) {
         $settings->add(new admin_setting_heading('block_cps_'.$setting.'_settings',
