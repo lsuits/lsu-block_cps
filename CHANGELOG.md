@@ -1,5 +1,6 @@
 ## v1.1.6
 
+- User preferences; name change [#42][42]
 - Documentation, help links, icons, etc [#36][36]
 - UES people field ordering [037b67][037b67]
 - UES people field highlighting [8c6517][8c6517]
@@ -8,6 +9,7 @@
 
 [037b67]: https://github.com/lsuits/cps/commit/037b670a0b2cf09c00bceea962573cefac9185ef
 [8c6517]: https://github.com/lsuits/cps/commit/8c651765138d5c8255208fc1f88cdd89aafa90a0
+[42]: https://github.com/lsuits/cps/pull/42
 [37]: https://github.com/lsuits/cps/issues/37
 [38]: https://github.com/lsuits/cps/issues/38
 [36]: https://github.com/lsuits/cps/issues/36
