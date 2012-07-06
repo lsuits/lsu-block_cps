@@ -354,7 +354,7 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
     public static function is_valid($semesters) {
         // Must have two courses in the same semester
         $validation = function ($in, $semester) {
-            return ($in || count($semester->courses) < 2);
+            return ($in || count($semester->courses) >= 2);
         };
 
         return array_reduce($semesters, $validation, false);
