@@ -8,5 +8,6 @@ $(document).ready ->
     $('.passed').each (i, elem) ->
         params[$(elem).attr 'name'] = $(elem).val()
 
-    $.post '', params, (html) ->
+    $.post window.location.pathname, params, (html) ->
         $('.cps_loading').html(html)
+

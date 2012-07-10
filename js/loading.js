@@ -9,7 +9,7 @@
       params[$(elem).attr('name')] = $(elem).val();
       return params[$(elem).attr('name')];
     });
-    return $.post('', params, function(html) {
+    return $.post(window.location.pathname, params, function(html) {
       return $('.cps_loading').html(html);
     });
   });
