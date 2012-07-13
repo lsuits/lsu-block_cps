@@ -1,5 +1,7 @@
 ## v1.1.6
 
+- IE js fix [2ac17e][2ac17e]
+- Crosslist reverse boolean [e259ed][e259ed]
 - User preferences; name change [#42][42]
 - Documentation, help links, icons, etc [#36][36]
 - UES people field ordering [037b67][037b67]
@@ -7,6 +9,8 @@
 - Field cat setting if one exists [#37][37]
 - Completion info added to Creation default settings [#38][38]
 
+[2ac17e]: https://github.com/lsuits/cps/commit/2ac17e85e5e61d436648c93988532cb77d979a21
+[e259ed]: https://github.com/lsuits/cps/commit/e259ed74b0e45bfc003392e1a18251b8c5633dc9
 [037b67]: https://github.com/lsuits/cps/commit/037b670a0b2cf09c00bceea962573cefac9185ef
 [8c6517]: https://github.com/lsuits/cps/commit/8c651765138d5c8255208fc1f88cdd89aafa90a0
 [42]: https://github.com/lsuits/cps/pull/42
