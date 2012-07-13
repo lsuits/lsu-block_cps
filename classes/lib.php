@@ -221,6 +221,8 @@ class cps_creation extends cps_preferences implements application {
                 $primary = current($section->teachers());
             }
 
+            if (empty($primary)) return false;
+
             return $userid == $primary->userid;
         };
 
