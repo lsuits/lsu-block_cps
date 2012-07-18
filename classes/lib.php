@@ -273,8 +273,8 @@ class cps_split extends ues_user_section_accessor implements unique, undoable {
 
     public static function filter_valid($semesters) {
         return array_filter($semesters, function($semester) {
-            $semester->courses = cps_split::filter_valid_courses($semester->courses);
-            return count($semester->courses) > 0;
+            $courses = cps_split::filter_valid_courses($semester->courses);
+            return count($courses) > 0;
         });
     }
 
