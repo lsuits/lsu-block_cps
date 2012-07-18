@@ -1,3 +1,9 @@
+## v1.1.7
+
+- Split validity would cause side-effects [31886][31886]
+
+[31886]: https://github.com/lsuits/cps/commit/3188698260a42872cbfe134c8c5e077ac9a1c451
+
 ## v1.1.6
 
 - IE js fix [2ac17e][2ac17e]
