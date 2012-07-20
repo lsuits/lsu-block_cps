@@ -90,6 +90,49 @@ abstract class ues_user_section_accessor extends ues_section_accessor {
     }
 }
 
+abstract class manifest_updater extends ues_user_section_accessor implements unique {
+    public function save() {
+        $updated = !empty($this->id);
+        $updated = parent::save() && $updated;
+
+        if ($updated) {
+            $this->update_manifest();
+        }
+
+        return true;
+    }
+
+    public function update_manifest() {
+        global $DB;
+
+        // Only on update
+        if (empty($this->id)) {
+            return false;
+        }
+
+        $section = $this->section();
+        $course = $section->moodle();
+        $new_idnumber = $this->new_idnumber();
+
+        // Nothing to do
+        if (empty($course)) {
+            return false;
+        }
+
+        // Allow event to rename course
+        events_trigger('ues_course_create', $course);
+
+        // Change association if there exists no other
+        // this would prevent a course creation
+        $n = $DB->get_record('course', array('idnumber' => $new_idnumber));
+        if (empty($n) and $course->idnumber != $new_idnumber) {
+            $course->idnumber = $new_idnumber;
+        }
+
+        return $DB->update_record('course', $course);
+    }
+}
+
 // Begin Concrete classes
 class cps_unwant extends ues_user_section_accessor implements application, undoable {
     var $sectionid;
@@ -255,7 +298,7 @@ class cps_setting extends cps_preferences {
     }
 }
 
-class cps_split extends ues_user_section_accessor implements unique, undoable {
+class cps_split extends manifest_updater implements application, undoable {
     var $userid;
     var $sectionid;
     var $groupingid;
@@ -322,12 +365,14 @@ class cps_split extends ues_user_section_accessor implements unique, undoable {
     function new_idnumber() {
         $section = $this->section();
         $semester = $section->semester();
+        $session_key = $semester->session_key;
 
         $course = $section->course();
 
-        $idnumber = sprintf('%s%s%s%s%ssplit%s', $semester->year, $semester->name,
-            $course->department, $course->cou_number, $this->userid,
-            $this->groupingid);
+        $semstr = "$semester->year$semester->name$session_key";
+        $coursestr = "$course->department$course->cou_number";
+
+        $idnumber = "$semstr$coursestr$this->userid$this->groupingid";
 
         return $idnumber;
     }
@@ -347,7 +392,7 @@ class cps_split extends ues_user_section_accessor implements unique, undoable {
     }
 }
 
-class cps_crosslist extends ues_user_section_accessor implements unique, undoable {
+class cps_crosslist extends manifest_updater implements application, undoable {
     var $userid;
     var $sectionid;
     var $groupingid;
@@ -400,12 +445,12 @@ class cps_crosslist extends ues_user_section_accessor implements unique, undoabl
     function new_idnumber() {
         $section = $this->section();
         $sem = $section->semester();
-        $session_key = $sem->session_key;
+        $ses = $sem->session_key;
 
-        $shell = str_replace(' ', '', trim($this->shell_name));
+        $shell = str_replace(' ', '', $this->shell_name);
         $userid = $this->userid;
 
-        $idnumber = "$sem->year$sem->name$session_key{$shell}{$userid}cl{$this->groupingid}";
+        $idnumber = "$sem->year$sem->name$ses{$shell}{$userid}cl{$this->groupingid}";
         return $idnumber;
     }
 
@@ -693,7 +738,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
     }
 }
 
-class cps_team_section extends ues_section_accessor implements unique, undoable {
+class cps_team_section extends manifest_updater implements application, undoable {
     var $sectionid;
     var $groupingid;
     var $shell_name;
@@ -769,15 +814,22 @@ class cps_team_section extends ues_section_accessor implements unique, undoable 
         return $this->request;
     }
 
+    public function user() {
+        if (empty($this->user)) {
+            $this->user = $this->request()->owner();
+        }
+
+        return $this->user;
+    }
+
     function new_idnumber() {
         $section = $this->section();
         $sem = $section->semester();
-
-        $shell = str_replace(' ', '', trim($this->shell_name));
+        $ses = $sem->session_key;
 
         $requestid = $this->requestid;
 
-        $idnumber = "$sem->year$sem->name{$shell}{$requestid}tt{$this->groupingid}";
+        $idnumber = "$sem->year$sem->name$ses{$requestid}tt{$this->groupingid}";
 
         return $idnumber;
     }

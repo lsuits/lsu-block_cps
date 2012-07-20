@@ -385,11 +385,13 @@ abstract class cps_ues_handler {
         $course->fullname = $fullname;
         $course->shortname = $shortname;
 
-        // Instructor overrides
-        foreach ($creation_settings as $setting) {
-            $key = str_replace('creation_', '', $setting->name);
+        // Instructor overrides only on creation
+        if (empty($course->id)) {
+            foreach ($creation_settings as $setting) {
+                $key = str_replace('creation_', '', $setting->name);
 
-            $course->$key = $setting->value;
+                $course->$key = $setting->value;
+            }
         }
 
         return true;
