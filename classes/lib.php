@@ -122,8 +122,8 @@ abstract class manifest_updater extends ues_user_section_accessor implements uni
         // Allow event to rename course
         events_trigger('ues_course_create', $course);
 
-        // Change association if there exists no other
-        // this would prevent a course creation
+        // Change association if there exists no other course.
+        // This would prevent an unnecessary course creation
         $n = $DB->get_record('course', array('idnumber' => $new_idnumber));
         if (empty($n) and $course->idnumber != $new_idnumber) {
             $course->idnumber = $new_idnumber;
