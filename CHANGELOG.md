@@ -1,8 +1,10 @@
 ## v1.1.7
 
+- Fixes course creation duplicates [#44][44]
 - Split validity would cause side-effects [31886][31886]
 
 [31886]: https://github.com/lsuits/cps/commit/3188698260a42872cbfe134c8c5e077ac9a1c451
+[44]: https://github.com/lsuits/cps/issues/44
 
 ## v1.1.6
 
