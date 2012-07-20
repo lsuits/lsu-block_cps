@@ -22,7 +22,7 @@ if (empty($sections)) {
     print_error('no_section', 'block_cps');
 }
 
-$PAGE->requires->js('/lib/jquery.js');
+$PAGE->requires->js('/blocks/cps/js/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/unwanted.js');
 
 $_s = ues::gen_str('block_cps');
