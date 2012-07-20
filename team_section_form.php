@@ -326,6 +326,8 @@ class team_section_form_decide extends team_section_form {
 
         $before = array();
 
+        $mastered = cps_team_request::filtered_master($requests);
+
         foreach ($requests as $request) {
             $other_course = $request->is_owner() ?
                 $request->other_course() : $request->course();
@@ -392,7 +394,8 @@ class team_section_form_decide extends team_section_form {
                 '', $shell_name_params);
             $shell_name->setValue($shell_name_value);
 
-            $link = html_writer::link('shell_'.$groupingid, self::_s('customize_name'));
+            $link = empty($mastered) ? get_string('locked', 'grades') :
+                html_writer::link('shell_'.$groupingid, self::_s('customize_name'));
 
             $radio_params = array('id' => 'selected_shell_'.$groupingid);
             $radio =& $m->createElement('radio', 'selected_shell', '', '', $groupingid, $radio_params);
