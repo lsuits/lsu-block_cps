@@ -37,6 +37,8 @@ function xmldb_block_cps_upgrade($oldversion) {
                 $obj->apply();
             }
         }
+
+        upgrade_block_savepoint($result, 2012072013, 'cps');
     }
 
     return $result;
