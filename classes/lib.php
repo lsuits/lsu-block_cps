@@ -372,7 +372,7 @@ class cps_split extends manifest_updater implements application, undoable {
         $semstr = "$semester->year$semester->name$session_key";
         $coursestr = "$course->department$course->cou_number";
 
-        $idnumber = "$semstr$coursestr$this->userid$this->groupingid";
+        $idnumber = "$semstr$coursestr{$this->userid}split{$this->groupingid}";
 
         return $idnumber;
     }
