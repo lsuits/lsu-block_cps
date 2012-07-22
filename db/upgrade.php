@@ -41,5 +41,20 @@ function xmldb_block_cps_upgrade($oldversion) {
         upgrade_block_savepoint($result, 2012072013, 'cps');
     }
 
+    if ($oldversion < 2012072209) {
+        require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
+
+        foreach (array('split') as $setting) {
+            $class = "cps_{$setting}";
+
+            $settings = $class::get_all();
+            foreach ($settings as $obj) {
+                $obj->update_manifest();
+                $obj->apply();
+            }
+        }
+
+        upgrade_block_savepoint($result, 2012072209, 'cps');
+    }
     return $result;
 }
