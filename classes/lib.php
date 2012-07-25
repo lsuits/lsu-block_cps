@@ -539,7 +539,7 @@ class cps_team_request extends cps_preferences implements application, undoable 
         });
     }
 
-    public static function delete_all(array $params) {
+    public static function delete_all($params = array()) {
         return self::delete_all_internal($params, function ($t) use ($params) {
             $old = cps_team_request::get_all($params);
 

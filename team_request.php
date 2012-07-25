@@ -41,7 +41,7 @@ $PAGE->set_title($heading);
 $PAGE->set_url('/blocks/cps/team_request.php');
 $PAGE->set_pagetype('cps-teamteach');
 
-$form = team_request_form::create($semesters);
+$form = cps_form::create('team_request', $semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -65,7 +65,7 @@ if ($form->is_cancelled()) {
         )));
     }
 
-    $form = team_request_form::next_from($form->next, $data, $semesters);
+    $form = cps_form::next_from('team_request', $form->next, $data, $semesters);
 }
 
 echo $OUTPUT->header();

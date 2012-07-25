@@ -3,13 +3,6 @@
 require_once $CFG->dirroot . '/blocks/cps/formslib.php';
 
 abstract class crosslist_form extends cps_form {
-    public static function next_from($next, $data, $courses) {
-        return parent::next_from('crosslist', $next, $data, $courses);
-    }
-
-    public static function create($courses, $state = null, $extra = null) {
-        return parent::create('crosslist', $courses, $state, $extra);
-    }
 }
 
 class crosslist_form_select extends crosslist_form {
@@ -44,7 +37,7 @@ class crosslist_form_select extends crosslist_form {
         $this->generate_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $semesters = $this->_customdata['semesters'];
 
         $errors = array();
@@ -180,7 +173,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $option = $data['crosslist_option'];
 
         $this->next = $option == self::UNDO ? self::LOADING : $this->next;
@@ -359,7 +352,7 @@ class crosslist_form_decide extends crosslist_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
 
         if (isset($data['back'])) {
             return true;

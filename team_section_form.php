@@ -11,14 +11,6 @@ abstract class team_section_form extends cps_form {
             $this->_customdata['requests']
         );
     }
-
-    public static function next_from($next, $data, $courses) {
-        return parent::next_from('team_section', $next, $data, $courses);
-    }
-
-    public static function create($courses, $state = null, $extra = null) {
-        return parent::create('team_section', $courses, $state, $extra);
-    }
 }
 
 class team_section_form_select extends team_section_form {
@@ -120,7 +112,7 @@ class team_section_form_select extends team_section_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         // Teacher can potentially be both...
         // But if the Teacher is NOT a master, then we can skip the shells
         if ($this->not_a_master and !$this->is_a_master) {
@@ -237,7 +229,7 @@ class team_section_form_update extends team_section_form implements updating_for
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         if (isset($data['back'])) {
             return true;
         }
@@ -427,7 +419,7 @@ class team_section_form_decide extends team_section_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $requests = $this->_customdata['requests'];
 
         $mastered = cps_team_request::filtered_master($requests);

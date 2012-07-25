@@ -49,7 +49,7 @@ $PAGE->requires->js('/blocks/cps/js/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/split.js');
 
-$form = split_form::create($valid_semesters);
+$form = cps_form::create('split', $valid_semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -73,7 +73,7 @@ if ($form->is_cancelled()) {
         die();
     }
 
-    $form = split_form::next_from($form->next, $data, $valid_semesters);
+    $form = cps_form::next_from('split', $form->next, $data, $valid_semesters);
 }
 
 echo $OUTPUT->header();

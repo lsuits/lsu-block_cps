@@ -43,7 +43,7 @@ $PAGE->requires->js('/blocks/cps/js/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/crosslist.js');
 
-$form = crosslist_form::create($semesters);
+$form = cps_form::create('crosslist', $semesters);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
@@ -67,7 +67,7 @@ if ($form->is_cancelled()) {
         die();
     }
 
-    $form = crosslist_form::next_from($form->next, $data, $semesters);
+    $form = cps_form::next_from('crosslist', $form->next, $data, $semesters);
 }
 
 echo $OUTPUT->header();

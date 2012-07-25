@@ -147,7 +147,7 @@ class creation_form extends moodleform {
         $m->closeHeaderBefore('buttons');
     }
 
-    function validation($data) {
+    public function validation($data, $files) {
         $create_days = array();
         $enroll_days = array();
         $settings = array();

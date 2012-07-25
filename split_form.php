@@ -4,14 +4,6 @@ require_once $CFG->dirroot . '/blocks/cps/formslib.php';
 
 abstract class split_form extends cps_form {
 
-    public static function next_from($next, $data, $courses) {
-        return parent::next_from('split', $next, $data, $courses);
-    }
-
-    public static function create($courses, $state = null, $extra= null) {
-        return parent::create('split', $courses, $state, $extra);
-    }
-
     protected function forge_split_all($course) {
         $grouping = 1;
         foreach ($course->sections as $section) {
@@ -58,7 +50,7 @@ class split_form_select extends split_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $semesters = $this->_customdata['semesters'];
 
         if (empty($data['selected'])) {
@@ -127,7 +119,7 @@ class split_form_shells extends split_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $course = $this->_customdata['course'];
 
         if ($data['shells'] == count($course->sections)) {
@@ -213,7 +205,7 @@ class split_form_update extends split_form implements updating_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $option = $data['split_option'];
 
         $course = $this->_customdata['course'];
@@ -394,7 +386,7 @@ class split_form_confirm extends split_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         $course = $this->_customdata['course'];
 
         $section_count = count($course->sections);

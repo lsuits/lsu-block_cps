@@ -11,13 +11,6 @@ interface team_states {
 }
 
 abstract class team_request_form extends cps_form implements team_states {
-    public static function next_from($next, $data, $courses) {
-        return parent::next_from('team_request', $next, $data, $courses);
-    }
-
-    public static function create($courses, $state = null, $extra = null) {
-        return parent::create('team_request', $courses, $state, $extra);
-    }
 }
 
 class team_request_form_select extends team_request_form {
@@ -55,7 +48,7 @@ class team_request_form_select extends team_request_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         if (empty($data['selected'])) {
             return array('selected' => self::_s('err_select_one'));
         }
@@ -202,7 +195,7 @@ class team_request_form_update extends team_request_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         if (isset($data['back'])) {
             return true;
         }
@@ -312,7 +305,7 @@ class team_request_form_manage extends team_request_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
 
         if (isset($data['back'])) {
             return true;
@@ -536,7 +529,7 @@ class team_request_form_query extends team_request_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
         global $USER;
 
         if (isset($data['back'])) {
@@ -699,7 +692,7 @@ class team_request_form_request extends team_request_form {
         $this->generate_states_and_buttons();
     }
 
-    function validation($data) {
+    function validation($data, $files) {
 
         if (isset($data['back'])) {
             return true;

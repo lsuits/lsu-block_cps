@@ -22,7 +22,7 @@ if ($ADMIN->fulltree) {
     $field_cats = $DB->get_records_menu('user_info_category', null, '', 'id, name');
 
     if (!empty($field_cats)) {
-        $first = reset(array_keys($field_cats));
+        $first = key($field_cats);
 
         $settings->add(new admin_setting_configselect('block_cps/user_field_catid',
             $_s('user_field_category'), $_s('user_field_category_desc'), $first, $field_cats));

@@ -65,7 +65,7 @@ $PAGE->requires->js('/blocks/cps/js/jquery.js');
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/crosslist.js');
 
-$form = team_section_form::create($initial_data);
+$form = cps_form::create('team_section', $initial_data);
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/blocks/cps/team_request.php'));
@@ -89,7 +89,7 @@ if ($form->is_cancelled()) {
         die();
     }
 
-    $form = team_section_form::next_from($form->next, $data, $initial_data);
+    $form = cps_form::next_from('team_section', $form->next, $data, $initial_data);
 }
 
 echo $OUTPUT->header();
