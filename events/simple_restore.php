@@ -6,19 +6,9 @@ abstract class cps_simple_restore_handler {
         $restore_to = $course_settings['restore_to'];
         $old_course = $course_settings['course'];
 
-        // This is an import, ignore
-        if ($restore_to == 1) {
-            return true;
-        }
-
         global $DB, $CFG;
 
         $course = $DB->get_record('course', array('id' => $old_course->id));
-
-        $keep_enrollments = (bool) get_config('simple_restore', 'keep_roles_and_enrolments');
-        $keep_groups = (bool) get_config('simple_restore', 'keep_groups_and_groupings');
-
-        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
 
         // Maintain the correct config
         foreach (get_object_vars($old_course) as $key => $value) {
@@ -30,6 +20,16 @@ abstract class cps_simple_restore_handler {
         }
 
         $DB->update_record('course', $course);
+
+        // This is an import, ignore
+        if ($restore_to == 1) {
+            return true;
+        }
+
+        $keep_enrollments = (bool) get_config('simple_restore', 'keep_roles_and_enrolments');
+        $keep_groups = (bool) get_config('simple_restore', 'keep_groups_and_groupings');
+
+        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
 
         // No need to re-enroll
         if ($keep_groups and $keep_enrollments) {
