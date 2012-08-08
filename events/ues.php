@@ -125,19 +125,18 @@ abstract class cps_ues_handler {
         return $DB->update_record('user', $user);
     }
 
-    public static function ues_primary_change($params) {
-        extract($params);
-
+    public static function ues_primary_change($data) {
         // Empty enrollment / idnumber
-        ues::unenroll_users(array($section));
+        ues::unenroll_users(array($data->section));
 
         // Safe keeping
-        $section->status = ues::PROCESSED;
-        $section->save();
+        $data->section->idnumber = '';
+        $data->section->status = ues::PROCESSED;
+        $data->section->save();
 
         // Set to re-enroll
-        ues_student::reset_status($section, ues::PROCESSED);
-        ues_teacher::reset_status($section, ues::PROCESSED);
+        ues_student::reset_status($data->section, ues::PROCESSED);
+        ues_teacher::reset_status($data->section, ues::PROCESSED);
 
         return true;
     }
