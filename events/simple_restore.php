@@ -8,6 +8,8 @@ abstract class cps_simple_restore_handler {
 
         global $DB, $CFG;
 
+        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
+
         $course = $DB->get_record('course', array('id' => $old_course->id));
 
         // Maintain the correct config
@@ -28,8 +30,6 @@ abstract class cps_simple_restore_handler {
 
         $keep_enrollments = (bool) get_config('simple_restore', 'keep_roles_and_enrolments');
         $keep_groups = (bool) get_config('simple_restore', 'keep_groups_and_groupings');
-
-        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
 
         // No need to re-enroll
         if ($keep_groups and $keep_enrollments) {
