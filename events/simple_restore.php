@@ -2,15 +2,27 @@
 
 abstract class cps_simple_restore_handler {
     public static function simple_restore_complete($params) {
+        global $DB, $CFG, $USER;
+        require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
+
         extract($params);
         $restore_to = $course_settings['restore_to'];
         $old_course = $course_settings['course'];
 
-        global $DB, $CFG;
-
         $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
 
         $course = $DB->get_record('course', array('id' => $old_course->id));
+
+        $reset_grades = cps_setting::get(array(
+            'name' => 'user_grade_restore',
+            'userid' => $USER->id
+        ));
+
+        // Defaults to reset grade items
+        if (empty($reset_grades)) {
+            $reset_grades = new stdClass;
+            $reset_grades->value = 1;
+        }
 
         // Maintain the correct config
         foreach (get_object_vars($old_course) as $key => $value) {
@@ -22,6 +34,19 @@ abstract class cps_simple_restore_handler {
         }
 
         $DB->update_record('course', $course);
+
+        if ($reset_grades->value == 1) {
+            require_once $CFG->libdir . '/gradelib.php';
+
+            $items = grade_item::fetch_all(array('courseid' => $course->id));
+            foreach ($items as $item) {
+                $item->plusfactor = 0.00000;
+                $item->multfactor = 1.00000;
+                $item->update();
+            }
+
+            grade_regrade_final_grades($course->id);
+        }
 
         // This is an import, ignore
         if ($restore_to == 1) {
@@ -46,9 +71,6 @@ abstract class cps_simple_restore_handler {
             }
 
         } else {
-            require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
-            ues::require_daos();
-
             $sections = ues_section::from_course($course);
 
             // Nothing to do

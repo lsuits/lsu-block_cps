@@ -34,6 +34,11 @@ $string['setting_help'] = 'Faculty are allowed to change their first name to a
 preferred name. This change will be permanent until otherwise specified.';
 
 $string['user_firstname'] = 'Prefered firstname';
+$string['grade_restore'] = 'Reset restored grade items';
+$string['grade_restore_help'] = 'If checked, grade items restored from a backup
+will reset offset and curve-to values, rather than pulling these values from
+the archive.';
+
 $string['no_filters'] = 'Provide at least one field to query.';
 $string['no_results'] = 'No results.';
 
