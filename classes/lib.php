@@ -749,7 +749,8 @@ class cps_team_section extends manifest_updater implements application, undoable
 
         foreach ($requests as $request) {
             $internal = cps_team_section::get_all(array(
-                'requestid' => $request->id
+                'requesterid' => $request->userid,
+                'courseid' => $request->courseid
             ));
 
             $sections += $internal;

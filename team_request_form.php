@@ -149,10 +149,10 @@ class team_request_form_update extends team_request_form {
         if ($is_master) {
             $m->addElement('radio', 'update_option', '',
                 self::_s('team_current'), self::ADD_USER_CURRENT);
-        }
 
-        $m->addElement('radio', 'update_option', '',
-            self::_s('team_add_course'), self::ADD_COURSE);
+            $m->addElement('radio', 'update_option', '',
+                self::_s('team_add_course'), self::ADD_COURSE);
+        }
 
         $limit = get_config('block_cps', 'team_request_limit');
         $shells_range = range(1, $limit - $groupingid);

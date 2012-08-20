@@ -223,6 +223,7 @@ $string['team_section_processed'] = 'The Team Teach Sections have been processed
 Continue to head back to the Team Section home.';
 
 $string['team_section_option'] = '(Team Section option taken)';
+$string['team_section_yours'] = '(Yours)';
 
 $string['team_request_shells'] = 'Course Requests';
 $string['query'] = 'Query a Course';
