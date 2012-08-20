@@ -5,6 +5,8 @@ function xmldb_block_cps_upgrade($oldversion) {
 
     $result = true;
 
+    $dbman = $DB->get_manager();
+
     // Clear out old event handlers
     if ($oldversion < 2012012514) {
 
@@ -56,5 +58,67 @@ function xmldb_block_cps_upgrade($oldversion) {
 
         upgrade_block_savepoint($result, 2012072209, 'cps');
     }
+
+    if ($oldversion < 2012082013) {
+        require_once $CFG->dirroot . '/blocks/cps/classes/lib.php';
+
+        // Gather all team_sections
+        $all_sections = cps_team_section::get_all();
+
+        // Be safe: clear out all section associations
+        foreach ($all_sections as $section) {
+            $section->delete($section->id);
+            unset($section->id);
+        }
+
+        // Define field requesterid to be added to enrol_cps_team_sections
+        $table = new xmldb_table('enrol_cps_team_sections');
+        $field = new xmldb_field('requesterid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+
+        // Conditionally launch add field requesterid
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field courseid to be added to enrol_cps_team_sections
+        $table = new xmldb_table('enrol_cps_team_sections');
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'requesterid');
+
+        // Conditionally launch add field courseid
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define key coursetouescourse (foreign) to be added to enrol_cps_team_sections
+        $table = new xmldb_table('enrol_cps_team_sections');
+        $key = new xmldb_key('coursetouescourse', XMLDB_KEY_FOREIGN, array('courseid'), 'enrol_ues_courses', array('id'));
+
+        // Launch add key coursetouescourse
+        $dbman->add_key($table, $key);
+
+        // Define index rqucou (not unique) to be added to enrol_cps_team_sections
+        $table = new xmldb_table('enrol_cps_team_sections');
+        $index = new xmldb_index('courequ', XMLDB_INDEX_NOTUNIQUE, array('requesterid', 'courseid'));
+
+        // Conditionally launch add index rqucou
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Re-allocate team_ections
+        foreach ($all_sections as $section) {
+            $request = $section->request();
+            $section->requesterid = $request->userid;
+            $section->courseid = $request->courseid;
+
+            $section->save();
+            $section->update_manifest();
+            $section->apply();
+        }
+
+        // cps savepoint reached
+        upgrade_block_savepoint($result, 2012082013, 'cps');
+    }
+
     return $result;
 }
