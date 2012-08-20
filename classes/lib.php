@@ -500,11 +500,9 @@ class cps_team_request extends cps_preferences implements application, undoable 
         $all_together = $requests + $participants;
 
         if ($approved) {
-            $rtn = array_filter($all_together, function ($req) {
+            return array_filter($all_together, function ($req) {
                 return $req->approved();
             });
-
-            return $rtn;
         } else {
             return $all_together;
         }
@@ -748,8 +746,9 @@ class cps_team_section extends manifest_updater implements application, undoable
         $sections = array();
 
         foreach ($requests as $request) {
-            $params = array('requestid' => $request->id);
-            $internal = cps_team_section::get_all($params);
+            $internal = cps_team_section::get_all(array(
+                'requestid' => $request->id
+            ));
 
             $sections += $internal;
         }

@@ -322,7 +322,8 @@ class team_section_form_decide extends team_section_form {
 
         foreach ($requests as $request) {
             $other_course = $request->is_owner() ?
-                $request->other_course() : $request->course();
+                $request->other_course() :
+                $request->course();
 
             if (!isset($all_courses[$other_course->id])) {
                 $all_courses[$other_course->id] = $other_course;

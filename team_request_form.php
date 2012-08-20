@@ -618,6 +618,8 @@ class team_request_form_request extends team_request_form {
     }
 
     function definition() {
+        global $USER;
+
         $m =& $this->_form;
 
         $selected_course = $this->_customdata['selected_course'];
@@ -664,6 +666,10 @@ class team_request_form_request extends team_request_form {
             $other_teachers = $other_course->teachers($semester);
 
             foreach ($other_teachers as $teacher) {
+                if ($teacher->userid == $USER->id) {
+                    continue;
+                }
+
                 $user = $teacher->user();
 
                 $section_info = $other_sections[$teacher->sectionid];
