@@ -737,6 +737,8 @@ class cps_team_request extends cps_preferences implements application, undoable 
 }
 
 class cps_team_section extends manifest_updater implements application, undoable {
+    var $requesterid;
+    var $courseid;
     var $sectionid;
     var $groupingid;
     var $shell_name;
@@ -746,9 +748,12 @@ class cps_team_section extends manifest_updater implements application, undoable
         $sections = array();
 
         foreach ($requests as $request) {
-            $internal = cps_team_section::get_all(array(
-                'requestid' => $request->id
-            ));
+            $internal = cps_team_section::get_all(ues::where()
+                ->join('{enrol_ues_sections}', 'sec')->on('sectionid', 'id')
+                ->sec->semesterid->equal($request->semesterid)
+                ->requesterid->equal($request->userid)
+                ->courseid->equal($request->courseid)
+            );
 
             $sections += $internal;
         }
@@ -815,10 +820,18 @@ class cps_team_section extends manifest_updater implements application, undoable
 
     public function user() {
         if (empty($this->user)) {
-            $this->user = $this->request()->owner();
+            $this->user = ues_user::by_id($this->requesterid);
         }
 
         return $this->user;
+    }
+
+    public function course() {
+        if (empty($this->course)) {
+            $this->course = ues_course::by_id($this->courseid);
+        }
+
+        return $this->course;
     }
 
     function new_idnumber() {
@@ -826,7 +839,7 @@ class cps_team_section extends manifest_updater implements application, undoable
         $sem = $section->semester();
         $ses = $sem->session_key;
 
-        $requestid = $this->requestid;
+        $requestid = "{$this->requesterid}_{$this->courseid}";
 
         $idnumber = "$sem->year$sem->name$ses{$requestid}tt{$this->groupingid}";
 

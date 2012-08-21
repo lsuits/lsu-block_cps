@@ -320,6 +320,17 @@ class team_section_form_decide extends team_section_form {
 
         $mastered = cps_team_request::filtered_master($requests);
 
+        $tt_sections = cps_team_section::in_requests($requests);
+
+        foreach ($tt_sections as $section) {
+            if (isset($all_sections[$section->sectionid])) {
+                continue;
+            }
+
+            $section = $section->section();
+            $all_sections[$section->id] = $section;
+        }
+
         foreach ($requests as $request) {
             $other_course = $request->is_owner() ?
                 $request->other_course() :
@@ -327,16 +338,6 @@ class team_section_form_decide extends team_section_form {
 
             if (!isset($all_courses[$other_course->id])) {
                 $all_courses[$other_course->id] = $other_course;
-            }
-
-            foreach ($request->sections() as $req_sec) {
-                if (isset($all_sections[$req_sec->sectionid])) {
-                    continue;
-                }
-
-                $section = $req_sec->section();
-
-                $all_sections[$section->id] = $section;
             }
         }
 
@@ -348,6 +349,10 @@ class team_section_form_decide extends team_section_form {
             $before[$section->id] =
                 $to_coursename($all_courses[$section->courseid]) . ' ' .
                 $section->sec_number;
+
+            if (isset($course->sections[$section->id])) {
+                $before[$section->id] .= ' ' . $this->_s('team_section_yours');
+            }
         }
 
         $shells = array();
@@ -607,9 +612,12 @@ class team_section_form_finish implements finalized_form, updating_form {
                     $comp = array(0 => $req->semesterid);
 
                     if ($req->is_owner($requested->userid)) {
-                        $comp += array(1 => $req->userid, 2 => $req->courseid);
+                        $comp += array(
+                            1 => $req->userid,
+                            2 => $req->courseid);
                     } else {
-                        $comp += array(1 => $req->requested,
+                        $comp += array(
+                            1 => $req->requested,
                             2 => $req->requested_course);
                     }
 
@@ -622,18 +630,39 @@ class team_section_form_finish implements finalized_form, updating_form {
 
                 $associate = current(array_filter($current_requests, $associates));
 
-                $params = array(
-                    'sectionid' => $sectionid,
-                    'requestid' => $associate->id
+                $params = array('sectionid' => $sectionid);
+
+                // Interesting ... probably don't have access; skip
+                if (empty($associate)) {
+                    $req_secs = cps_team_section::get_all($params);
+
+                    foreach ($req_secs as $req_sec) {
+                        unset($current_sections[$req_sec->id]);
+                    }
+                    continue;
+                }
+
+                $params += array(
+                    'courseid' => $associate->courseid,
+                    'requesterid' => $associate->userid
                 );
 
-                if (!$req_sec = cps_team_section::get($params)) {
-                    $req_sec = new cps_team_section();
-                    $req_sec->fill_params($params);
+                // Don't want to mess with requester's requestid
+                $req_sec = cps_team_section::get($params);
+
+                if (!$req_sec) {
+                    $params['requestid'] = $associate->id;
+
+                    // Potentially update own section
+                    if (!$req_sec = cps_team_section::get($params)) {
+                        $req_sec = new cps_team_section();
+                        $req_sec->fill_params($params);
+                    }
                 }
 
                 $req_sec->groupingid = $number;
                 $req_sec->shell_name = $shell_name;
+
                 $req_sec->save();
                 $req_sec->apply();
 
