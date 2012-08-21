@@ -748,10 +748,12 @@ class cps_team_section extends manifest_updater implements application, undoable
         $sections = array();
 
         foreach ($requests as $request) {
-            $internal = cps_team_section::get_all(array(
-                'requesterid' => $request->userid,
-                'courseid' => $request->courseid
-            ));
+            $internal = cps_team_section::get_all(ues::where()
+                ->join('{enrol_ues_sections}', 'sec')->on('sectionid', 'id')
+                ->sec->semesterid->equal($request->semesterid)
+                ->requesterid->equal($request->userid)
+                ->courseid->equal($request->courseid)
+            );
 
             $sections += $internal;
         }
