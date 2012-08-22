@@ -17,17 +17,9 @@ class material_form extends moodleform {
         $m->addElement('header', 'materials', $_s('creating_materials'));
 
         foreach ($courses as $course) {
-            $material = cps_material::get(array(
-                'userid' => $USER->id, 'courseid' => $course->id
-            ));
-
-            $checkbox =& $m->addElement('checkbox', 'material_'.$course->id,
-                '', $course);
-
-            if ($material) {
-                $m->setDefault('material_'.$course->id, 1);
-                $checkbox->freeze();
-            }
+            $checkbox =& $m->addElement(
+                'checkbox', 'material_'.$course->id, '', $course
+            );
         }
 
         $buttons = array(

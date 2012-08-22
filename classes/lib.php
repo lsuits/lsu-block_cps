@@ -176,34 +176,85 @@ class cps_unwant extends ues_user_section_accessor implements application, undoa
     }
 }
 
-class cps_material extends cps_preferences implements application {
+class cps_material extends cps_preferences implements application, undoable {
     var $userid;
     var $courseid;
     var $moodleid;
+
+    private $ues_course;
+    private $user;
+    private $moodle;
+
+    public function moodle() {
+        global $DB;
+
+        if (empty($this->moodle)) {
+            if ($this->moodleid) {
+                $params = array('id' => $this->moodleid);
+            } else {
+                $params = array('shortname' => $this->build_shortname());
+            }
+
+            $this->moodle = $DB->get_record('course', $params);
+        }
+
+        return $this->moodle;
+    }
+
+    public function course() {
+        if (empty($this->ues_course) and $this->courseid) {
+            $this->ues_course = ues_course::by_id($this->courseid);
+        }
+
+        return $this->ues_course;
+    }
+
+    public function user() {
+        if (empty($this->user) and $this->userid) {
+            $this->user = ues_user::by_id($this->userid);
+        }
+
+        return $this->user;
+    }
+
+    public function build_shortname() {
+        $pattern = get_config('block_cps', 'material_shortname');
+
+        $a = new stdClass;
+        $a->department = $this->course()->department;
+        $a->course_number = $this->course()->cou_number;
+        $a->fullname = fullname($this->user());
+
+        return ues::format_string($pattern, $a);
+    }
+
+    function unapply() {
+        $mcourse = $this->moodle();
+
+        if (empty($mcourse)) {
+            return true;
+        }
+
+        $enrol = enrol_get_plugin('ues');
+        $instance = $enrol->get_instance($mcourse->id);
+
+        $enrol->unenrol_user($instance, $this->userid);
+        return true;
+    }
 
     function apply() {
         global $DB, $CFG;
 
         require_once $CFG->dirroot . '/course/lib.php';
 
-        $ues_course = ues_course::get(array('id' => $this->courseid));
-        $user = ues_user::get(array('id' => $this->userid));
-
-        $pattern = get_config('block_cps', 'material_shortname');
-
-        $a = new stdClass;
-        $a->department = $ues_course->department;
-        $a->course_number = $ues_course->cou_number;
-        $a->fullname = fullname($user);
-
-        $shortname = ues::format_string($pattern, $a);
+        $shortname = $this->build_shortname();
 
         $mcourse = $DB->get_record('course', array('shortname' => $shortname));
 
         $enrol = enrol_get_plugin('ues');
 
         if (!$mcourse) {
-            $category = $enrol->manifest_category($ues_course);
+            $category = $enrol->manifest_category($this->course());
 
             $course = new stdClass;
             $course->visible = 0;
@@ -231,7 +282,7 @@ class cps_material extends cps_preferences implements application {
         $instance = $enrol->get_instance($mcourse->id);
 
         $primary = $enrol->setting('editingteacher_role');
-        $enrol->enrol_user($instance, $user->id, $primary);
+        $enrol->enrol_user($instance, $this->userid, $primary);
 
         $this->moodleid = $mcourse->id;
 

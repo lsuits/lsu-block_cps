@@ -45,6 +45,8 @@ if ($form->is_cancelled()) {
 } else if ($data = $form->get_data()) {
     $fields = get_object_vars($data);
 
+    $current_selections = cps_material::get_all(array('userid' => $USER->id));
+
     foreach ($fields as $name => $value) {
         if (!preg_match('/^material_(\d+)/', $name, $matches)) {
             continue;
@@ -60,13 +62,26 @@ if ($form->is_cancelled()) {
         }
 
         $material->save();
-
         $material->apply();
+
+        unset($current_selections[$material->id]);
+    }
+
+    // Remove deselected
+    foreach ($current_selections as $material) {
+        $material->unapply();
+        $material->delete($material->id);
     }
 
     $success = true;
-    $form = new material_form(null, array('sections' => $sections));
 }
+
+$all_materials = cps_material::get_all(array('userid' => $USER->id));
+$data = array();
+foreach ($all_materials as $material) {
+    $data['material_' . $material->courseid] = 1;
+}
+$form->set_data($data);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading_with_help($heading, 'material', 'block_cps');
