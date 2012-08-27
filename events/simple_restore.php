@@ -9,7 +9,10 @@ abstract class cps_simple_restore_handler {
         $restore_to = $course_settings['restore_to'];
         $old_course = $course_settings['course'];
 
-        $skip = array('id', 'category', 'sortorder', 'modinfo', 'newsitems');
+        $skip = array(
+            'id', 'category', 'sortorder',
+            'sectioncache', 'modinfo', 'newsitems'
+        );
 
         $course = $DB->get_record('course', array('id' => $old_course->id));
 
