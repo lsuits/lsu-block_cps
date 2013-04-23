@@ -16,7 +16,17 @@ if (!ues_user::is_teacher()) {
 
 $teacher = ues_teacher::get(array('userid' => $USER->id));
 
-$sections = $teacher->sections(true);
+//prevents previous semesters from being presented for user-creation
+$all        = $teacher->sections(true);
+$filter     = ues::where()->grades_due->greater_equal(time());
+$valids     = array_keys(ues_semester::get_all($filter));
+$sections   = array();
+foreach($all as $sec){
+    if(in_array($sec->semesterid, $valids)){
+        $sections[] = $sec;
+    }
+}
+
 
 if (empty($sections)) {
     print_error('no_section', 'block_cps');
