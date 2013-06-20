@@ -58,6 +58,8 @@ sections.';
 
 $string['err_enrol_days'] = 'Enrollments days cannot be >= Create Days.';
 $string['err_number'] = 'Days entered must be greater than 0.';
+$string['err_numeric'] = 'Days entered must be numeric.';
+$string['err_both_empty'] = 'If both values are not empty, they must both be numeric';
 
 $string['err_manage_one'] = 'You must select at least one request.';
 

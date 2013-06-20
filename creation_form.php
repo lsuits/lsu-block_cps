@@ -130,11 +130,13 @@ class creation_form extends moodleform {
                 $id = "{$semesterid}_{$courseid}";
 
                 $group = array(
-                    $m->createElement('text', 'create_days_'.$id, ''),
-                    $m->createElement('text', 'enroll_days_'.$id, '')
+                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>"default: 30")),
+                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>"default: 14"))
                 );
 
                 $m->addGroup($group, 'create_group_'.$id, $course, $spacer(1));
+                $m->setType("create_group_{$id}[enroll_days_{$id}]", PARAM_INT);
+                $m->setType("create_group_{$id}[create_days_{$id}]", PARAM_INT);
             }
         }
 
@@ -159,7 +161,10 @@ class creation_form extends moodleform {
                 $collection[$semesterid] = array();
             }
 
-            if (trim($value) === '' or $value > 0) {
+            $numeric = is_numeric($value) && (int) $value > 0;
+            $empty_str = trim($value) === '';
+            if ($numeric || $empty_str){
+                $value = $numeric ? (int) $value : $value;
                 $collection[$semesterid][$courseid] = $value;
                 return true;
             } else {
@@ -185,27 +190,56 @@ class creation_form extends moodleform {
 
                 foreach ($group as $name => $value) {
                     if (preg_match('/^create_days/', $name)) {
-                        $success = $fill($create_days, $semesterid,
+                        $filled = $fill($create_days, $semesterid,
                             $courseid, $value);
+                        if(!$filled){
+                            if(!is_numeric($value)){
+                                $errors[$gname] = $_s('err_numeric');                                
+                            }else{
+                                $errors[$gname] = $_s('err_number');
+                            }
+                            break;
+                        } 
+
                     } else {
-                        $success = $fill($enroll_days, $semesterid,
+                        $filled = $fill($enroll_days, $semesterid,
                             $courseid, $value);
+                        
+                        $valid = true;
+                        if(!$filled){
+                            if(!is_numeric($value)){
+                                $errors[$gname] = $_s('err_numeric');                                
+                            }else{
+                                $errors[$gname] = $_s('err_number');
+                            }
+                            break;
+                        }else{
+                        
+                            if($create_days[$semesterid][$courseid] == '' &&
+                                    $enroll_days[$semesterid][$courseid] == '') {
+                                $both_empty = true;
+                            }else{
+                                $both_empty = false;
+                                if(is_numeric($create_days[$semesterid][$courseid]) &&
+                                        is_numeric($enroll_days[$semesterid][$courseid])){
+                                    $both_numeric = true;
+                                }else{
+                                    $both_numeric = false; 
+                                }
 
+                                if($filled && !$both_empty && !$both_numeric){
+                                    $errors[$gname] = $_s('err_both_empty');
+                                }else{
+                                    $valid = 
+                                        ($create_days[$semesterid][$courseid] >= $value);
 
-                        if (isset($create_days[$semesterid][$courseid])) {
-                            $valid =
-                                ($create_days[$semesterid][$courseid] >= $value);
-                        } else {
-                            $valid = true;
+                                    if ($filled and !$valid) {
+                                        $errors[$gname] = $_s('err_enrol_days');
+                                    }
+                                }
+
+                            }
                         }
-
-                        if ($success and empty($valid)) {
-                            $errors[$gname] = $_s('err_enrol_days');
-                        }
-                    }
-
-                    if (!$success) {
-                        $errors[$gname] = $_s('err_number');
                     }
                 }
             }
