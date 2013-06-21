@@ -149,6 +149,8 @@ echo $OUTPUT->heading_with_help($heading, 'creation', 'block_cps');
 
 if (isset($success) and $success) {
     echo $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');
+}elseif($form->is_submitted() && !$form->is_validated()){
+    echo $OUTPUT->notification(get_string('someerrorswerefound'));
 }
 
 $form->set_data($form_data);
