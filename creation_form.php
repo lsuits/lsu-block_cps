@@ -13,10 +13,6 @@ class creation_form extends moodleform {
 
         $courses = array();
         $course_semesters = array();
-        
-        $cfg_enroll_days = get_config('block_cps', 'enroll_days');
-        $cfg_create_days = get_config('block_cps', 'create_days');
-        
         foreach ($sections as $section) {
             $semesterid = $section->semesterid;
             if (!isset($course_semesters[$semesterid])) {
@@ -42,14 +38,16 @@ class creation_form extends moodleform {
                 range(1, $how_many))));
         };
 
+        $default_create_days = get_config('block_cps', 'create_days');
+        $default_enroll_days = get_config('block_cps', 'enroll_days');
 
         $m->addElement('header', 'defaults', $_s('default_settings'));
 
         $m->addElement('static', 'def_create', $_s('default_create_days'),
-            $cfg_create_days);
+            $default_create_days);
 
         $m->addElement('static', 'def_enroll', $_s('default_enroll_days'),
-            $cfg_enroll_days);
+            $default_enroll_days);
 
         $course_sorter = function($coursea, $courseb) {
             if ($coursea->department == $courseb->department) {
@@ -128,22 +126,15 @@ class creation_form extends moodleform {
 
             $m->addGroup($label, 'labels', '&nbsp;', $spacer(15));
 
-            
-            
             foreach ($courses as $courseid => $course) {
                 $id = "{$semesterid}_{$courseid}";
 
                 $group = array(
-                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>'default: '.$cfg_create_days)),
-                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>'default: '.$cfg_enroll_days))
+                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>"default: 30")),
+                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>"default: 14"))
                 );
 
-                
                 $m->addGroup($group, 'create_group_'.$id, $course, $spacer(1));
-                
-                $m->setDefault("enroll_days_{$id}", $cfg_enroll_days);
-                $m->setDefault("create_days_{$id}", $cfg_create_days);
-                
                 $m->setType("create_group_{$id}[enroll_days_{$id}]", PARAM_INT);
                 $m->setType("create_group_{$id}[create_days_{$id}]", PARAM_INT);
             }
@@ -173,6 +164,7 @@ class creation_form extends moodleform {
             $numeric = is_numeric($value) && (int) $value > 0;
             $empty_str = trim($value) === '';
             if ($numeric || $empty_str){
+                $value = $numeric ? (int) $value : $value;
                 $collection[$semesterid][$courseid] = $value;
                 return true;
             } else {
@@ -197,17 +189,9 @@ class creation_form extends moodleform {
                 $courseid = $matches[2];
 
                 foreach ($group as $name => $value) {
-                    $create_status;
-                    $enroll_status;
-                    //create days fields
                     if (preg_match('/^create_days/', $name)) {
-                        if(is_null($value) || $value == ''){
-                            $create_status = 'empty';
-                        }else{
-                            $create_status = 
-                                $fill($create_days, $semesterid,$courseid, $value,'create_days') 
-                                    ? 'valid' : 'invalid';
-                        }
+                        $filled = $fill($create_days, $semesterid,
+                            $courseid, $value);
                         if(!$filled){
                             if(!is_numeric($value)){
                                 $errors[$gname] = $_s('err_numeric');                                
@@ -217,17 +201,9 @@ class creation_form extends moodleform {
                             break;
                         } 
 
-                    } 
-                    //enroll_days fields
-                    else {
-                        if(is_null($value) || $value == ''){
-                            $enroll_status = 'empty';
-                        }else{
-                            $enroll_status = 
-                                $fill($create_days, $semesterid,$courseid, $value,'enroll_days') 
-                                    ? 'valid' : 'invalid';
-                        }
-
+                    } else {
+                        $filled = $fill($enroll_days, $semesterid,
+                            $courseid, $value);
                         
                         $valid = true;
                         if(!$filled){
