@@ -165,7 +165,7 @@ class creation_form extends moodleform {
 
         $errors = array();
 
-        $fill = function (&$collection, $semesterid, $courseid, $value, $config_default) {
+        $fill = function (&$collection, $semesterid, $courseid, $value) {
             if (!isset($collection[$semesterid])) {
                 $collection[$semesterid] = array();
             }
@@ -197,10 +197,17 @@ class creation_form extends moodleform {
                 $courseid = $matches[2];
 
                 foreach ($group as $name => $value) {
+                    $create_status;
+                    $enroll_status;
                     //create days fields
                     if (preg_match('/^create_days/', $name)) {
-                        $filled = $fill($create_days, $semesterid,
-                            $courseid, $value,'create_days');
+                        if(is_null($value) || $value == ''){
+                            $create_status = 'empty';
+                        }else{
+                            $create_status = 
+                                $fill($create_days, $semesterid,$courseid, $value,'create_days') 
+                                    ? 'valid' : 'invalid';
+                        }
                         if(!$filled){
                             if(!is_numeric($value)){
                                 $errors[$gname] = $_s('err_numeric');                                
@@ -213,8 +220,14 @@ class creation_form extends moodleform {
                     } 
                     //enroll_days fields
                     else {
-                        $filled = $fill($enroll_days, $semesterid,
-                            $courseid, $value, 'enroll_days');
+                        if(is_null($value) || $value == ''){
+                            $enroll_status = 'empty';
+                        }else{
+                            $enroll_status = 
+                                $fill($create_days, $semesterid,$courseid, $value,'enroll_days') 
+                                    ? 'valid' : 'invalid';
+                        }
+
                         
                         $valid = true;
                         if(!$filled){
