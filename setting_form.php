@@ -12,12 +12,14 @@ class setting_form extends moodleform {
 
         $m->addElement('text', 'user_firstname', $_s('user_firstname'));
         $m->setDefault('user_firstname', $user->firstname);
+        $m->setType('user_firstname', PARAM_TEXT);
 
         $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
         $m->setDefault('user_grade_restore', 1);
         $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
 
         $m->addElement('hidden', 'id', $user->id);
+        $m->setType('id', PARAM_INT);
 
         $buttons = array(
             $m->createElement('submit', 'save', get_string('savechanges')),
