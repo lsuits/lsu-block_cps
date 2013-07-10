@@ -5,6 +5,9 @@ $string['pluginname_desc'] = 'The Course Preferences block allows instructors to
 control course creation and enrollment behavior. These are system wide defaults for
 those who do not actually set any data.';
 
+$string['cps:myaddinstance'] = 'Add Course Preferences System Block to the My page';
+$string['cps:addinstance'] = 'Add Course Preferences System Block';
+
 $string['course_threshold'] = 'Course Number Threshold';
 $string['course_threshold_desc'] = 'Sections belonging to a course number that
 is greater than or equal to the specified number will not be initially created.
