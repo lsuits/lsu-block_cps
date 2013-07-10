@@ -8,6 +8,10 @@ class block_cps extends block_list {
     function applicable_formats() {
         return array('site' => true, 'my' => true, 'course' => false);
     }
+    
+    function has_config() {
+        return true;
+    }
 
     function get_content() {
         if ($this->content !== NULL) {
