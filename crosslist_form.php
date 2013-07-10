@@ -31,6 +31,7 @@ class crosslist_form_select extends crosslist_form {
 
                 $key = 'selected_' . $semester->id . '_' . $course->id;
                 $m->addElement('checkbox', $key, '', $display);
+                $m->setType($key, PARAM_BOOL);
             }
         }
 
@@ -227,8 +228,9 @@ class crosslist_form_shells extends crosslist_form {
 
             $m->addElement('static', 'course_' . $course->id,
                 $this->display_course($course, $semester));
-
+            
             $m->addElement('hidden', $selected, 1);
+                $m->setType($selected, PARAM_BOOL);
 
             $last = count($course->sections);
             $total += $last;
@@ -241,7 +243,7 @@ class crosslist_form_shells extends crosslist_form {
 
         $m->addElement('select', 'shells', self::_s('split_how_many'), $options);
         $m->addHelpButton('shells', 'split_how_many', 'block_cps');
-
+        $m->setType('shells', PARAM_INT);
         $this->generate_states_and_buttons();
     }
 }
@@ -283,6 +285,7 @@ class crosslist_form_decide extends crosslist_form {
             }
 
             $m->addElement('hidden', $selected, 1);
+            $m->setType($selected, PARAM_BOOL);
         }
 
         $shells = array();
@@ -333,7 +336,10 @@ class crosslist_form_decide extends crosslist_form {
                 $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
 
             $m->addElement('hidden', 'shell_values_'.$groupingid, $shell_values);
+            $m->setType('shell_values_'.$groupingid, PARAM_TEXT);
+            
             $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
+            $m->setType('shell_name_'.$groupingid.'_hidden', PARAM_TEXT);
         }
 
         $previous_label =& $m->createElement('static', 'available_sections',
@@ -347,7 +353,10 @@ class crosslist_form_decide extends crosslist_form {
         $m->addElement('html', $form_html);
 
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells', PARAM_TEXT);
+        
         $m->addElement('hidden', 'reshelled', '');
+        $m->setType('reshelled', PARAM_TEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -446,13 +455,18 @@ class crosslist_form_confirm extends crosslist_form {
             $m->addElement('static', 'shell_label_'.$number, $name, $html);
 
             $m->addElement('hidden', $namekey, $name);
+            $m->setType($namekey, PARAM_TEXT);
+            
             $m->addElement('hidden', $valuekey, $values);
+            $m->setType($valuekey, PARAM_TEXT);
         }
 
         $m->addElement('hidden', 'shells', $this->_customdata['shells']);
+        $m->setType('shells', PARAM_TEXT);
 
         foreach ($courses as $key => $course) {
             $m->addElement('hidden', $key, $course->id);
+            $m->setType($key, PARAM_INT);
         }
 
         $this->generate_states_and_buttons();
