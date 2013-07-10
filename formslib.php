@@ -129,13 +129,16 @@ abstract class cps_form extends moodleform implements generic_states {
         $m =& $this->_form;
 
         $m->addElement('hidden', 'current', $this->current);
+        $m->setType('current', PARAM_ALPHA);
 
         if (!empty($this->next)) {
             $m->addElement('hidden', 'next', $this->next);
+            $m->setType('next', PARAM_ALPHA);
         }
 
         if (!empty($this->prev)) {
             $m->addElement('hidden', 'prev', $this->prev);
+            $m->setType('prev', PARAM_ALPHA);
         }
     }
 
@@ -147,6 +150,7 @@ abstract class cps_form extends moodleform implements generic_states {
         if (!empty($this->prev)) {
             $buttons[] = $m->createElement('submit', 'back', self::_s('back'));
         }
+        
 
         $buttons[] = $m->createElement('cancel');
 
