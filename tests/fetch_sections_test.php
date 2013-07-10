@@ -12,7 +12,6 @@ class test_fetch_sections extends advanced_testcase{
 
     public function setup(){
         global $CFG;
-//        $this->loadDataSet($this->createXMLDataSet($CFG->dirroot.'/local/ap_report/tests/fixtures/dataset.xml'));
         $this->loadDataSet($this->dataset());
         $this->resetAfterTest();
     }
