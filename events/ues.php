@@ -108,6 +108,13 @@ abstract class cps_profile_field_helper {
 
 abstract class cps_ues_handler {
 
+    /**
+     * 
+     * @global type $DB
+     * @param stdClass $user previously, this has been of type ues_user
+     * @see enrol_ues_plugin::create_user
+     * @return boolean
+     */
     public static function user_updated($user) {
         global $DB;
 
