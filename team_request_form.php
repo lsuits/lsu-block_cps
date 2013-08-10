@@ -180,15 +180,21 @@ class team_request_form_update extends team_request_form {
         $m->setDefault('update_option', self::MANAGE_REQUESTS);
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected',PARAM_ALPHANUMEXT);
+        
         $m->addElement('hidden', 'shells', $groupingid);
+        $m->setType('shells', PARAM_INT);
 
         foreach ($queries as $number => $query) {
             $users = implode(',', $selected_users[$number]);
 
             $m->addElement('hidden', 'selected_users'.$number.'_str', $users);
+            $m->setType('selected_users'.$number.'_str', PARAM_TEXT);
 
             foreach ($query as $key => $value) {
                 $m->addElement('hidden', 'query'.$number.'['.$key.']', $value);
+                $ptype = $key == 'department' ? PARAM_ALPHA : PARAM_INT;
+                $m->setType('query'.$number.'['.$key.']', $ptype);
             }
         }
 
@@ -299,9 +305,11 @@ class team_request_form_manage extends team_request_form {
         }
 
         $m->addElement('hidden', 'selected', '');
-
+        $m->setType('selected',PARAM_ALPHANUMEXT);
+        
         $m->addElement('hidden', 'update_option', '');
-
+        $m->setType('update_option',PARAM_INT);
+        
         $this->generate_states_and_buttons();
     }
 
@@ -362,7 +370,8 @@ class team_request_form_confirm extends team_request_form {
 
         foreach ($team_teaches as $id => $request) {
 
-            $m->addElement('hidden', 'options_'.$id.'[approval_'.$id.']', '');;
+            $m->addElement('hidden', 'options_'.$id.'[approval_'.$id.']', '');
+            $m->setType('options_'.$id.'[approval_'.$id.']', PARAM_INT);
 
             if (!isset($this->_customdata['options_'.$id])) {
                 continue;
@@ -398,12 +407,18 @@ class team_request_form_confirm extends team_request_form {
         }
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected',PARAM_ALPHANUMEXT);
+        
         $m->addElement('hidden', 'update_option', '');
+        $m->setType('update_option',PARAM_INT);
 
         $this->generate_states_and_buttons();
     }
 }
 
+/**
+ * second form in the team-teach request wizard
+ */
 class team_request_form_shells extends team_request_form {
     var $current = self::SHELLS;
     var $prev = self::SELECT;
@@ -436,9 +451,11 @@ class team_request_form_shells extends team_request_form {
         $options = array_combine($range, $range);
 
         $m->addElement('select', 'shells', self::_s('team_how_many'), $options);
+        
         $m->addHelpButton('shells', 'team_how_many', 'block_cps');
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected',PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -509,23 +526,34 @@ class team_request_form_query extends team_request_form {
         $m->addGroup($labels, 'query_labels', '&nbsp;', $fill(23), false);
 
         foreach (range(1, $shells) as $number) {
+
+
+            
             $texts = array(
                 $m->createELement('text', 'department', ''),
                 $m->createELement('text', 'cou_number', '')
             );
-
+            
             $display = self::_s('team_query_for', $semester);
 
-            $m->addGroup($texts, 'query' . $number, $display, $fill(1), true);
+            $group = $m->addGroup($texts, 'query' . $number, $display, $fill(1), true);
 
+            $m->setType($group->getElementName('department'), PARAM_ALPHA);
+            $m->setType($group->getElementName('cou_number'), PARAM_INT);
+            
             $m->addElement('hidden', 'selected_users'.$number.'_str', '');
+            $m->setType('selected_users'.$number.'_str', PARAM_TEXT);
         }
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_TEXT);
+        
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells',PARAM_INT);
 
         $m->addElement('hidden', 'reshell', 0);
-
+        $m->setType('reshell',PARAM_INT);
+        
         $this->generate_states_and_buttons();
     }
 
@@ -648,10 +676,14 @@ class team_request_form_request extends team_request_form {
             $query = $this->_customdata[$key];
 
             $m->addElement('hidden', 'query'.$number.'[department]', '');
+            $m->setType('query'.$number.'[department]', PARAM_ALPHA);
+            
             $m->addElement('hidden', 'query'.$number.'[cou_number]', '');
-
+            $m->setType('query'.$number.'[cou_number]', PARAM_INT);
+            
             if (empty($query['department'])) {
                 $m->addElement('hidden', 'selected_users'.$number, '');
+                $m->setType('selected_users'.$number,PARAM_INT);
                 continue;
             }
 
@@ -683,17 +715,24 @@ class team_request_form_request extends team_request_form {
 
             $select =& $m->addElement('select', 'selected_users' . $number,
                 self::_s('team_teachers'), $users);
+            $m->setType('selected_users'.$number,PARAM_INT);
 
             $select->setMultiple(true);
 
             $m->addHelpButton('selected_users' . $number, 'team_teachers', 'block_cps');
 
             $m->addElement('hidden', 'selected_users'.$number.'_str', '');
+            $m->setType('selected_users'.$number.'_str',PARAM_RAW);
         }
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected',PARAM_ALPHANUMEXT);
+        
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells', PARAM_INT);
+        
         $m->addElement('hidden', 'reshell', 0);
+        $m->setType('reshell',PARAM_INT);
 
         $this->generate_states_and_buttons();
     }
@@ -761,7 +800,10 @@ class team_request_form_review extends team_request_form {
             $query = (object) $this->_customdata['query'. $number];
 
             $m->addElement('hidden', 'query'.$number.'[department]', '');
+            $m->setType('query'.$number.'[department]', PARAM_ALPHA);
+            
             $m->addElement('hidden', 'query'.$number.'[cou_number]', '');
+            $m->setType('query'.$number.'[cou_number]', PARAM_INT);
 
             if (empty($query->department)) {
                 $m->addElement('hidden', 'selected_users'.$number.'_str', '');
@@ -779,14 +821,20 @@ class team_request_form_review extends team_request_form {
             }
 
             $m->addElement('hidden', 'selected_users'.$number.'_str', $userids);
+            $m->setType('selected_users'.$number.'_str', PARAM_RAW);
         }
 
         $m->addElement('static', 'breather', '', '');
         $m->addElement('static', 'please_note', self::_s('team_note'), self::_s('team_going_email'));
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected',PARAM_ALPHANUMEXT);
+        
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells',PARAM_INT);
+        
         $m->addElement('hidden', 'reshell', 0);
+        $m->setType('reshell', PARAM_INT);
 
         $update_option = optional_param('update_option', null, PARAM_INT);
         if ($update_option) {

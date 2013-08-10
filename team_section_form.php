@@ -77,6 +77,8 @@ class team_section_form_select extends team_section_form {
         $m->addElement('static', 'continue_build', '', self::_s('team_continue_build'));
 
         $m->addElement('hidden', 'id', $semester->id . '_' . $course->id);
+        $m->setType('id', PARAM_ALPHANUMEXT);
+        
 
         $this->is_a_master = $is_a_master;
         $this->not_a_master = $not_a_master;
@@ -93,6 +95,7 @@ class team_section_form_select extends team_section_form {
                 $this->next = null;
             } else {
                 $m->addElement('hidden', 'shells', count($merged));
+                $m->setType('shells',PARAM_INT);
 
                 foreach ($merged as $number => $sections) {
                     $name_key = 'shell_name_'.$number.'_hidden';
@@ -100,11 +103,13 @@ class team_section_form_select extends team_section_form {
 
                     $m->addElement('hidden', $name_key,
                         current($sections)->shell_name);
+                    $m->setType($name_key, PARAM_TEXT);
 
                     $to_sectionids = function ($sec) { return $sec->sectionid; };
 
                     $m->addElement('hidden', $value_key,
                         implode(',', array_map($to_sectionids, $sections)));
+                    $m->setType($value_key, PARAM_RAW);
                 }
             }
         }
@@ -288,6 +293,7 @@ class team_section_form_shells extends team_section_form {
         $m->addHelpButton('shells', 'split_how_many', 'block_cps');
 
         $m->addElement('hidden', 'id', $course->id);
+        $m->setType('id', PARAM_ALPHANUMEXT);
         $this->generate_states_and_buttons();
     }
 }
@@ -404,7 +410,11 @@ class team_section_form_decide extends team_section_form {
                 $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
 
             $m->addElement('hidden', 'shell_values_'.$groupingid, $shell_values);
+            $m->setType('shell_values_'.$groupingid, PARAM_RAW);
+
             $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
+            $m->setType('shell_name_'.$groupingid.'_hidden', PARAM_TEXT);
+
         }
 
         $previous_label =& $m->createElement('static', 'available_sections',
@@ -418,9 +428,16 @@ class team_section_form_decide extends team_section_form {
         $m->addElement('html', $form_html);
 
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells', PARAM_INT);
+        
         $m->addElement('hidden', 'id', '');
+        $m->setType('id', PARAM_ALPHANUMEXT);
+
         $m->addElement('hidden', 'team_section_option', '');
+        $m->setType('team_section_option', PARAM_ALPHANUMEXT);
+
         $m->addElement('hidden', 'reshelled', '');
+        $m->setType('reshelled', PARAM_INT);
 
         $this->generate_states_and_buttons();
     }
@@ -555,11 +572,18 @@ class team_section_form_confirm extends team_section_form {
 
             $m->addElement('hidden', $value_key, '');
             $m->addElement('hidden', $name_key, '');
+            $m->setType($name_key,PARAM_TEXT);
+            $m->setType($value_key,PARAM_RAW);
         }
 
         $m->addElement('hidden', 'id', '');
+        $m->setType('id',PARAM_ALPHANUMEXT);
+
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells',PARAM_INT);
+
         $m->addElement('hidden', 'team_section_option', '');
+        $m->setType('team_section_option', PARAM_INT);
 
         $this->generate_states_and_buttons();
     }

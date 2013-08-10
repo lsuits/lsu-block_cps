@@ -38,7 +38,7 @@ class setting_search_form extends moodleform {
         $m->setType('username',PARAM_ALPHANUMEXT);
         
         $m->addElement('text', 'idnumber', get_string('idnumber'));
-        $m->setType('idnumber',PARAM_INT);
+        $m->setType('idnumber',PARAM_ALPHANUM);
 
         $buttons = array(
             $m->createElement('submit', 'search', get_string('search')),
