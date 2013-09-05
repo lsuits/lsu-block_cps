@@ -104,11 +104,15 @@ class creation_form extends moodleform {
             $m->setDefault('creation_enablecompletion', get_config('moodlecourse', 'enablecompletion'));
             $m->disabledIf('creation_enablecompletion', 'creation_defaults', 'checked');
 
-            $m->addElement('checkbox', 'creation_completionstartonenrol', get_string('completionstartonenrol', 'completion'));
-            $m->setDefault('creation_completionstartonenrol', get_config('moodlecourse', 'completionstartonenrol'));
 
-            $m->disabledIf('creation_completionstartonenrol', 'creation_enablecompletion', 'eq', 0);
-            $m->disabledIf('creation_completionstartonenrol', 'creation_defaults', 'checked');
+            /* Removed from Moodle
+                $m->addElement('checkbox', 'creation_completionstartonenrol', get_string('completionstartonenrol', 'completion'));
+                $m->setDefault('creation_completionstartonenrol', get_config('moodlecourse', 'completionstartonenrol'));
+
+                $m->disabledIf('creation_completionstartonenrol', 'creation_enablecompletion', 'eq', 0);
+                $m->disabledIf('creation_completionstartonenrol', 'creation_defaults', 'checked');
+            */
+
         }
 
         foreach ($course_semesters as $semesterid => $courses) {
