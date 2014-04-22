@@ -35,10 +35,9 @@ class setting_form extends moodleform {
         $m->setDefault('user_firstname', $user->firstname);
         $m->setType('user_firstname', PARAM_TEXT);
 
-        if (cps_setting::is_teacher(ues_user::sections(true))) {
-        $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
-        $m->setDefault('user_grade_restore', 1);
-        $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
+        if (cps_setting::is_valid_teacher(ues_user::sections(true))) {
+            $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
+            $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
         }
 
         $m->addElement('hidden', 'id', $user->id);
