@@ -37,7 +37,7 @@ $_s = ues::gen_str('block_cps');
 $blockname = $_s('pluginname');
 $heading = cps_creation::name();
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 
 $PAGE->set_context($context);
 $PAGE->set_heading($blockname . ': '. $heading);
