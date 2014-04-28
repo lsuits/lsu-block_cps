@@ -16,7 +16,7 @@ if (!ues_user::is_teacher()) {
 
 $teacher = ues_teacher::get(array('userid' => $USER->id));
 
-//prevents previous semesters from being presented for user-creation
+// We're only concerned with active sections.
 $all        = $teacher->sections(true);
 $filter     = ues::where()->grades_due->greater_equal(time());
 $valids     = array_keys(ues_semester::get_all($filter));
