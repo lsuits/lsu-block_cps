@@ -228,7 +228,7 @@ abstract class cps_ues_handler {
         $semester = $section->semester();
 
         $primary = $section->primary();
-
+        // @TODO debug this: 1 why  use current ? is the choice of teacher arbitrary ?
         // We know a teacher exists for this course, so we'll use a non-primary
         if (!$primary) {
             $primary = current($section->teachers());
