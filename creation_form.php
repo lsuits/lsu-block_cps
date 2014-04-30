@@ -129,18 +129,28 @@ class creation_form extends moodleform {
             );
 
             $m->addGroup($label, 'labels', '&nbsp;', $spacer(15));
+            
+            $create_default = get_config('block_cps', 'create_days');
+            $enroll_default = get_config('block_cps', 'enroll_days');
 
             foreach ($courses as $courseid => $course) {
                 $id = "{$semesterid}_{$courseid}";
 
                 $group = array(
-                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>"default: 30")),
-                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>"default: 14"))
+                    // @todo if these default placeholders remain, refactor to use global settings.
+                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>"default: $create_default")),
+                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>"default: $enroll_default"))
                 );
 
                 $m->addGroup($group, 'create_group_'.$id, $course, $spacer(1));
-                $m->setType("create_group_{$id}[enroll_days_{$id}]", PARAM_INT);
+                
                 $m->setType("create_group_{$id}[create_days_{$id}]", PARAM_INT);
+                $m->setDefault("create_group_{$id}[create_days_{$id}]", $create_default);
+                $m->disabledIf("create_group_{$id}[create_days_{$id}]", 'creation_defaults', 'checked');
+
+                $m->setType("create_group_{$id}[enroll_days_{$id}]", PARAM_INT);
+                $m->setDefault("create_group_{$id}[enroll_days_{$id}]", $enroll_default);
+                $m->disabledIf("create_group_{$id}[enroll_days_{$id}]", 'creation_defaults', 'checked');
             }
         }
 
@@ -154,19 +164,16 @@ class creation_form extends moodleform {
     }
 
     public function validation($data, $files) {
-        $create_days = array();
-        $enroll_days = array();
-        $settings = array();
-
-        $errors = array();
+        $create_days = $enroll_days = $settings = $errors = array();
 
         $fill = function (&$collection, $semesterid, $courseid, $value) {
             if (!isset($collection[$semesterid])) {
                 $collection[$semesterid] = array();
             }
 
-            $numeric = is_numeric($value) && (int) $value > 0;
+            $numeric   = is_numeric($value) && (int) $value > 0;
             $empty_str = trim($value) === '';
+
             if ($numeric || $empty_str){
                 $value = $numeric ? (int) $value : $value;
                 $collection[$semesterid][$courseid] = $value;
@@ -178,6 +185,7 @@ class creation_form extends moodleform {
 
         $_s = ues::gen_str('block_cps');
 
+        // iterate over the form values for creation and enrollment data.
         foreach ($data as $gname => $group) {
             if ($gname === 'creation_defaults') {
                 continue;
@@ -206,9 +214,8 @@ class creation_form extends moodleform {
                         } 
 
                     } else {
-                        $filled = $fill($enroll_days, $semesterid,
-                            $courseid, $value);
-                        
+                        $filled = $fill($enroll_days, $semesterid, $courseid, $value);
+
                         $valid = true;
                         if(!$filled){
                             if(!is_numeric($value)){

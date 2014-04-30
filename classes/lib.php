@@ -303,7 +303,7 @@ class cps_creation extends cps_preferences implements application {
             'courseid' => $this->courseid
         );
 
-        // All the section for this course and semester
+        // All the sections for this course and semester
         $sections = ues_section::get_all($params);
 
         $userid = $this->userid;

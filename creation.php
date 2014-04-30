@@ -55,8 +55,7 @@ $setting_params = ues::where()
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
 } else if ($data = $form->get_data()) {
-    $settings = cps_setting::get_to_name($setting_params);
-
+    $settings  = cps_setting::get_to_name($setting_params);
     $creations = cps_creation::get_all(array('userid' => $USER->id));
 
     if (isset($data->creation_defaults)) {
@@ -120,7 +119,7 @@ if ($form->is_cancelled()) {
 }
 
 $creations = cps_creation::get_all(array('userid' => $USER->id));
-$settings = cps_setting::get_all($setting_params);
+$settings  = cps_setting::get_all($setting_params);
 
 $form_data = array();
 
@@ -134,14 +133,12 @@ foreach ($settings as $setting) {
 
 foreach ($creations as $creation) {
     $semesterid = $creation->semesterid;
-    $courseid = $creation->courseid;
+    $courseid   = $creation->courseid;
 
     $id = "_{$semesterid}_{$courseid}";
 
-    $form_data["create_group{$id}"] = array(
-        "create_days{$id}" => $creation->create_days,
-        "enroll_days{$id}" => $creation->enroll_days
-    );
+    $form_data["create_group{$id}[create_days{$id}]"] = $creation->create_days;
+    $form_data["create_group{$id}[enroll_days{$id}]"] = $creation->enroll_days;
 }
 
 echo $OUTPUT->header();
