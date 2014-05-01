@@ -100,6 +100,12 @@ if ($form->is_cancelled()) {
                 $creation->fill_params($params);
             }
 
+            // If nothing has changed, skip the rest of the loop:
+            // apply will perform unenroll/enroll, causing course visibility = 0;
+            if($creation->create_days == $create_days && $creation->enroll_days == $enroll_days){
+                unset($creations[$creation->id]);
+                continue;
+            }
             $creation->create_days = $create_days;
             $creation->enroll_days = $enroll_days;
 

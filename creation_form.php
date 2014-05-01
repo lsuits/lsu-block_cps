@@ -137,20 +137,17 @@ class creation_form extends moodleform {
                 $id = "{$semesterid}_{$courseid}";
 
                 $group = array(
-                    // @todo if these default placeholders remain, refactor to use global settings.
-                    $m->createElement('text', 'create_days_'.$id, null, array('placeholder'=>"default: $create_default")),
-                    $m->createElement('text', 'enroll_days_'.$id, null, array('placeholder'=>"default: $enroll_default"))
+                    $m->createElement('text', 'create_days_'.$id, null),
+                    $m->createElement('text', 'enroll_days_'.$id, null)
                 );
 
                 $m->addGroup($group, 'create_group_'.$id, $course, $spacer(1));
                 
                 $m->setType("create_group_{$id}[create_days_{$id}]", PARAM_INT);
                 $m->setDefault("create_group_{$id}[create_days_{$id}]", $create_default);
-                $m->disabledIf("create_group_{$id}[create_days_{$id}]", 'creation_defaults', 'checked');
 
                 $m->setType("create_group_{$id}[enroll_days_{$id}]", PARAM_INT);
                 $m->setDefault("create_group_{$id}[enroll_days_{$id}]", $enroll_default);
-                $m->disabledIf("create_group_{$id}[enroll_days_{$id}]", 'creation_defaults', 'checked');
             }
         }
 
