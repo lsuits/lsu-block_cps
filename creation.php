@@ -80,6 +80,7 @@ if ($form->is_cancelled()) {
         $setting->save();
     }
 
+    $moodle_course_visibilities = array();
     foreach ($form->create_days as $semesterid => $courses) {
         foreach ($courses as $courseid => $create_days) {
             if (empty($create_days)) {
@@ -100,19 +101,45 @@ if ($form->is_cancelled()) {
                 $creation->fill_params($params);
             }
 
-            // If nothing has changed, skip the rest of the loop:
-            // apply will perform unenroll/enroll, causing course visibility = 0;
-            if($creation->create_days == $create_days && $creation->enroll_days == $enroll_days){
+            
+            $same_value = $creation->create_days == $create_days && $creation->enroll_days == $enroll_days;
+            $no_value   = $creation->create_days == null && $creation->enroll_days == null;
+            if($same_value){
+                // If nothing has changed, skip the rest of the loop:
+                // apply will perform unenroll/enroll, causing course visibility = 0;
                 unset($creations[$creation->id]);
                 continue;
+            }else{
+                global $DB;
+                $creation->create_days = $create_days;
+                $creation->enroll_days = $enroll_days;
+                $creation->save();
+                
+                // populate the moodle_course_visibilities map for all courses in which the current user is primary.
+                $course = ues_course::by_id($courseid);
+                $sections = $course->sections(ues_semester::by_id($semesterid));
+                foreach($sections as $section){
+                    if($USER->id != $section->primary()->userid){
+                        continue;
+                    }
+                    $moodle_course = $section->moodle();
+                    if($moodle_course and !array_key_exists($moodle_course->id, $moodle_course_visibilities)){
+                        $moodle_course_visibilities[$moodle_course->id] = $moodle_course->visible;
+                    }
+                }
+                
+                $creation->apply();
             }
-            $creation->create_days = $create_days;
-            $creation->enroll_days = $enroll_days;
-
-            $creation->save();
-            $creation->apply();
-
             unset($creations[$creation->id]);
+        }
+    }
+
+    // reset the visibility for courses made invisible by $creation->apply(); HACK!
+    $moodle_courses = $DB->get_records_list('course', 'id', array_keys($moodle_course_visibilities));
+    foreach($moodle_courses as $id => $course){
+        if($course->visible != $moodle_course_visibilities[$id]){
+            $course->visible = $moodle_course_visibilities[$id];
+            $DB->update_record('course', $course);
         }
     }
 
