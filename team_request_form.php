@@ -1,5 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
+/**
+ *
+ * @package    block_cps
+ * @copyright  2014 Louisiana State University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 require_once $CFG->dirroot . '/blocks/cps/formslib.php';
 
 interface team_states {
@@ -193,7 +214,18 @@ class team_request_form_update extends team_request_form {
 
             foreach ($query as $key => $value) {
                 $m->addElement('hidden', 'query'.$number.'['.$key.']', $value);
-                $ptype = $key == 'department' ? PARAM_ALPHA : PARAM_INT;
+                switch($key){
+                    case 'department':
+                        $ptype = PARAM_ALPHANUMEXT;
+                        break;
+                    case 'cou_number':
+                        $ptype = PARAM_ALPHANUM;
+                        break;
+                    default:
+                        $ptype = PARAM_INT;
+                        break;
+                }
+
                 $m->setType('query'.$number.'['.$key.']', $ptype);
             }
         }
@@ -497,7 +529,7 @@ class team_request_form_query extends team_request_form {
 
         if ($update_option) {
             $m->addElement('hidden', 'update_option', $update_option);
-
+            $m->setType('update_option',PARAM_INT);
             $this->prev = self::UPDATE;
         }
 
@@ -538,8 +570,8 @@ class team_request_form_query extends team_request_form {
 
             $group = $m->addGroup($texts, 'query' . $number, $display, $fill(1), true);
 
-            $m->setType($group->getElementName('department'), PARAM_ALPHA);
-            $m->setType($group->getElementName('cou_number'), PARAM_INT);
+            $m->setType($group->getElementName('department'), PARAM_ALPHANUMEXT);
+            $m->setType($group->getElementName('cou_number'), PARAM_ALPHANUM);
             
             $m->addElement('hidden', 'selected_users'.$number.'_str', '');
             $m->setType('selected_users'.$number.'_str', PARAM_TEXT);
@@ -658,6 +690,7 @@ class team_request_form_request extends team_request_form {
 
         if ($update_option) {
             $m->addElement('hidden', 'update_option', $update_option);
+            $m->setType('update_option', PARAM_INT);
             $adding_user = team_request_form_update::ADD_USER_CURRENT;
 
             $this->prev = $update_option == $adding_user ? self::UPDATE :
@@ -676,10 +709,10 @@ class team_request_form_request extends team_request_form {
             $query = $this->_customdata[$key];
 
             $m->addElement('hidden', 'query'.$number.'[department]', '');
-            $m->setType('query'.$number.'[department]', PARAM_ALPHA);
+            $m->setType('query'.$number.'[department]', PARAM_ALPHANUMEXT);
             
             $m->addElement('hidden', 'query'.$number.'[cou_number]', '');
-            $m->setType('query'.$number.'[cou_number]', PARAM_INT);
+            $m->setType('query'.$number.'[cou_number]', PARAM_ALPHANUM);
             
             if (empty($query['department'])) {
                 $m->addElement('hidden', 'selected_users'.$number, '');
@@ -800,10 +833,10 @@ class team_request_form_review extends team_request_form {
             $query = (object) $this->_customdata['query'. $number];
 
             $m->addElement('hidden', 'query'.$number.'[department]', '');
-            $m->setType('query'.$number.'[department]', PARAM_ALPHA);
+            $m->setType('query'.$number.'[department]', PARAM_ALPHANUMEXT);
             
             $m->addElement('hidden', 'query'.$number.'[cou_number]', '');
-            $m->setType('query'.$number.'[cou_number]', PARAM_INT);
+            $m->setType('query'.$number.'[cou_number]', PARAM_ALPHANUM);
 
             if (empty($query->department)) {
                 $m->addElement('hidden', 'selected_users'.$number.'_str', '');
@@ -839,6 +872,7 @@ class team_request_form_review extends team_request_form {
         $update_option = optional_param('update_option', null, PARAM_INT);
         if ($update_option) {
             $m->addElement('hidden', 'update_option', $update_option);
+            $m->setType('update_option', PARAM_INT);
         }
 
         $this->generate_states_and_buttons();
