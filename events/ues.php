@@ -509,6 +509,12 @@ abstract class cps_ues_handler {
         return cps_profile_field_helper::process($user, 'user_anonymous_number');
     }
 
+    // Accommodate the Generic XML provider.
+    public static function ues_xml_anonymous_updated($user) {
+        mtrace(sprintf("xml_anon event triggered !"));
+        self::ues_lsu_anonymous_updated($user);
+    }
+
     public static function ues_group_emptied($params) {
         return true;
     }
