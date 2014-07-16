@@ -496,12 +496,23 @@ abstract class cps_ues_handler {
         return cps_profile_field_helper::process($user, 'user_keypadid');
     }
 
+    // Accommodate the Generic XML provider.
+    public static function ues_xml_student_data_updated($user) {
+        self::ues_lsu_student_data_updated($user);
+    }
+
     public static function ues_lsu_anonymous_updated($user) {
         if (empty($user->user_anonymous_number)) {
             return cps_profile_field_helper::clear_field_data($user, 'user_anonymous_number');
         }
 
         return cps_profile_field_helper::process($user, 'user_anonymous_number');
+    }
+
+    // Accommodate the Generic XML provider.
+    public static function ues_xml_anonymous_updated($user) {
+        mtrace(sprintf("xml_anon event triggered !"));
+        self::ues_lsu_anonymous_updated($user);
     }
 
     public static function ues_group_emptied($params) {
