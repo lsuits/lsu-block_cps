@@ -1,3 +1,9 @@
+## v1.1.8
+
+- Updates deprecated context functions.
+- adds GPL declarations
+- adds setType statements missed in the upgrade to Moodle 2.5.
+
 ## v1.1.7
 
 - Ships with jQuery [#43][43]

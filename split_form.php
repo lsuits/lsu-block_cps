@@ -1,5 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
+/**
+ *
+ * @package    block_cps
+ * @copyright  2014 Louisiana State University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 require_once $CFG->dirroot . '/blocks/cps/formslib.php';
 
 abstract class split_form extends cps_form {
@@ -155,6 +176,7 @@ class split_form_update extends split_form implements updating_form {
         $grouping_lookup = array();
 
         $m->addElement('hidden', 'shells', $shells);
+        $m->setType('shells', PARAM_INT);
 
         $m->addElement('header', 'selected_course', self::_s('split_updating'));
 
@@ -176,7 +198,10 @@ class split_form_update extends split_form implements updating_form {
         foreach ($grouping_lookup as $number => $info) {
             foreach ($info as $name => $secs) {
                 $m->addElement('hidden', 'shell_name_'.$number.'_hidden', $name);
+                $m->setType('shell_name_'.$number.'_hidden', PARAM_ALPHANUMEXT);
+
                 $m->addElement('hidden', 'shell_values_'.$number, implode(',', $secs));
+                $m->setType('shell_values_'.$number, PARAM_ALPHANUMEXT);
             }
         }
 
@@ -201,6 +226,7 @@ class split_form_update extends split_form implements updating_form {
         $m->setDefault('split_option', self::REARRANGE);
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -302,7 +328,9 @@ class split_form_decide extends split_form {
                 $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
 
             $m->addElement('hidden', 'shell_values_'.$groupingid, $shell_values);
+            $m->setType('shell_values_'.$groupingid, PARAM_ALPHANUMEXT);
             $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
+            $m->setType('shell_name_'.$groupingid.'_hidden', PARAM_ALPHANUMEXT);
         }
 
         $previous_label =& $m->createElement('static', 'available_sections',
@@ -316,8 +344,12 @@ class split_form_decide extends split_form {
         $m->addElement('html', $form_html);
 
         $m->addElement('hidden', 'shells', '');
+        $m->setType('shells', PARAM_INT);
+
         $m->addElement('hidden', 'reshelled', '');
+
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -374,14 +406,22 @@ class split_form_confirm extends split_form {
             $html .= '</ul>';
 
             $m->addElement('static', 'shell_label_' . $number, $display . ' ' .$name, $html);
+            $m->setType('reshelled', PARAM_INT);
 
             $m->addElement('hidden', $namekey, $this->_customdata[$namekey]);
+            $m->setType($namekey, PARAM_ALPHANUM);
+
             $m->addElement('hidden', $valuekey, $this->_customdata[$valuekey]);
+            $m->setType($valuekey, PARAM_ALPHANUM);
         }
 
         $m->addElement('hidden', 'shells', $this->_customdata['shells']);
+        $m->setType('shells', PARAM_INT);
+
         $m->addElement('hidden', 'reshelled', '');
+
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
