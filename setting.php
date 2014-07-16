@@ -142,6 +142,12 @@ if ($form->is_cancelled()) {
             unset($current_settings[$name]);
         }
 
+        // In order to allow students to change their names, per SG resolution c.2014, while
+        // still retaining the legal name for roster and post-grades purposes, move firstname to alt.name.
+        if($setting->name == 'user_firstname' && !cps_setting::is_valid_teacher(ues_user::sections(true))){
+            $user->alternatename = $user->firstname;
+        }
+
         foreach ($current_settings as $setting) {
             cps_setting::delete($setting->id);
         }
