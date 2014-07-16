@@ -353,7 +353,6 @@ class cps_setting extends cps_preferences {
     var $value;
 
     public static function is_valid($semesters) {
-        global $USER;
         return true;
     }
 
