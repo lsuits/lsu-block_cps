@@ -141,7 +141,7 @@ abstract class manifest_updater extends ues_user_section_accessor implements uni
         }
 
         // Allow event to rename course
-        events_trigger('ues_course_create', $course);
+        events_trigger_legacy('ues_course_create', $course);
 
         // Change association if there exists no other course.
         // This would prevent an unnecessary course creation
