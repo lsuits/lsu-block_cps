@@ -62,6 +62,8 @@ $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
 $PAGE->set_url($base_url);
 
+$renderer = $PAGE->get_renderer('block_cps');
+
 // Admin came here the first time
 if (is_siteadmin($USER->id) and $USER->id === $id) {
     $form = new setting_search_form();
@@ -71,24 +73,6 @@ if (is_siteadmin($USER->id) and $USER->id === $id) {
 
 $setting_params = ues::where('userid')->equal($id)->name->starts_with('user_');
 
-if($reset == 1){
-    $setting = cps_setting::get(array(
-        'userid' => $user->id,
-        'name' => 'user_firstname'
-    ));
-
-    if($setting){
-        cps_setting::delete($setting->id);
-    }
-
-    if(isset($user->alternatename)){
-        global $DB;
-        $user->firstname = $user->alternatename;
-        $user->alternatename = null;
-        $DB->update_record('user', $user);
-    }
-
-}
 
 function processnamechange($user){
     $isteacher  = cps_setting::is_valid_teacher(ues_user::sections(true));
@@ -122,30 +106,7 @@ if ($form->is_cancelled()) {
             if (empty($users)) {
                 $result = $OUTPUT->notification($_s('no_results'));
             } else {
-                $table = new html_table();
-                $table->head = array(
-                    get_string('firstname'), get_string('lastname'),
-                    get_string('username'), get_string('idnumber'),
-                    get_string('alternatename'),
-                    get_string('action')
-                );
-
-                $edit_str = get_string('edit');
-                foreach ($users as $user) {
-                    $url = new moodle_url($base_url, array('id' => $user->id));
-                    $resetlink = html_writer::link(new moodle_url($base_url, array('id' => $user->id, 'reset'=>1)), 'reset');
-                    $altname = $user->alternatename ? $user->alternatename." | ".$resetlink : '';
-                    $line = array(
-                        $user->firstname,
-                        $user->lastname,
-                        $user->username,
-                        $user->idnumber,
-                        $altname,
-                        html_writer::link($url, $edit_str)
-                    );
-
-                    $table->data[] = new html_table_row($line);
-                }
+                $table  = $renderer->users_search_result_table($users, $base_url);
 
                 $result = html_writer::tag(
                     'div', html_writer::table($table),
@@ -189,6 +150,31 @@ if ($form->is_cancelled()) {
 
         $note = $OUTPUT->notification(get_string('settings_changessaved', 'block_cps'), 'notifysuccess');
     }
+}elseif($reset == 1){
+    $setting = cps_setting::get(array(
+        'userid' => $user->id,
+        'name' => 'user_firstname'
+    ));
+
+    if($setting){
+        cps_setting::delete($setting->id);
+    }
+
+    if(isset($user->alternatename)){
+        global $DB;
+        $user->firstname = $user->alternatename;
+        $user->alternatename = null;
+        $DB->update_record('user', $user);
+    }
+
+    $users = $DB->get_records('user', array('id'=>$user->id));
+    $table = $renderer->users_search_result_table($users, $base_url);
+
+    $result = html_writer::tag(
+        'div', html_writer::table($table),
+        array('class' => 'centered results')
+    );
+    redirect(new moodle_url('/blocks/cps/setting.php', array('id' =>$user->id)));
 }
 
 $settings = cps_setting::get_to_name($setting_params);
