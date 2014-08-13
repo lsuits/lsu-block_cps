@@ -65,7 +65,7 @@ $PAGE->set_url($base_url);
 $renderer = $PAGE->get_renderer('block_cps');
 
 // Admin came here the first time
-if (is_siteadmin($USER->id) and $USER->id === $id) {
+if ($reset == 1 || (is_siteadmin($USER->id) and $USER->id === $id)) {
     $form = new setting_search_form();
 } else {
     $form = new setting_form(null, array('user' => $user));
@@ -84,10 +84,33 @@ function processnamechange($user){
     return $user;
 }
 
+if($reset == 1){
+    $setting = cps_setting::get(array(
+        'userid' => $user->id,
+        'name' => 'user_firstname'
+    ));
+
+    if($setting){
+        cps_setting::delete($setting->id);
+    }
+
+    if(isset($user->alternatename)){
+        global $DB;
+        $user->firstname = $user->alternatename;
+        $user->alternatename = null;
+        $DB->update_record('user', $user);
+    }
+
+    $data = new stdClass();
+    $data->search = true;
+    $data->username = $user->username;
+}else{
+    $data = $form->get_data();
+}
 
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
-} else if ($data = $form->get_data()) {
+} else if ($data) {
     if (isset($data->search)) {
         $filters = ues::where();
 
@@ -149,32 +172,9 @@ if ($form->is_cancelled()) {
         events_trigger('user_updated', $user);
 
         $note = $OUTPUT->notification(get_string('settings_changessaved', 'block_cps'), 'notifysuccess');
+        $base_url->param('id', $user->id);
+        redirect($base_url);
     }
-}elseif($reset == 1){
-    $setting = cps_setting::get(array(
-        'userid' => $user->id,
-        'name' => 'user_firstname'
-    ));
-
-    if($setting){
-        cps_setting::delete($setting->id);
-    }
-
-    if(isset($user->alternatename)){
-        global $DB;
-        $user->firstname = $user->alternatename;
-        $user->alternatename = null;
-        $DB->update_record('user', $user);
-    }
-
-    $users = $DB->get_records('user', array('id'=>$user->id));
-    $table = $renderer->users_search_result_table($users, $base_url);
-
-    $result = html_writer::tag(
-        'div', html_writer::table($table),
-        array('class' => 'centered results')
-    );
-    redirect(new moodle_url('/blocks/cps/setting.php', array('id' =>$user->id)));
 }
 
 $settings = cps_setting::get_to_name($setting_params);
