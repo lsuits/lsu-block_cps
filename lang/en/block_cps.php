@@ -58,6 +58,7 @@ $string['setting_help'] = 'Faculty are allowed to change their first name to a
 preferred name. This change will be permanent until otherwise specified.';
 
 $string['user_firstname'] = 'Prefered firstname';
+$string['settings_changessaved'] = 'Your changes have been saved.<br />Please log out and back in to see any name changes.';
 $string['grade_restore'] = 'Reset restored grade items';
 $string['grade_restore_help'] = 'If checked, grade items restored from a backup
 will reset offset and curve-to values, rather than pulling these values from
