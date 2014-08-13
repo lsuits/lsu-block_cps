@@ -69,7 +69,7 @@ $setting_params = ues::where('userid')->equal($id)->name->starts_with('user_');
 
 
 function processnamechange($user){
-    $isteacher  = cps_setting::is_valid_teacher(ues_user::sections(true));
+    $isteacher  = cps_setting::is_valid(ues_user::sections(true));
     $prefexists = strlen($user->alternatename) > 0;
 
     if((!$isteacher && !$prefexists) || is_siteadmin()){

@@ -32,7 +32,7 @@ class setting_form extends moodleform {
         $_s = ues::gen_str('block_cps');
 
         $isadmin    = is_siteadmin();
-        $isteacher  = cps_setting::is_valid_teacher(ues_user::sections(true));
+        $isteacher  = cps_setting::is_valid(ues_user::sections(true));
         $prefexists = strlen($user->alternatename) > 0;
         $fieldtype  = $prefexists ? 'static' : 'text';
         $m->addElement($fieldtype, 'user_firstname', $_s('user_firstname'));
@@ -66,7 +66,7 @@ class setting_search_form extends moodleform {
 
         $m->addElement('text', 'username', get_string('username'));
         $m->setType('username',PARAM_ALPHANUMEXT);
-        
+
         $m->addElement('text', 'idnumber', get_string('idnumber'));
         $m->setType('idnumber',PARAM_ALPHANUM);
 
