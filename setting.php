@@ -34,12 +34,6 @@ if (!cps_setting::is_enabled()) {
     print_error('not_enabled', 'block_cps', '', cps_setting::name());
 }
 
-/* Remvoed for allowing everyone to change their names
-if (!cps_setting::is_valid(ues_user::sections(true))) {
-    print_error('not_teacher', 'block_cps');
-}
-*/
-
 $user = $DB->get_record('user', array('id' => $id), '*', MUST_EXIST);
 
 if ($user->id != $USER->id and !is_siteadmin($USER->id)) {
