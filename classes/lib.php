@@ -353,7 +353,7 @@ class cps_setting extends cps_preferences {
     var $value;
 
     public static function is_valid($semesters) {
-        return parent::is_valid($semesters);
+        return parent::is_valid($semesters) || is_siteadmin($USER->id);
     }
 
     public static function is_valid_teacher($semesters) {
