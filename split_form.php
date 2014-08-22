@@ -198,10 +198,10 @@ class split_form_update extends split_form implements updating_form {
         foreach ($grouping_lookup as $number => $info) {
             foreach ($info as $name => $secs) {
                 $m->addElement('hidden', 'shell_name_'.$number.'_hidden', $name);
-                $m->setType('shell_name_'.$number.'_hidden', PARAM_ALPHANUMEXT);
+                $m->setType('shell_name_'.$number.'_hidden', PARAM_TEXT);
 
                 $m->addElement('hidden', 'shell_values_'.$number, implode(',', $secs));
-                $m->setType('shell_values_'.$number, PARAM_ALPHANUMEXT);
+                $m->setType('shell_values_'.$number, PARAM_TEXT);
             }
         }
 
@@ -328,9 +328,9 @@ class split_form_decide extends split_form {
                 $shell_name->toHtml() . '<br/>' . $radio->toHtml() . $shell->toHtml();
 
             $m->addElement('hidden', 'shell_values_'.$groupingid, $shell_values);
-            $m->setType('shell_values_'.$groupingid, PARAM_ALPHANUMEXT);
+            $m->setType('shell_values_'.$groupingid, PARAM_TEXT);
             $m->addElement('hidden', 'shell_name_'.$groupingid.'_hidden', $shell_name_value);
-            $m->setType('shell_name_'.$groupingid.'_hidden', PARAM_ALPHANUMEXT);
+            $m->setType('shell_name_'.$groupingid.'_hidden', PARAM_TEXT);
         }
 
         $previous_label =& $m->createElement('static', 'available_sections',
@@ -369,7 +369,7 @@ class split_form_confirm extends split_form {
             $valuekey = 'shell_values_'.$number;
 
             $extra[$namekey] = required_param($namekey, PARAM_TEXT);
-            $extra[$valuekey] = required_param($valuekey, PARAM_RAW);
+            $extra[$valuekey] = required_param($valuekey, PARAM_TEXT);
         }
 
         return $data + $extra;
@@ -409,10 +409,10 @@ class split_form_confirm extends split_form {
             $m->setType('reshelled', PARAM_INT);
 
             $m->addElement('hidden', $namekey, $this->_customdata[$namekey]);
-            $m->setType($namekey, PARAM_ALPHANUM);
+            $m->setType($namekey, PARAM_TEXT);
 
             $m->addElement('hidden', $valuekey, $this->_customdata[$valuekey]);
-            $m->setType($valuekey, PARAM_ALPHANUM);
+            $m->setType($valuekey, PARAM_TEXT);
         }
 
         $m->addElement('hidden', 'shells', $this->_customdata['shells']);
