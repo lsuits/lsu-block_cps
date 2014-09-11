@@ -153,6 +153,21 @@ abstract class cps_ues_handler {
         return $DB->update_record('user', $user);
     }
 
+    /**
+     * For users who have previously set their preferred name
+     * and who have now had their name changed officially (so that
+     * provider returns this name as firstname), delete the setting
+     * for firstname.
+     * @param type $user
+     */
+    public static function preferred_name_legitimized($user){
+        $params = array(
+            'userid' => $user->id,
+            'name' => 'user_firstname'
+        );
+        cps_setting::delete_all($params);
+    }
+
     public static function ues_primary_change($data) {
         // Empty enrollment / idnumber
         ues::unenroll_users(array($data->section));

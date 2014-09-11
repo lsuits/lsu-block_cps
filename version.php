@@ -20,11 +20,11 @@
  * @copyright 2014, Louisiana State University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 defined('MOODLE_INTERNAL') || die();
 
 
-$plugin->version = 2014062600;
+$plugin->version = 2014091111;
 $plugin->requires = 2013051400;
 $plugin->component = 'block_cps';
 $plugin->maturity = MATURITY_STABLE;

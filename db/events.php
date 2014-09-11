@@ -48,7 +48,8 @@ $modules_events = array(
         'ues_lsu_anonymous_updated',
         'ues_xml_anonymous_updated',
         'ues_group_emptied',
-        'user_updated'
+        'user_updated',
+        'preferred_name_legitimized'
     ),
     'simple_restore' => array(
         'simple_restore_complete'
