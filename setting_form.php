@@ -32,8 +32,8 @@ class setting_form extends moodleform {
         $_s = ues::gen_str('block_cps');
 
         $isadmin    = is_siteadmin();
-        $prefexists = strlen($user->alternatename) > 0;
-        $fieldtype  = $prefexists ? 'static' : 'text';
+        $altexists  = strlen($user->alternatename) > 0;
+        $fieldtype  = $altexists ? 'static' : 'text';
         $m->addElement($fieldtype, 'user_firstname', $_s('user_firstname'));
         $m->setDefault('user_firstname', $user->firstname);
         $m->setType('user_firstname', PARAM_TEXT);
@@ -51,7 +51,7 @@ class setting_form extends moodleform {
         );
 
         // Only show the save button if the user has not already savfed a preferred name.
-        if(!$prefexists || $isadmin){
+        if(!$altexists || $isadmin){
             array_unshift($buttons, $m->createElement('submit', 'save', get_string('savechanges')));
         }
 
