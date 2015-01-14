@@ -59,7 +59,7 @@ class block_cps extends block_list {
 
             $obj = 'cps_' . $setting;
 
-            if (!$obj::is_valid($semesters)) {
+            if (!$obj::is_valid($semesters) && $setting !== 'setting') {
                 continue;
             }
 

@@ -31,21 +31,29 @@ class setting_form extends moodleform {
 
         $_s = ues::gen_str('block_cps');
 
-        $m->addElement('text', 'user_firstname', $_s('user_firstname'));
+        $isadmin    = is_siteadmin();
+        $altexists  = strlen($user->alternatename) > 0;
+        $fieldtype  = $altexists ? 'static' : 'text';
+        $m->addElement($fieldtype, 'user_firstname', $_s('user_firstname'));
         $m->setDefault('user_firstname', $user->firstname);
         $m->setType('user_firstname', PARAM_TEXT);
 
-        $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
-        $m->setDefault('user_grade_restore', 1);
-        $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
+        if (cps_setting::is_valid(ues_user::sections(true))) {
+            $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
+            $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
+        }
 
         $m->addElement('hidden', 'id', $user->id);
         $m->setType('id', PARAM_INT);
 
         $buttons = array(
-            $m->createElement('submit', 'save', get_string('savechanges')),
             $m->createElement('cancel')
         );
+
+        // Only show the save button if the user has not already savfed a preferred name.
+        if(!$altexists || $isadmin){
+            array_unshift($buttons, $m->createElement('submit', 'save', get_string('savechanges')));
+        }
 
         $m->addGroup($buttons, 'buttons', '&nbsp;', array(' '), false);
     }
@@ -57,7 +65,7 @@ class setting_search_form extends moodleform {
 
         $m->addElement('text', 'username', get_string('username'));
         $m->setType('username',PARAM_ALPHANUMEXT);
-        
+
         $m->addElement('text', 'idnumber', get_string('idnumber'));
         $m->setType('idnumber',PARAM_ALPHANUM);
 

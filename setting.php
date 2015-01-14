@@ -28,13 +28,10 @@ require_once 'setting_form.php';
 require_login();
 
 $id = optional_param('id', $USER->id, PARAM_INT);
+$reset = optional_param('reset', 0, PARAM_INT);
 
 if (!cps_setting::is_enabled()) {
     print_error('not_enabled', 'block_cps', '', cps_setting::name());
-}
-
-if (!cps_setting::is_valid(ues_user::sections(true))) {
-    print_error('not_teacher', 'block_cps');
 }
 
 $user = $DB->get_record('user', array('id' => $id), '*', MUST_EXIST);
@@ -59,8 +56,10 @@ $PAGE->navbar->add($blockname);
 $PAGE->navbar->add($heading);
 $PAGE->set_url($base_url);
 
+$renderer = $PAGE->get_renderer('block_cps');
+
 // Admin came here the first time
-if (is_siteadmin($USER->id) and $USER->id === $id) {
+if ($reset == 1 || (is_siteadmin($USER->id) and $USER->id === $id)) {
     $form = new setting_search_form();
 } else {
     $form = new setting_form(null, array('user' => $user));
@@ -68,9 +67,44 @@ if (is_siteadmin($USER->id) and $USER->id === $id) {
 
 $setting_params = ues::where('userid')->equal($id)->name->starts_with('user_');
 
+
+function processnamechange($user){
+    $isteacher  = cps_setting::is_valid(ues_user::sections(true));
+    $altexists  = strlen($user->alternatename) > 0;
+
+    if((!$isteacher && !$altexists) || is_siteadmin()){
+        $user->alternatename = $user->firstname;
+    }
+    return $user;
+}
+
+if($reset == 1){
+    $setting = cps_setting::get(array(
+        'userid' => $user->id,
+        'name' => 'user_firstname'
+    ));
+
+    if($setting){
+        cps_setting::delete($setting->id);
+    }
+
+    if(isset($user->alternatename)){
+        global $DB;
+        $user->firstname = $user->alternatename;
+        $user->alternatename = null;
+        $DB->update_record('user', $user);
+    }
+
+    $data = new stdClass();
+    $data->search = true;
+    $data->username = $user->username;
+}else{
+    $data = $form->get_data();
+}
+
 if ($form->is_cancelled()) {
     redirect(new moodle_url('/my'));
-} else if ($data = $form->get_data()) {
+} else if ($data) {
     if (isset($data->search)) {
         $filters = ues::where();
 
@@ -89,27 +123,7 @@ if ($form->is_cancelled()) {
             if (empty($users)) {
                 $result = $OUTPUT->notification($_s('no_results'));
             } else {
-                $table = new html_table();
-                $table->head = array(
-                    get_string('firstname'), get_string('lastname'),
-                    get_string('username'), get_string('idnumber'),
-                    get_string('action')
-                );
-
-                $edit_str = get_string('edit');
-                foreach ($users as $user) {
-                    $url = new moodle_url($base_url, array('id' => $user->id));
-
-                    $line = array(
-                        $user->firstname,
-                        $user->lastname,
-                        $user->username,
-                        $user->idnumber,
-                        html_writer::link($url, $edit_str)
-                    );
-
-                    $table->data[] = new html_table_row($line);
-                }
+                $table  = $renderer->users_search_result_table($users, $base_url);
 
                 $result = html_writer::tag(
                     'div', html_writer::table($table),
@@ -121,6 +135,7 @@ if ($form->is_cancelled()) {
 
     if (isset($data->save)) {
         $current_settings = cps_setting::get_to_name($setting_params);
+
         foreach (get_object_vars($data) as $name => $value) {
             if (empty($value) or !preg_match('/^user_/', $name)) {
                 continue;
@@ -134,6 +149,11 @@ if ($form->is_cancelled()) {
                 $setting->name = $name;
             }
 
+            // In order to allow students to change their names, per SG resolution c.2014, while
+            // still retaining the legal name for roster and post-grades purposes, move firstname to alt.name.
+            if($setting->name == 'user_firstname'){
+                $user = processnamechange($user);
+            }
             $setting->value = $value;
             $setting->save();
 
@@ -143,10 +163,11 @@ if ($form->is_cancelled()) {
         foreach ($current_settings as $setting) {
             cps_setting::delete($setting->id);
         }
-
         events_trigger('user_updated', $user);
 
-        $note = $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');
+        $note = $OUTPUT->notification(get_string('settings_changessaved', 'block_cps'), 'notifysuccess');
+        $base_url->param('id', $user->id);
+        redirect($base_url);
     }
 }
 
