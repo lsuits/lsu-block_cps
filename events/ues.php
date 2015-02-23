@@ -231,7 +231,7 @@ abstract class cps_ues_handler {
 
         if ($promotion) {
             // Promotion means all settings are in tact
-            return true;
+            return $ues_teacher;
         } else if ($demotion) {
             // Demotion means crosslist and split behavior must be effected
             unset($all_section_settings[0]);
@@ -257,7 +257,7 @@ abstract class cps_ues_handler {
             $success
         );
 
-        return $success;
+        return $ues_teacher;
     }
 
     public static function ues_section_process($section) {
@@ -302,7 +302,7 @@ abstract class cps_ues_handler {
 
         if ($diff_days > $creation->create_days) {
             $section->status = ues::PENDING;
-            return true;
+            return $section;
         }
 
         if ($diff_days > $creation->enroll_days) {
@@ -318,7 +318,7 @@ abstract class cps_ues_handler {
             }
         }
 
-        return true;
+        return $section;
     }
 
     public static function ues_section_drop($section) {
