@@ -42,6 +42,6 @@ abstract class cps_ues_people_handler {
             $data->outputs[$meta] = new cps_people_element($meta, $_s($meta));
         }
 
-        return true;
+        return $data;
     }
 }
