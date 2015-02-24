@@ -351,7 +351,7 @@ abstract class cps_ues_handler {
         $sections = ues_section::from_course($course);
 
         if (empty($sections)) {
-            return true;
+            return $course;
         }
 
         $section = reset($sections);
@@ -359,7 +359,7 @@ abstract class cps_ues_handler {
         $primary = $section->primary();
 
         if (empty($primary)) {
-            return true;
+            return $course;
         }
 
         $creation_settings = cps_setting::get_all(ues::where()
@@ -436,7 +436,7 @@ abstract class cps_ues_handler {
             }
         }
 
-        return true;
+        return $course;
     }
 
     public static function ues_course_severed($course) {
