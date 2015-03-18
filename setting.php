@@ -163,7 +163,7 @@ if ($form->is_cancelled()) {
         foreach ($current_settings as $setting) {
             cps_setting::delete($setting->id);
         }
-        events_trigger('user_updated', $user);
+        events_trigger_legacy('user_updated', $user);
 
         $note = $OUTPUT->notification(get_string('settings_changessaved', 'block_cps'), 'notifysuccess');
         $base_url->param('id', $user->id);
