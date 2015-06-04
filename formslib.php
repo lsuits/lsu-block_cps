@@ -82,7 +82,6 @@ abstract class cps_form extends moodleform implements generic_states {
         }
 
         $class = $prefix . '_form_' . $state;
-mtrace(sprintf("creating form %s", $class));
 
         $data = $class::build($courses);
 

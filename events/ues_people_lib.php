@@ -25,7 +25,8 @@ require_once $CFG->dirroot . '/blocks/ues_people/lib.php';
 
 class cps_people_element extends ues_people_element_output {
     private function span_yes() {
-        $class = end(explode('_', $this->field));
+        $values = explode('_', $this->field);
+        $class = end($values);
         return html_writer::tag('span', 'Y', array('class' => "$class yes"));
     }
 
