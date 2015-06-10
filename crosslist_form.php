@@ -40,8 +40,10 @@ class crosslist_form_select extends crosslist_form {
         $semesters = $this->_customdata['semesters'];
 
         $m->addElement('header', 'select_course', self::_s('crosslist_select'));
+        $m->setType('select_course', PARAM_TEXT);
 
         $m->addElement('static', 'selected_label', '', '');
+        $m->setType('selected_label', PARAM_TEXT);
         foreach ($semesters as $semester) {
             foreach ($semester->courses as $course) {
                 $display = $this->display_course($course, $semester);
@@ -52,7 +54,6 @@ class crosslist_form_select extends crosslist_form {
 
                 $key = 'selected_' . $semester->id . '_' . $course->id;
                 $m->addElement('checkbox', $key, '', $display);
-                $m->setType($key, PARAM_BOOL);
             }
         }
 
@@ -130,7 +131,8 @@ class crosslist_form_update extends crosslist_form implements updating_form {
 
         $grouping_lookup = array();
 
-        $m->addElement('header', 'selected_courses', self::_s('crosslist_updating'));
+        $m->addElement('header', 'pre_selected_courses', self::_s('crosslist_updating'));
+        $m->setType('pre_selected_courses', PARAM_TEXT);
 
         $orphaned_sections = 0;
         foreach ($courses as $key => $course) {
@@ -138,6 +140,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
             $display = $this->display_course($course, $semester);
 
             $m->addElement('static', 'course_'.$course->id, $display, '');
+            $m->setType('course_' . $course->id, PARAM_TEXT);
 
             $html = '<ul>';
             foreach ($course->sections as $section) {
@@ -159,14 +162,18 @@ class crosslist_form_update extends crosslist_form implements updating_form {
             $html .= '</ul>';
 
             $m->addElement('static', 'sections_'.$course->id, '', $html);
+            $m->setType('sections_' . $course->id, PARAM_TEXT);
 
             $m->addElement('hidden', $key, 1);
+            $m->setType($key, PARAM_TEXT);
         }
 
         foreach ($grouping_lookup as $number => $info) {
             foreach ($info as $name => $secs) {
                 $m->addElement('hidden', 'shell_name_'.$number.'_hidden', $name);
                 $m->addElement('hidden', 'shell_values_'.$number, implode(',', $secs));
+                $m->setType('shell_name_'.$number.'_hidden', PARAM_TEXT);
+                $m->setType('shell_values_'.$number, PARAM_TEXT);
             }
         }
 
@@ -191,6 +198,7 @@ class crosslist_form_update extends crosslist_form implements updating_form {
         $m->setDefault('crosslist_option', self::REARRANGE);
 
         $m->addElement('hidden', 'shells', $shells);
+        $m->setType('shells', PARAM_TEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -240,7 +248,8 @@ class crosslist_form_shells extends crosslist_form {
 
         $semester = $this->_customdata['semester'];
 
-        $m->addElement('header', 'selected_courses', self::_s('crosslist_you_have'));
+        $m->addElement('header', 'pre_selected_courses', self::_s('crosslist_you_have'));
+        $m->setType('pre_selected_courses', PARAM_TEXT);
 
         $total = $last = 0;
 
@@ -249,6 +258,7 @@ class crosslist_form_shells extends crosslist_form {
 
             $m->addElement('static', 'course_' . $course->id,
                 $this->display_course($course, $semester));
+                $m->setType('course_' . $course->id, PARAM_TEXT);
             
             $m->addElement('hidden', $selected, 1);
                 $m->setType($selected, PARAM_BOOL);
@@ -263,8 +273,8 @@ class crosslist_form_shells extends crosslist_form {
         $options = array_combine($range, $range);
 
         $m->addElement('select', 'shells', self::_s('split_how_many'), $options);
-        $m->addHelpButton('shells', 'split_how_many', 'block_cps');
         $m->setType('shells', PARAM_INT);
+        $m->addHelpButton('shells', 'split_how_many', 'block_cps');
         $this->generate_states_and_buttons();
     }
 }
@@ -297,7 +307,8 @@ class crosslist_form_decide extends crosslist_form {
 
         $display = $this->display_semester($semester) . ' ' . $course_names;
 
-        $m->addElement('header', 'selected_courses', $display);
+        $m->addElement('header', 'pre_selected_courses', $display);
+        $m->setType('pre_selected_courses', PARAM_TEXT);
 
         $before = array();
         foreach ($courses as $selected => $course) {
@@ -372,6 +383,7 @@ class crosslist_form_decide extends crosslist_form {
         $form_html = $this->mover_form($previous_label, $previous, $shells);
 
         $m->addElement('html', $form_html);
+        $m->setType('html', PARAM_RAW);
 
         $m->addElement('hidden', 'shells', '');
         $m->setType('shells', PARAM_TEXT);
@@ -446,9 +458,11 @@ class crosslist_form_confirm extends crosslist_form {
 
         $display = $this->display_semester($semester);
 
-        $m->addElement('header', 'selected_courses', "$display $course_names");
+        $m->addElement('header', 'pre_selected_courses', "$display $course_names");
+        $m->setType('pre_selected_courses', PARAM_TEXT);
 
         $m->addElement('static', 'chosen', self::_s('chosen'), '');
+        $m->setType('chosen', PARAM_TEXT);
 
         foreach (range(1, $this->_customdata['shells']) as $number) {
             $namekey = 'shell_name_'.$number.'_hidden';

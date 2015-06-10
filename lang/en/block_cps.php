@@ -354,3 +354,6 @@ $string['user_sport1'] = 'Sport';
 $string['user_anonymous_number'] = 'Anonymous';
 
 $string['network_failure'] = 'There was a network error that caused the process to fail. You can either refresh this page or go back to re-apply the settings.';
+$string['sec_number'] = 'Section';
+$string['credit_hours'] = 'Credit Hours';
+$string['student_audit'] = 'Auditing';
