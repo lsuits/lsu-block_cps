@@ -170,7 +170,7 @@ abstract class cps_ues_handler {
 
     public static function ues_primary_change($data) {
         // Empty enrollment / idnumber
-        ues::unenroll_users(array($data->section));
+        ues::unenrollUsersBySections(array($data->section));
 
         // Safe keeping
         $data->section->idnumber = '';

@@ -103,7 +103,7 @@ abstract class cps_simple_restore_handler {
             }
 
             // Rebuild enrollment
-            ues::enroll_users(ues_section::from_course($course));
+            ues::enrollUsers(ues_section::from_course($course));
         }
 
         return true;

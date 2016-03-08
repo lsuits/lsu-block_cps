@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once $CFG->dirroot . '/enrol/ues/publiclib.php';
-ues::require_daos();
+ues::requireLibs();
 
 interface verifiable {
     public static function is_valid($semesters);
@@ -187,13 +187,13 @@ class cps_unwant extends ues_user_section_accessor implements application, undoa
         $section = $this->section();
 
         // Severage is happening in eventslib.php
-        ues::unenroll_users(array($section));
+        ues::unenrollUsersBySections(array($section));
     }
 
     function unapply() {
         $section = $this->section();
 
-        ues::enroll_users(array($section));
+        ues::enrollUsersBySections(array($section));
     }
 }
 
@@ -256,10 +256,10 @@ class cps_material extends cps_preferences implements application, undoable {
             return true;
         }
 
-        $enrol = enrol_get_plugin('ues');
-        $instance = $enrol->get_instance($mcourse->id);
+        $ues = enrol_get_plugin('ues');
+        $instance = $ues->get_instance($mcourse->id);
 
-        $enrol->unenrol_user($instance, $this->userid);
+        $ues->unenrol_user($instance, $this->userid);
         return true;
     }
 
@@ -272,10 +272,10 @@ class cps_material extends cps_preferences implements application, undoable {
 
         $mcourse = $DB->get_record('course', array('shortname' => $shortname));
 
-        $enrol = enrol_get_plugin('ues');
+        $ues = enrol_get_plugin('ues');
 
         if (!$mcourse) {
-            $category = $enrol->manifest_category($this->course());
+            $category = $ues->manifestCategory($this->course());
 
             $course = new stdClass;
             $course->visible = 0;
@@ -300,10 +300,10 @@ class cps_material extends cps_preferences implements application, undoable {
             $mcourse = create_course($course);
         }
 
-        $instance = $enrol->get_instance($mcourse->id);
+        $instance = $ues->get_instance($mcourse->id);
 
-        $primary = $enrol->setting('editingteacher_role');
-        $enrol->enrol_user($instance, $this->userid, $primary);
+        $primary = $ues->config('editingteacher_role');
+        $ues->enrol_user($instance, $this->userid, $primary);
 
         $this->moodleid = $mcourse->id;
 
@@ -343,7 +343,7 @@ class cps_creation extends cps_preferences implements application {
 
         $associated = array_filter($sections, $by_teacher);
 
-        ues::inject_manifest($associated);
+        ues::injectManifest($associated);
     }
 }
 
@@ -451,13 +451,13 @@ class cps_split extends manifest_updater implements application, undoable {
     function apply() {
         $sections = array($this->section());
 
-        ues::inject_manifest($sections);
+        ues::injectManifest($sections);
     }
 
     function unapply() {
         $sections = array($this->section());
 
-        ues::inject_manifest($sections, function ($sec) {
+        ues::injectManifest($sections, function ($sec) {
             $sec->idnumber = '';
         });
     }
@@ -528,13 +528,13 @@ class cps_crosslist extends manifest_updater implements application, undoable {
     function apply() {
         $section = $this->section();
 
-        ues::inject_manifest(array($section));
+        ues::injectManifest(array($section));
     }
 
     function unapply() {
         $sections = array($this->section());
 
-        ues::inject_manifest($sections, function ($section) {
+        ues::injectManifest($sections, function ($section) {
             $section->idnumber = '';
         });
     }
@@ -920,11 +920,11 @@ class cps_team_section extends manifest_updater implements application, undoable
     function apply() {
         $section = $this->section();
 
-        ues::inject_manifest(array($section));
+        ues::injectManifest(array($section));
     }
 
     function unapply() {
-        ues::inject_manifest(array($this->section()), function($sec) {
+        ues::injectManifest(array($this->section()), function($sec) {
             $sec->idnumber = '';
         });
     }
