@@ -15,7 +15,10 @@ abstract class cps_manipulator {
     public static function handle($component, $eventName, $data = array()) {
 
         // check that this component can be handled
-        $handleableComponents = array('enrol_ues');
+        $handleableComponents = array(
+            'enrol_ues',
+            'block_ues_people'
+        );
 
         if ( ! in_array($component, $handleableComponents))
             throw new CPSManipulatorException('CPS is trying to handle a component that is not registered as an manipulator');
