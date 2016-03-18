@@ -57,4 +57,35 @@ class block_ues_people_manipulator extends base_manipulator {
         return $this->response;
     }
 
+    /**
+     * Adds audit data to UES people data
+     * 
+     * @param  array  $data[$course]
+     * @param  array  $data[$output]
+     * @return array  $response
+     */
+    public function add_audit_data_to_output($data) {
+
+        $output = $data['output'];
+
+        // get UES sections for this course
+        $sections = ues_section::from_course($data['course']);
+
+        // If one of them contains LAW, then display student_audit
+        $is_law = false;
+        foreach ($sections as $section) {
+            if ($is_law) break;
+
+            $is_law = $section->course()->department == 'LAW';
+        }
+
+        if ($is_law) {
+            $output['student_audit'] = new post_grades_audit_people();
+        }
+
+        $this->addToResponse('output', $output);
+
+        return $this->response;
+    }
+
 }
