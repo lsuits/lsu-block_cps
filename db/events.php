@@ -58,9 +58,9 @@ $modules_events = array(
         'ues_user_data_ui_keys',
         'ues_user_data_ui_element'
     ),
-    'ues_people' => array(
-        'ues_people_outputs'
-    )
+    // 'ues_people' => array(
+    //     'ues_people_outputs'
+    // )
 );
 
 $handlers = array();
