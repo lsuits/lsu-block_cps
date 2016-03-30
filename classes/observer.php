@@ -121,7 +121,7 @@ class block_cps_observer {
         // get this moodle course
         $courseid = $event->other['moodle_course_id'];
 
-        $course = get_course($courseid)
+        $course = get_course($courseid);
 
         global $DB;
 
@@ -186,6 +186,58 @@ class block_cps_observer {
         }
 
         return true;
+    }
+
+    /**
+     * UES event:
+     *
+     * @param  \enrol_ues\event\ues_student_data_updated  $event
+     * @param  int  other['ues_user_id']
+     */
+    public static function ues_student_data_updated(\enrol_ues\event\ues_student_data_updated $event) {
+
+        try {
+            $ues_user = ues_user::by_id($event->other['ues_user_id']);
+
+            // if (property_exists($user_user, 'user_keypadid')) {
+                if (empty($ues_user->user_keypadid)) {
+                    cps_profile_field_helper::clear_field_data($ues_user, 'user_keypadid');
+                }
+            // }
+
+            cps_profile_field_helper::process($ues_user, 'user_keypadid');
+
+            return true;
+
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * UES event:
+     *
+     * @param  \enrol_ues\event\ues_anonymous_updated  $event
+     * @param  int  other['ues_user_id']
+     */
+    public static function ues_anonymous_updated(\enrol_ues\event\ues_anonymous_updated $event) {
+
+        try {
+            $ues_user = ues_user::by_id($event->other['ues_user_id']);
+
+            // if (property_exists($user_user, 'user_anonymous_number')) {
+            if (empty($ues_user->user_anonymous_number)) {
+                cps_profile_field_helper::clear_field_data($ues_user, 'user_anonymous_number');
+            }
+            // }
+
+            cps_profile_field_helper::process($ues_user, 'user_anonymous_number');
+
+            return true;
+
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
 }

@@ -43,10 +43,10 @@ $modules_events = array(
         // 'ues_semester_drop',
         // 'ues_course_create',
         // 'ues_course_severed',
-        'ues_lsu_student_data_updated',
-        'ues_xml_student_data_updated',
-        'ues_lsu_anonymous_updated',
-        'ues_xml_anonymous_updated',
+        // 'ues_lsu_student_data_updated',
+        // 'ues_xml_student_data_updated',
+        // 'ues_lsu_anonymous_updated',
+        // 'ues_xml_anonymous_updated',
         // 'ues_group_emptied',
         // 'user_updated',
         // 'preferred_name_legitimized'
@@ -76,6 +76,31 @@ $observers = array(
     array(
         'eventname'   => '\enrol_ues\event\ues_section_dropped',
         'callback'    => 'block_cps_observer::ues_section_dropped',
+    ),
+
+    array(
+        'eventname'   => '\enrol_ues\event\ues_teacher_processed',
+        'callback'    => 'block_cps_observer::ues_teacher_processed',
+    ),
+
+    array(
+        'eventname'   => '\enrol_ues\event\preferred_name_used',
+        'callback'    => 'block_cps_observer::preferred_name_used',
+    ),
+
+    array(
+        'eventname'   => '\enrol_ues\event\ues_course_severed',
+        'callback'    => 'block_cps_observer::ues_course_severed',
+    ),
+
+    array(
+        'eventname'   => '\enrol_ues\event\ues_student_data_updated',
+        'callback'    => 'block_cps_observer::ues_student_data_updated',
+    ),
+
+    array(
+        'eventname'   => '\enrol_ues\event\ues_anonymous_updated',
+        'callback'    => 'block_cps_observer::ues_anonymous_updated',
     ),
  
 );
