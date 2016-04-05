@@ -52,11 +52,11 @@ $modules_events = array(
         // 'preferred_name_legitimized'
     ),
     'simple_restore' => array(
-        'simple_restore_complete'
+        // 'simple_restore_complete'
     ),
     'ues_meta_viewer' => array(
-        'ues_user_data_ui_keys',
-        'ues_user_data_ui_element'
+            // 'ues_user_data_ui_keys',
+            // 'ues_user_data_ui_element'
     ),
     // 'ues_people' => array(
     //     'ues_people_outputs'
@@ -73,6 +73,8 @@ foreach ($modules_events as $module => $events) {
 
 $observers = array(
  
+    // UES events
+
     array(
         'eventname'   => '\enrol_ues\event\ues_section_dropped',
         'callback'    => 'block_cps_observer::ues_section_dropped',
@@ -102,5 +104,12 @@ $observers = array(
         'eventname'   => '\enrol_ues\event\ues_anonymous_updated',
         'callback'    => 'block_cps_observer::ues_anonymous_updated',
     ),
+
+    // SIMPLE RESTORE events
+
+    array(
+        'eventname' => '\block_simple_restore\event\simple_restore_complete',
+        'callback'  => 'block_cps_observer::simple_restore_complete',
+    )
  
 );
