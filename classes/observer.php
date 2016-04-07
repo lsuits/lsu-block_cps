@@ -199,10 +199,10 @@ class block_cps_observer {
         try {
             $ues_user = ues_user::by_id($event->other['ues_user_id']);
 
-            if ( ! property_exists($user_user, 'user_keypadid')) {
-                // if (empty($ues_user->user_keypadid)) {
+            if (property_exists($ues_user, 'user_keypadid')) {
+                if (empty($ues_user->user_keypadid)) {
                     cps_profile_field_helper::clear_field_data($ues_user, 'user_keypadid');
-                // }
+                }
             }
 
             cps_profile_field_helper::process($ues_user, 'user_keypadid');
@@ -225,10 +225,10 @@ class block_cps_observer {
         try {
             $ues_user = ues_user::by_id($event->other['ues_user_id']);
 
-            if ( ! property_exists($user_user, 'user_anonymous_number')) {
-            // if (empty($ues_user->user_anonymous_number)) {
-                cps_profile_field_helper::clear_field_data($ues_user, 'user_anonymous_number');
-            // }
+            if (property_exists($ues_user, 'user_anonymous_number')) {
+                if (empty($ues_user->user_anonymous_number)) {
+                    cps_profile_field_helper::clear_field_data($ues_user, 'user_anonymous_number');
+                }
             }
 
             cps_profile_field_helper::process($ues_user, 'user_anonymous_number');
