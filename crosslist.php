@@ -60,7 +60,7 @@ $PAGE->set_url('/blocks/cps/crosslist.php');
 $PAGE->set_title($heading);
 $PAGE->set_pagetype('cps-crosslist');
 
-$PAGE->requires->js('/blocks/cps/js/jquery.js');
+$PAGE->requires->jquery();
 $PAGE->requires->js('/blocks/cps/js/selection.js');
 $PAGE->requires->js('/blocks/cps/js/crosslist.js');
 
