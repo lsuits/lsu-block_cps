@@ -136,6 +136,7 @@ class split_form_shells extends split_form {
         $m->addHelpButton('shells', 'split_how_many', 'block_cps');
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
