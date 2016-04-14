@@ -278,7 +278,7 @@ abstract class cps_ues_handler {
 
         if ($unwanted) {
             $section->status = ues::PENDING;
-            return true;
+            return $section;
         }
 
         // Creation and Enrollment interjection
