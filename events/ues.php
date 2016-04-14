@@ -181,7 +181,7 @@ abstract class cps_ues_handler {
         ues_student::reset_status($data->section, ues::PROCESSED);
         ues_teacher::reset_status($data->section, ues::PROCESSED);
 
-        return true;
+        return $data;
     }
 
     public static function ues_teacher_process($ues_teacher) {
