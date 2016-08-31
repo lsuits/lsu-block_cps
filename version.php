@@ -17,20 +17,20 @@
 
 /**
  * @package   block_cps
- * @copyright 2014, Louisiana State University
+ * @copyright 2016, Louisiana State University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 
-$plugin->version = 2014091111;
-$plugin->requires = 2013051400;
+$plugin->version = 2016083100;
+$plugin->requires = 2015051102;
 $plugin->component = 'block_cps';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.1.8';
+$plugin->release = 'v3.1.0';
 
 
 $plugin->dependencies = array(
-    'enrol_ues' => 2013081007,
+    'enrol_ues' => 2016083000,
 );
