@@ -231,7 +231,7 @@ abstract class cps_ues_handler {
 
         if ($promotion) {
             // Promotion means all settings are in tact
-            return true;
+            return $ues_teacher;
         } else if ($demotion) {
             // Demotion means crosslist and split behavior must be effected
             unset($all_section_settings[0]);
@@ -257,7 +257,7 @@ abstract class cps_ues_handler {
             $success
         );
 
-        return $success;
+        return $ues_teacher;
     }
 
     public static function ues_section_process($section) {
@@ -278,7 +278,7 @@ abstract class cps_ues_handler {
 
         if ($unwanted) {
             $section->status = ues::PENDING;
-            return true;
+            return $section;
         }
 
         // Creation and Enrollment interjection
@@ -302,7 +302,7 @@ abstract class cps_ues_handler {
 
         if ($diff_days > $creation->create_days) {
             $section->status = ues::PENDING;
-            return true;
+            return $section;
         }
 
         if ($diff_days > $creation->enroll_days) {
@@ -318,7 +318,7 @@ abstract class cps_ues_handler {
             }
         }
 
-        return true;
+        return $section;
     }
 
     public static function ues_section_drop($section) {
@@ -351,7 +351,7 @@ abstract class cps_ues_handler {
         $sections = ues_section::from_course($course);
 
         if (empty($sections)) {
-            return true;
+            return $course;
         }
 
         $section = reset($sections);
@@ -359,7 +359,7 @@ abstract class cps_ues_handler {
         $primary = $section->primary();
 
         if (empty($primary)) {
-            return true;
+            return $course;
         }
 
         $creation_settings = cps_setting::get_all(ues::where()
@@ -436,7 +436,7 @@ abstract class cps_ues_handler {
             }
         }
 
-        return true;
+        return $course;
     }
 
     public static function ues_course_severed($course) {
