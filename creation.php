@@ -102,6 +102,7 @@ if ($form->is_cancelled()) {
     }
 
     $moodle_course_visibilities = array();
+    $cpss = get_config('block_cps');
     foreach ($form->create_days as $semesterid => $courses) {
         foreach ($courses as $courseid => $create_days) {
             if (empty($create_days)) {
@@ -124,13 +125,20 @@ if ($form->is_cancelled()) {
 
             
             $same_value = $creation->create_days == $create_days && $creation->enroll_days == $enroll_days;
+            $default_value = $cpss->create_days == $create_days && $cpss->enroll_days == $enroll_days;
             $no_value   = $creation->create_days == null && $creation->enroll_days == null;
             if($same_value){
                 // If nothing has changed, skip the rest of the loop:
                 // apply will perform unenroll/enroll, causing course visibility = 0;
                 unset($creations[$creation->id]);
                 continue;
-            }else{
+            } else if ($default_value) {
+                global $DB;
+                $creation->create_days = $cpss->create_days;
+                $creation->enroll_days = $cpss->enroll_days;
+                $creation->save();
+                continue;
+            } else {
                 global $DB;
                 $creation->create_days = $create_days;
                 $creation->enroll_days = $enroll_days;

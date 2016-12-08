@@ -54,9 +54,8 @@ $string['cou_number'] = 'Course Number';
 $string['material_shortname'] = 'Master Course {department} {course_number} for {fullname}';
 
 $string['setting'] = 'User preferences';
-$string['setting_help'] = 'Faculty are allowed to change their first name to a
-preferred name. This change will be permanent until otherwise specified.';
-
+$string['setting_help'] = 'Faculty are allowed to change their first name to a preferred name. This change will be permanent until otherwise specified.';
+$string['notice'] = 'Users are allowed to change their first name to a preferred name <strong>only once</strong>.<br />Your preferred name can then only be reset or edited by a Moodle administrator.<br />Please contact the help desk for additional assistance with preferred name.';
 $string['user_firstname'] = 'Preferred firstname';
 $string['settings_changessaved'] = 'Your changes have been saved.<br />Please log out and back in to see any name changes.';
 $string['grade_restore'] = 'Reset restored grade items';

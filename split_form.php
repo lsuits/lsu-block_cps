@@ -136,6 +136,7 @@ class split_form_shells extends split_form {
         $m->addHelpButton('shells', 'split_how_many', 'block_cps');
 
         $m->addElement('hidden', 'selected', '');
+        $m->setType('selected', PARAM_ALPHANUMEXT);
 
         $this->generate_states_and_buttons();
     }
@@ -226,7 +227,7 @@ class split_form_update extends split_form implements updating_form {
         $m->setDefault('split_option', self::REARRANGE);
 
         $m->addElement('hidden', 'selected', '');
-        $m->setType('selected', PARAM_ALPHANUMEXT);
+        $m->setType('reshelled', PARAM_INT);
 
         $this->generate_states_and_buttons();
     }
@@ -347,6 +348,7 @@ class split_form_decide extends split_form {
         $m->setType('shells', PARAM_INT);
 
         $m->addElement('hidden', 'reshelled', '');
+        $m->setType('reshelled', PARAM_ALPHANUMEXT);
 
         $m->addElement('hidden', 'selected', '');
         $m->setType('selected', PARAM_ALPHANUMEXT);
@@ -419,6 +421,7 @@ class split_form_confirm extends split_form {
         $m->setType('shells', PARAM_INT);
 
         $m->addElement('hidden', 'reshelled', '');
+        $m->setType('reshelled', PARAM_INT);
 
         $m->addElement('hidden', 'selected', '');
         $m->setType('selected', PARAM_ALPHANUMEXT);
