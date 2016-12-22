@@ -75,6 +75,8 @@ function processnamechange($user){
     if((!$isteacher && !$altexists) || is_siteadmin()){
         $user->alternatename = $user->firstname;
         $warning = get_string('notice', 'block_cps');
+    } else if($isteacher && !$altexists) {
+        $user->alternatename = $user->firstname;
     }
     return $user;
 }

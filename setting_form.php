@@ -32,13 +32,14 @@ class setting_form extends moodleform {
         $_s = ues::gen_str('block_cps');
 
         $isadmin    = is_siteadmin();
+        $isteacher  = cps_setting::is_valid(ues_user::sections(true));
         $altexists  = strlen($user->alternatename) > 0;
-        $fieldtype  = $altexists ? 'static' : 'text';
+        $fieldtype  = !$altexists || $isteacher ? 'text' : 'static';
         $m->addElement($fieldtype, 'user_firstname', $_s('user_firstname'));
         $m->setDefault('user_firstname', $user->firstname);
         $m->setType('user_firstname', PARAM_TEXT);
 
-        if (cps_setting::is_valid(ues_user::sections(true))) {
+        if ($isteacher) {
             $m->addElement('checkbox', 'user_grade_restore', $_s('grade_restore'));
             $m->addHelpButton('user_grade_restore', 'grade_restore', 'block_cps');
         }
@@ -51,7 +52,7 @@ class setting_form extends moodleform {
         );
 
         // Only show the save button if the user has not already savfed a preferred name.
-        if(!$altexists || $isadmin){
+        if(!$altexists || $isadmin || $isteacher){
             array_unshift($buttons, $m->createElement('submit', 'save', get_string('savechanges')));
         }
 
