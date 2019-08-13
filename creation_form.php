@@ -82,6 +82,18 @@ class creation_form extends moodleform {
 
         $m->addElement('checkbox', 'creation_defaults', $_s('use_defaults'));
 
+        // Add the Appearance option for choosing theme.
+        $themeobjects = get_list_of_themes();
+        $themes = array();
+        $themes[''] = get_string('forceno');
+        foreach ($themeobjects as $key=>$theme) {
+            if (empty($theme->hidefromselector)) {
+                $themes[$key] = get_string('pluginname', 'theme_' . $theme->name);
+            }
+        }
+        $m->addElement('select', 'creation_theme', get_string('forcetheme'), $themes);
+        $m->disabledIf('creation_theme', 'creation_defaults', 'checked');
+
         $options = array();
         $formats = get_plugin_list('format');
         foreach ($formats as $format => $ignore) {

@@ -63,10 +63,9 @@ class block_cps extends block_list {
                 continue;
             }
 
-            $content->items[] = html_writer::link($url, $name) .
+            $content->items[] = html_writer::link($url, $OUTPUT->pix_icon($setting, $name,
+                'block_cps', array('class' => 'icon')) . $name) . ' ' .
                 $OUTPUT->help_icon($setting, 'block_cps');
-            $content->icons[] = $OUTPUT->pix_icon($setting, $name,
-                'block_cps', array('class' => 'icon'));
         }
 
         $this->content = $content;

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/rss_client/db" VERSION="20120820" COMMENT="XMLDB file for the CPS setting block."
+<XMLDB PATH="blocks/cps/db" VERSION="20120820" COMMENT="XMLDB file for the CPS setting block."
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
->
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="enrol_cps_settings" COMMENT="Table storing general settings." NEXT="enrol_cps_creations">
       <FIELDS>

@@ -24,6 +24,7 @@
 require_once '../../config.php';
 require_once 'classes/lib.php';
 require_once 'setting_form.php';
+require_once 'events/ues.php';
 
 require_login();
 
@@ -166,7 +167,8 @@ if ($form->is_cancelled()) {
         foreach ($current_settings as $setting) {
             cps_setting::delete($setting->id);
         }
-        events_trigger_legacy('user_updated', $user);
+
+	cps_ues_handler::user_updated($user);
 
         $note = $OUTPUT->notification(get_string('settings_changessaved', 'block_cps'), 'notifysuccess');
         $base_url->param('id', $user->id);
